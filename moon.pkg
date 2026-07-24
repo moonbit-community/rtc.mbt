@@ -1,0 +1,23 @@
+import {
+  "moonbit-community/rtc/datachannel",
+  "moonbit-community/rtc/dtls",
+  "moonbit-community/rtc/ice",
+  "moonbit-community/rtc/internal/crypto",
+  "moonbit-community/rtc/interceptor",
+  "moonbit-community/rtc/mdns",
+  "moonbit-community/rtc/media",
+  "moonbit-community/rtc/rtcp",
+  "moonbit-community/rtc/rtp",
+  "moonbit-community/rtc/sctp",
+  "moonbit-community/rtc/sdp",
+  "moonbit-community/rtc/srtp",
+  "moonbit-community/rtc/stun",
+  "moonbit-community/rtc/transport",
+  "moonbit-community/rtc/turn",
+  "moonbitlang/core/queue",
+  "moonbitlang/core/strconv",
+}
+
+import {
+  "moonbitlang/core/bench",
+} for "test"

@@ -1,0 +1,24 @@
+import {
+  "moonbit-community/rtc",
+  "moonbitlang/async" @async_runtime,
+  "moonbitlang/async/socket",
+  "moonbitlang/async/tls",
+}
+
+import {
+  "moonbit-community/rtc/datachannel",
+  "moonbit-community/rtc/ice",
+} for "test"
+
+import {
+  "moonbit-community/rtc/sctp",
+} for "wbtest"
+
+options(
+  "native-stub": [ "clock.c" ],
+  targets: {
+    "clock.mbt": [ "native" ],
+    "driver.mbt": [ "native" ],
+    "spec.mbt": [ "native" ],
+  },
+)

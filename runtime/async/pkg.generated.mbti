@@ -1,0 +1,59 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/runtime/async"
+
+import {
+  "moonbit-community/rtc",
+  "moonbit-community/rtc/datachannel",
+  "moonbit-community/rtc/transport",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn sample_clock() -> @transport.ClockSample raise DriverError
+
+pub async fn with_peer_connection(@rtc.PeerConnection, async (PeerHandle, EventStream, MessageStream) -> Unit) -> Unit raise DriverError
+
+// Errors
+pub(all) suberror DriverError {
+  Core(@rtc.RtcError)
+  BackpressureExceeded
+  Cancelled
+  Closed
+  Io(String)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub struct Driver {
+  core : @rtc.PeerConnection
+  shared : Shared
+  receive_mtu : Int
+  pending_events : Array[@rtc.PeerEvent]
+  pending_messages : Array[@rtc.RtcMessage]
+}
+pub fn Driver::create(@rtc.PeerConnection) -> (Self, PeerHandle, EventStream, MessageStream)
+pub async fn Driver::run(Self) -> Unit raise DriverError
+
+pub struct EventStream {
+  shared : Shared
+}
+pub async fn EventStream::next(Self) -> @rtc.PeerEvent? raise DriverError
+
+pub struct MessageStream {
+  shared : Shared
+}
+pub async fn MessageStream::next(Self) -> @rtc.RtcMessage? raise DriverError
+
+pub struct PeerHandle {
+  shared : Shared
+}
+pub fn PeerHandle::clone(Self) -> Self
+pub async fn PeerHandle::close(Self) -> Unit raise DriverError
+pub async fn PeerHandle::close_data_channel(Self, @datachannel.DataChannel) -> Unit raise DriverError
+pub async fn PeerHandle::send(Self, @rtc.RtcMessage) -> Unit raise DriverError
+
+type Shared
+
+// Type aliases
+
+// Traits
+

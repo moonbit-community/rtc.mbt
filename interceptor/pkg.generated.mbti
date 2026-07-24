@@ -1,0 +1,153 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/interceptor"
+
+import {
+  "moonbit-community/rtc/rtcp",
+  "moonbit-community/rtc/rtp",
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+pub(all) suberror InterceptorError {
+  InvalidConfiguration(String)
+  PipelineFailed(String)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) struct Context {
+  direction : Direction
+  stream_id : String?
+} derive(Eq, @debug.Debug)
+pub fn Context::direction(Self) -> Direction
+pub fn Context::new(direction~ : Direction, stream_id? : String) -> Self
+pub fn Context::stream_id(Self) -> String?
+
+pub(all) enum Direction {
+  Inbound
+  Outbound
+} derive(Eq, @debug.Debug)
+
+type MissingPacket
+
+pub struct NackGenerator {
+  sender_ssrc : UInt
+  media_ssrc : UInt
+  max_tracked : Int
+  max_retries : Int
+  missing : Array[MissingPacket]
+  mut last_sequence : UInt16?
+}
+pub fn NackGenerator::missing_sequences(Self) -> Array[UInt16]
+pub fn NackGenerator::new(sender_ssrc~ : UInt, media_ssrc~ : UInt, max_tracked? : Int, max_retries? : Int) -> Self raise InterceptorError
+pub fn NackGenerator::observe(Self, @rtp.Packet) -> Unit
+pub fn NackGenerator::poll_feedback(Self) -> @rtcp.TransportLayerNackPacket?
+
+pub(all) enum Packet {
+  Rtp(@rtp.Packet)
+  Rtcp(@rtcp.Packet)
+} derive(Eq, @debug.Debug)
+
+pub struct Pipeline {
+  stages : Array[Stage]
+}
+pub fn Pipeline::add(Self, Stage) -> Unit
+pub fn Pipeline::length(Self) -> Int
+pub fn Pipeline::new() -> Self
+pub fn Pipeline::process(Self, Context, Packet) -> Array[Packet] raise InterceptorError
+
+pub struct ReceiverReportGenerator {
+  sender_ssrc : UInt
+  media_ssrc : UInt
+  clock_rate : UInt
+  mut initialized : Bool
+  mut base_sequence : UInt16
+  mut max_sequence : UInt16
+  mut cycles : UInt
+  mut received : UInt
+  mut octet_count : UInt64
+  mut expected_prior : UInt
+  mut received_prior : UInt
+  mut transit : Int64?
+  mut jitter : Int64
+  seen : Array[UInt]
+  mut last_sender_report : UInt
+  mut last_sender_report_arrival_ms : Int64?
+}
+pub fn ReceiverReportGenerator::jitter(Self) -> UInt64
+pub fn ReceiverReportGenerator::new(sender_ssrc~ : UInt, media_ssrc~ : UInt, clock_rate~ : UInt) -> Self raise InterceptorError
+pub fn ReceiverReportGenerator::observe(Self, @rtp.Packet, UInt) -> Unit
+pub fn ReceiverReportGenerator::observe_sender_report(Self, @rtcp.SenderReportPacket, Int64) -> Unit
+pub fn ReceiverReportGenerator::octet_count(Self) -> UInt64
+pub fn ReceiverReportGenerator::packet_count(Self) -> UInt
+pub fn ReceiverReportGenerator::packets_lost(Self) -> UInt64
+pub fn ReceiverReportGenerator::report(Self, Int64) -> @rtcp.ReceiverReportPacket raise InterceptorError
+
+pub struct RtxReceiver {
+  media_ssrc : UInt
+  media_payload_type : Byte
+  rtx_ssrc : UInt
+  rtx_payload_type : Byte
+  recent : Array[UInt16]
+  capacity : Int
+}
+pub fn RtxReceiver::new(media_ssrc~ : UInt, media_payload_type~ : Byte, rtx_ssrc~ : UInt, rtx_payload_type~ : Byte, capacity? : Int) -> Self raise InterceptorError
+pub fn RtxReceiver::observe_primary(Self, @rtp.Packet) -> Unit
+pub fn RtxReceiver::recover(Self, @rtp.Packet) -> @rtp.Packet? raise InterceptorError
+
+pub struct RtxSender {
+  media_ssrc : UInt
+  rtx_ssrc : UInt
+  rtx_payload_type : Byte
+  capacity : Int
+  history : Array[@rtp.Packet]
+  mut sequence_number : UInt16
+  mut retransmitted_packets : UInt64
+  mut retransmitted_bytes : UInt64
+}
+pub fn RtxSender::new(media_ssrc~ : UInt, rtx_ssrc~ : UInt, rtx_payload_type~ : Byte, sequence_number? : UInt16, capacity? : Int) -> Self raise InterceptorError
+pub fn RtxSender::remember(Self, @rtp.Packet) -> Unit
+pub fn RtxSender::retransmit(Self, @rtcp.TransportLayerNackPacket) -> Array[@rtp.Packet] raise InterceptorError
+pub fn RtxSender::retransmitted_bytes(Self) -> UInt64
+pub fn RtxSender::retransmitted_packets(Self) -> UInt64
+
+pub struct SenderReportGenerator {
+  sender_ssrc : UInt
+  mut packet_count : UInt
+  mut octet_count : UInt
+  mut last_rtp_timestamp : UInt
+}
+pub fn SenderReportGenerator::new(UInt) -> Self
+pub fn SenderReportGenerator::observe(Self, @rtp.Packet) -> Unit
+pub fn SenderReportGenerator::octet_count(Self) -> UInt
+pub fn SenderReportGenerator::packet_count(Self) -> UInt
+pub fn SenderReportGenerator::report(Self, UInt64, reports? : Array[@rtcp.ReceptionReport]) -> @rtcp.SenderReportPacket raise InterceptorError
+
+pub struct Stage {
+  name : String
+  handler : (Context, Packet) -> Array[Packet] raise InterceptorError
+}
+pub fn Stage::name(Self) -> String
+pub fn Stage::new(name~ : String, handler~ : (Context, Packet) -> Array[Packet] raise InterceptorError) -> Self raise InterceptorError
+
+type TwccObservation
+
+pub struct TwccRecorder {
+  sender_ssrc : UInt
+  media_ssrc : UInt
+  extension_id : Byte
+  max_packets : Int
+  observations : Array[TwccObservation]
+  mut base_sequence : UInt16?
+  mut feedback_packet_count : Byte
+}
+pub fn TwccRecorder::new(sender_ssrc~ : UInt, media_ssrc~ : UInt, extension_id~ : Byte, max_packets? : Int) -> Self raise InterceptorError
+pub fn TwccRecorder::observe(Self, @rtp.Packet, Int64) -> Unit raise InterceptorError
+pub fn TwccRecorder::observe_with_extension_id(Self, @rtp.Packet, Int64, Byte) -> Unit raise InterceptorError
+pub fn TwccRecorder::poll_feedback(Self) -> @rtcp.TransportWideCcPacket? raise InterceptorError
+
+// Type aliases
+
+// Traits
+

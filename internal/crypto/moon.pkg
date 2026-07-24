@@ -1,0 +1,13 @@
+import {
+  "moonbit-community/rtc/transport",
+  "moonbitlang/core/encoding/utf8",
+}
+
+options(
+  "native-stub": [ "openssl_shim.c" ],
+  targets: {
+    "ffi.mbt": [ "native" ],
+    "provider.mbt": [ "native" ],
+    "provider_test.mbt": [ "native" ],
+  },
+)

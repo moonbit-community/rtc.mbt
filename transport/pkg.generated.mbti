@@ -1,0 +1,133 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/transport"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+pub(all) suberror AddressError {
+  InvalidIpv6Length(Int)
+  InvalidAddress(String)
+} derive(Eq, @debug.Debug)
+
+pub(all) suberror TimeError {
+  NegativeMonotonicTime(Int64)
+  NegativeDuration(Int64)
+  TimeOverflow
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub struct ClockSample {
+  monotonic : Instant
+  wall : WallTime
+} derive(Eq, @debug.Debug)
+pub fn ClockSample::monotonic(Self) -> Instant
+pub fn ClockSample::new(monotonic~ : Instant, wall~ : WallTime) -> Self
+pub fn ClockSample::wall(Self) -> WallTime
+pub fn ClockSample::wall_at(Self, Instant) -> WallTime raise TimeError
+
+pub(all) struct ConnectionId(UInt64) derive(Eq, Hash, @debug.Debug)
+
+pub struct Duration(Int64) derive(Compare, Eq, @debug.Debug)
+pub fn Duration::as_milliseconds(Self) -> Int64
+pub fn Duration::milliseconds(Int64) -> Self raise TimeError
+pub fn Duration::zero() -> Self
+
+pub(all) enum EcnCodepoint {
+  Ect0
+  Ect1
+  CongestionExperienced
+} derive(Eq, @debug.Debug)
+
+pub(all) struct InboundDatagram {
+  now : Instant
+  context : TransportContext
+  payload : Bytes
+} derive(Eq, @debug.Debug)
+
+pub struct Instant(Int64) derive(Compare, Eq, @debug.Debug)
+pub fn Instant::as_milliseconds(Self) -> Int64
+pub fn Instant::checked_add(Self, Duration) -> Self raise TimeError
+pub fn Instant::from_milliseconds(Int64) -> Self raise TimeError
+pub fn Instant::saturating_duration_since(Self, Self) -> Duration
+
+pub(all) enum IoAction {
+  SendDatagram(OutboundDatagram)
+  ConnectTcp(connection~ : ConnectionId, local_address~ : SocketAddress?, peer~ : SocketAddress)
+  ConnectTls(connection~ : ConnectionId, local_address~ : SocketAddress?, peer~ : SocketAddress, server_name~ : String?)
+  ListenTcp(listener~ : ListenerId, local_address~ : SocketAddress)
+  WriteStream(connection~ : ConnectionId, bytes~ : Bytes)
+  CloseStream(ConnectionId)
+  CloseListener(ListenerId)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum IoEvent {
+  DatagramReceived(InboundDatagram)
+  StreamConnected(now~ : Instant, connection~ : ConnectionId, context~ : TransportContext)
+  StreamAccepted(now~ : Instant, listener~ : ListenerId, connection~ : ConnectionId, context~ : TransportContext)
+  StreamBytes(now~ : Instant, connection~ : ConnectionId, bytes~ : Bytes)
+  StreamWritable(now~ : Instant, connection~ : ConnectionId)
+  StreamEof(now~ : Instant, connection~ : ConnectionId)
+  StreamError(now~ : Instant, connection~ : ConnectionId, reason~ : String)
+  StreamClosed(now~ : Instant, connection~ : ConnectionId)
+} derive(Eq, @debug.Debug)
+
+pub enum IpAddress {
+  V4(UInt)
+  V6(Bytes)
+} derive(Eq, @debug.Debug)
+pub fn IpAddress::is_unspecified(Self) -> Bool
+pub fn IpAddress::loopback_v4() -> Self
+pub fn IpAddress::parse(String) -> Self raise AddressError
+pub fn IpAddress::to_bytes(Self) -> Bytes
+pub fn IpAddress::to_string(Self) -> String
+pub fn IpAddress::v4(Byte, Byte, Byte, Byte) -> Self
+pub fn IpAddress::v6(Bytes) -> Self raise AddressError
+
+pub(all) struct ListenerId(UInt64) derive(Eq, Hash, @debug.Debug)
+
+pub struct ManualClock {
+  mut monotonic : Instant
+  mut wall : WallTime
+}
+pub fn ManualClock::advance(Self, Duration) -> Unit raise TimeError
+pub fn ManualClock::new(ClockSample) -> Self
+pub fn ManualClock::sample(Self) -> ClockSample
+
+pub(all) struct OutboundDatagram {
+  context : TransportContext
+  payload : Bytes
+} derive(Eq, @debug.Debug)
+
+pub struct SocketAddress {
+  address : IpAddress
+  port : UInt16
+} derive(Eq, @debug.Debug)
+pub fn SocketAddress::address(Self) -> IpAddress
+pub fn SocketAddress::new(address~ : IpAddress, port~ : UInt16) -> Self
+pub fn SocketAddress::port(Self) -> UInt16
+pub fn SocketAddress::to_string(Self) -> String
+
+pub(all) struct TransportContext {
+  local_address : SocketAddress
+  peer : SocketAddress
+  ecn : EcnCodepoint?
+  protocol : TransportProtocol
+} derive(Eq, @debug.Debug)
+
+pub(all) enum TransportProtocol {
+  Udp
+  Tcp
+} derive(Eq, @debug.Debug)
+
+pub struct WallTime(Int64) derive(Compare, Eq, @debug.Debug)
+pub fn WallTime::as_unix_nanoseconds(Self) -> Int64
+pub fn WallTime::from_unix_nanoseconds(Int64) -> Self
+
+// Type aliases
+
+// Traits
+

@@ -1,0 +1,8 @@
+import {
+  "moonbit-community/rtc/internal/codec",
+  "moonbit-community/rtc/internal/crypto",
+  "moonbit-community/rtc/internal/replay",
+  "moonbit-community/rtc/transport",
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/queue",
+}

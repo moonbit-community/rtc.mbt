@@ -1,0 +1,122 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/turn"
+
+import {
+  "moonbit-community/rtc/stun",
+  "moonbit-community/rtc/transport",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/queue",
+}
+
+// Values
+pub fn long_term_key(String, String, String) -> Bytes
+
+// Errors
+pub(all) suberror TurnError {
+  InvalidConfiguration(String)
+  InvalidState(String)
+  InvalidPacket(String)
+  InvalidResponse(String)
+  AuthenticationFailed
+  AllocationExpired
+  PermissionMissing
+  ChannelBindingMissing
+  Transaction(@stun.StunError)
+  Time(@transport.TimeError)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub struct Allocation {
+  local_address : @transport.SocketAddress
+  server : @transport.SocketAddress
+  transport : TurnTransport
+  credentials : TurnCredentials
+  outputs : @queue.Queue[@transport.OutboundDatagram]
+  stream_outputs : @queue.Queue[Bytes]
+  events : @queue.Queue[AllocationEvent]
+  transactions : Map[@stun.TransactionId, PendingTurnTransaction]
+  permissions : Array[Permission]
+  channels : Array[ChannelBinding]
+  mut state : AllocationState
+  mut realm : String?
+  mut nonce : String?
+  mut key : Bytes?
+  mut relayed_address : RelayedAddress?
+  mut expires_at : @transport.Instant?
+  mut refresh_at : @transport.Instant?
+  mut stream_input : Bytes
+}
+pub fn Allocation::bind_channel(Self, @transport.SocketAddress, UInt16, @transport.Instant) -> Unit raise TurnError
+pub fn Allocation::close(Self, @transport.Instant) -> Unit raise TurnError
+pub fn Allocation::create_permission(Self, @transport.SocketAddress, @transport.Instant) -> Unit raise TurnError
+pub fn Allocation::handle_datagram(Self, @transport.InboundDatagram) -> Unit raise TurnError
+pub fn Allocation::handle_stream_bytes(Self, @transport.Instant, Bytes) -> Unit raise TurnError
+pub fn Allocation::handle_stream_closed(Self) -> Unit
+pub fn Allocation::handle_timeout(Self, @transport.Instant) -> Unit raise TurnError
+pub fn Allocation::handles_context(Self, @transport.TransportContext) -> Bool
+pub fn Allocation::local_address(Self) -> @transport.SocketAddress
+pub fn Allocation::new(local_address~ : @transport.SocketAddress, server~ : @transport.SocketAddress, credentials~ : TurnCredentials, transport? : TurnTransport) -> Self raise TurnError
+pub fn Allocation::poll_datagram(Self) -> @transport.OutboundDatagram?
+pub fn Allocation::poll_event(Self) -> AllocationEvent?
+pub fn Allocation::poll_stream_write(Self) -> Bytes?
+pub fn Allocation::poll_timeout(Self) -> @transport.Instant?
+pub fn Allocation::refresh(Self, @transport.Instant) -> Unit raise TurnError
+pub fn Allocation::relayed_address(Self) -> RelayedAddress?
+pub fn Allocation::send(Self, @transport.SocketAddress, Bytes, @transport.Instant) -> Unit raise TurnError
+pub fn Allocation::server(Self) -> @transport.SocketAddress
+pub fn Allocation::start(Self, @transport.Instant) -> Unit raise TurnError
+pub fn Allocation::state(Self) -> AllocationState
+pub fn Allocation::transport(Self) -> TurnTransport
+
+pub(all) enum AllocationEvent {
+  AllocationStateChanged(AllocationState)
+  AllocationCreated(RelayedAddress)
+  PermissionCreated(@transport.SocketAddress)
+  ChannelBound(peer~ : @transport.SocketAddress, channel~ : UInt16)
+  PeerData(peer~ : @transport.SocketAddress, payload~ : Bytes)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct AllocationId(UInt64) derive(Eq, Hash, @debug.Debug)
+
+pub(all) enum AllocationState {
+  New
+  Allocating
+  Active
+  Refreshing
+  Closed
+  Failed
+} derive(Eq, @debug.Debug)
+
+type ChannelBinding
+
+type PendingTurnTransaction
+
+type Permission
+
+pub(all) struct RelayedAddress {
+  address : @transport.SocketAddress
+  server : @transport.SocketAddress
+  transport : TurnTransport
+} derive(Eq, @debug.Debug)
+pub fn RelayedAddress::address(Self) -> @transport.SocketAddress
+pub fn RelayedAddress::server(Self) -> @transport.SocketAddress
+pub fn RelayedAddress::transport(Self) -> TurnTransport
+
+pub struct TurnCredentials {
+  username : String
+  password : String
+} derive(Eq, @debug.Debug)
+pub fn TurnCredentials::new(username~ : String, password~ : String) -> Self raise TurnError
+pub fn TurnCredentials::password(Self) -> String
+pub fn TurnCredentials::username(Self) -> String
+
+pub(all) enum TurnTransport {
+  Udp
+  Tcp
+  Tls
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
+

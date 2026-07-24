@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+image="$(<"${repository_root}/interop/coturn/image.txt")"
+container_name="rtc-mbt-coturn-$$"
+
+cleanup() {
+  docker logs "${container_name}" >"${RUNNER_TEMP:-/tmp}/rtc-mbt-coturn.log" 2>&1 || true
+  docker rm --force "${container_name}" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+docker run --detach --network host --name "${container_name}" \
+  "${image}" \
+  -n \
+  --log-file=stdout \
+  --simple-log \
+  --listening-ip=127.0.0.1 \
+  --relay-ip=127.0.0.1 \
+  --listening-port=3478 \
+  --min-port=49160 \
+  --max-port=49180 \
+  --lt-cred-mech \
+  --user=rtc:rtc-pass \
+  --realm=rtc.test \
+  --fingerprint \
+  --allow-loopback-peers \
+  --cli-password=rtc-cli-test-password \
+  --no-tls \
+  --no-dtls \
+  --no-multicast-peers >/dev/null
+
+sleep 1
+moon run interop/coturn --target native -- 127.0.0.1 3478 rtc rtc-pass

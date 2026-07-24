@@ -1,0 +1,16 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/interop/moon-peer"
+
+// Values
+
+// Errors
+
+// Types and methods
+type InteropMode derive(Eq)
+
+type OutboundMedia
+
+// Type aliases
+
+// Traits
+

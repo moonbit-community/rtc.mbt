@@ -1,0 +1,214 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  OPENSSL_PACKAGE_VERSION: 3.0.2-0ubuntu1.25
+  UBUNTU_SNAPSHOT: 20260702T000000Z
+
+jobs:
+  crypto-pinned:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    container:
+      image: ubuntu:22.04@sha256:0d779ea97881505f5ef0039336ee85edba27519bdba968c284c86ee066a973c8
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Bootstrap certificate trust
+        run: |
+          apt-get update -o APT::Update::Error-Mode=any
+          DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends \
+            ca-certificates
+
+      - name: Install dependencies from the pinned Ubuntu snapshot
+        run: |
+          printf '%s\n' \
+            "deb [snapshot=${UBUNTU_SNAPSHOT}] http://archive.ubuntu.com/ubuntu jammy main" \
+            "deb [snapshot=${UBUNTU_SNAPSHOT}] http://archive.ubuntu.com/ubuntu jammy-updates main" \
+            "deb [snapshot=${UBUNTU_SNAPSHOT}] http://security.ubuntu.com/ubuntu jammy-security main" \
+            > /etc/apt/sources.list
+          apt-get update -o APT::Update::Error-Mode=any
+          DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends \
+            build-essential \
+            ca-certificates \
+            curl \
+            git \
+            "libssl3=${OPENSSL_PACKAGE_VERSION}" \
+            "libssl-dev=${OPENSSL_PACKAGE_VERSION}" \
+            "openssl=${OPENSSL_PACKAGE_VERSION}"
+
+      - uses: actions/checkout@v5
+
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: Verify and record the exact crypto build identity
+        run: |
+          test "$(dpkg-query -W -f='${Version}' openssl)" = "$OPENSSL_PACKAGE_VERSION"
+          test "$(dpkg-query -W -f='${Version}' libssl3)" = "$OPENSSL_PACKAGE_VERSION"
+          test "$(dpkg-query -W -f='${Version}' libssl-dev)" = "$OPENSSL_PACKAGE_VERSION"
+          dpkg-query -W openssl libssl3 libssl-dev | tee openssl-packages.txt
+          openssl version -a | tee openssl-version.txt
+          moon version --all
+
+      - name: Resolve MoonBit dependencies
+        run: moon update
+
+      - name: Check and test against the pinned OpenSSL build
+        run: |
+          moon check --target native --warn-list +73
+          moon test --target native
+
+      - name: Archive pinned OpenSSL build identity
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openssl-build-identity
+          path: |
+            openssl-packages.txt
+            openssl-version.txt
+          if-no-files-found: error
+
+  native:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check out pinned Rust oracle
+        uses: actions/checkout@v5
+        with:
+          repository: webrtc-rs/rtc
+          ref: a10cd2c18f7c4e646e83f6f00b792ef38ac3cdb2
+          path: upstream/rtc
+
+      - name: Install native dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes build-essential libssl-dev
+
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: Verify toolchain and OpenSSL
+        run: |
+          moon version --all
+          openssl version -a | tee openssl-version.txt
+          openssl version | grep -E '^OpenSSL 3\.'
+
+      - name: Resolve MoonBit dependencies
+        run: moon update
+
+      - name: Install pinned Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.3.0
+          cache: npm
+          cache-dependency-path: interop/chromium/package-lock.json
+
+      - name: Verify upstream inventory
+        run: |
+          scripts/audit-upstream.mjs \
+            --upstream upstream/rtc \
+            --write-ledger docs/upstream-coverage.json
+          git diff --exit-code -- docs/upstream-coverage.json
+
+      - name: Check formatting
+        run: moon fmt --check
+
+      - name: Strict C shim compile
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror \
+            -I"$HOME/.moon/include" \
+            -fsyntax-only internal/crypto/openssl_shim.c
+          cc -std=c11 -Wall -Wextra -Werror \
+            -I"$HOME/.moon/include" \
+            -fsyntax-only runtime/async/clock.c
+
+      - name: Typecheck native packages
+        run: moon check --target native --warn-list +73
+
+      - name: Run native and documentation tests
+        run: moon test --target native
+
+      - name: Build native release benchmarks
+        run: moon bench --release --target native --no-parallelize --build-only
+
+      - name: Build fixed Rust interoperability peer
+        run: |
+          rustc --version | grep -F 'rustc 1.90.0'
+          cargo build --locked --manifest-path interop/rust-peer/Cargo.toml
+
+      - name: Run Rust DataChannel and audio/video interoperability in both roles
+        run: scripts/test-rust-interop
+
+      - name: Install pinned Playwright and Chromium revision
+        working-directory: interop/chromium
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Run Chromium DataChannel and audio/video interoperability in both roles
+        run: scripts/test-chromium-interop
+
+      - name: Run DataChannel through digest-pinned coturn
+        run: scripts/test-coturn-interop
+
+      - name: Archive coturn log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coturn-log
+          path: ${{ runner.temp }}/rtc-mbt-coturn.log
+          if-no-files-found: ignore
+
+      - name: Verify generated public interfaces
+        run: |
+          moon info
+          test -z "$(git status --porcelain -- '*.mbti')"
+          git diff --exit-code -- '*.mbti'
+
+      - name: Archive OpenSSL build identity
+        uses: actions/upload-artifact@v4
+        with:
+          name: openssl-host-version
+          path: openssl-version.txt
+
+  asan:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install pinned Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.3.0
+
+      - name: Install native dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes build-essential libasan8 libssl-dev
+
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve MoonBit dependencies
+        run: moon update
+
+      - name: Run C stubs and native test entries under ASan
+        run: scripts/run-asan.mjs

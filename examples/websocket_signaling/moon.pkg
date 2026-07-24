@@ -1,0 +1,10 @@
+import {
+  "moonbitlang/async" @async_runtime,
+  "moonbitlang/async/http",
+  "moonbitlang/async/socket",
+  "moonbitlang/async/websocket",
+}
+
+supported_targets = "-all+native"
+
+pkgtype(kind: "executable")

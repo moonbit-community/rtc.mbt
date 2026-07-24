@@ -1,0 +1,9 @@
+import {
+  "moonbit-community/rtc",
+  "moonbit-community/rtc/datachannel",
+  "moonbit-community/rtc/ice",
+}
+
+supported_targets = "-all+native"
+
+pkgtype(kind: "executable")

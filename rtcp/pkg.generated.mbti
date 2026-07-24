@@ -1,0 +1,232 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/rtcp"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn decode_compound(Bytes) -> Array[Packet] raise RtcpError
+
+pub fn encode_compound(Array[Packet]) -> Bytes raise RtcpError
+
+// Errors
+pub(all) suberror RtcpError {
+  InvalidPacket(String)
+  InvalidCompoundPacket(String)
+  PacketTooLarge(Int)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) struct ApplicationDefinedPacket {
+  subtype : Byte
+  ssrc : UInt
+  name : Bytes
+  data : Bytes
+} derive(Eq, @debug.Debug)
+pub fn ApplicationDefinedPacket::marshal(Self) -> Bytes raise RtcpError
+pub fn ApplicationDefinedPacket::new(subtype? : Byte, ssrc~ : UInt, name~ : Bytes, data? : Bytes) -> Self raise RtcpError
+pub fn ApplicationDefinedPacket::to_packet(Self) -> Packet raise RtcpError
+
+pub(all) struct ExtendedReportBlock {
+  block_type : Byte
+  type_specific : Byte
+  payload : Bytes
+} derive(Eq, @debug.Debug)
+pub fn ExtendedReportBlock::new(block_type~ : Byte, type_specific? : Byte, payload~ : Bytes) -> Self raise RtcpError
+
+pub(all) struct ExtendedReportPacket {
+  sender_ssrc : UInt
+  blocks : Array[ExtendedReportBlock]
+} derive(Eq, @debug.Debug)
+pub fn ExtendedReportPacket::marshal(Self) -> Bytes raise RtcpError
+pub fn ExtendedReportPacket::new(sender_ssrc~ : UInt, blocks? : Array[ExtendedReportBlock]) -> Self
+pub fn ExtendedReportPacket::to_packet(Self) -> Packet raise RtcpError
+
+pub(all) struct FullIntraRequestEntry {
+  ssrc : UInt
+  sequence_number : Byte
+} derive(Eq, @debug.Debug)
+
+pub(all) struct FullIntraRequestPacket {
+  sender_ssrc : UInt
+  media_ssrc : UInt
+  entries : Array[FullIntraRequestEntry]
+} derive(Eq, @debug.Debug)
+pub fn FullIntraRequestPacket::marshal(Self) -> Bytes raise RtcpError
+pub fn FullIntraRequestPacket::new(sender_ssrc~ : UInt, media_ssrc? : UInt, entries~ : Array[FullIntraRequestEntry]) -> Self
+pub fn FullIntraRequestPacket::to_packet(Self) -> Packet raise RtcpError
+
+pub(all) struct GoodbyePacket {
+  sources : Array[UInt]
+  reason : Bytes?
+} derive(Eq, @debug.Debug)
+pub fn GoodbyePacket::marshal(Self) -> Bytes raise RtcpError
+pub fn GoodbyePacket::new(sources~ : Array[UInt], reason? : Bytes) -> Self raise RtcpError
+pub fn GoodbyePacket::to_packet(Self) -> Packet raise RtcpError
+
+pub(all) struct Header {
+  padding : Bool
+  count : Byte
+  packet_type : Byte
+  length_words_minus_one : UInt16
+} derive(Eq, @debug.Debug)
+pub fn Header::count(Self) -> Byte
+pub fn Header::length_words_minus_one(Self) -> UInt16
+pub fn Header::packet_type(Self) -> Byte
+pub fn Header::padding(Self) -> Bool
+
+pub(all) struct NackPair {
+  packet_id : UInt16
+  lost_packets : UInt16
+} derive(Eq, @debug.Debug)
+pub fn NackPair::lost_sequence_numbers(Self) -> Array[UInt16]
+pub fn NackPair::new(packet_id~ : UInt16, lost_packets? : UInt16) -> Self
+
+pub(all) enum Packet {
+  SenderReport(Bytes)
+  ReceiverReport(Bytes)
+  SourceDescription(Bytes)
+  Goodbye(Bytes)
+  ApplicationDefined(Bytes)
+  TransportFeedback(Bytes)
+  PayloadFeedback(Bytes)
+  ExtendedReport(Bytes)
+  Unknown(Bytes)
+} derive(Eq, @debug.Debug)
+pub fn Packet::as_application_defined(Self) -> ApplicationDefinedPacket raise RtcpError
+pub fn Packet::as_extended_report(Self) -> ExtendedReportPacket raise RtcpError
+pub fn Packet::as_full_intra_request(Self) -> FullIntraRequestPacket raise RtcpError
+pub fn Packet::as_goodbye(Self) -> GoodbyePacket raise RtcpError
+pub fn Packet::as_picture_loss_indication(Self) -> PictureLossIndicationPacket raise RtcpError
+pub fn Packet::as_receiver_estimated_maximum_bitrate(Self) -> ReceiverEstimatedMaximumBitratePacket raise RtcpError
+pub fn Packet::as_receiver_report(Self) -> ReceiverReportPacket raise RtcpError
+pub fn Packet::as_sender_report(Self) -> SenderReportPacket raise RtcpError
+pub fn Packet::as_source_description(Self) -> SourceDescriptionPacket raise RtcpError
+pub fn Packet::as_transport_layer_nack(Self) -> TransportLayerNackPacket raise RtcpError
+pub fn Packet::as_transport_wide_cc(Self) -> TransportWideCcPacket raise RtcpError
+pub fn Packet::decode(Bytes) -> Self raise RtcpError
+pub fn Packet::header(Self) -> Header raise RtcpError
+pub fn Packet::marshal(Self) -> Bytes raise RtcpError
+pub fn Packet::unmarshal(Bytes) -> Self raise RtcpError
+
+pub(all) struct PictureLossIndicationPacket {
+  sender_ssrc : UInt
+  media_ssrc : UInt
+} derive(Eq, @debug.Debug)
+pub fn PictureLossIndicationPacket::marshal(Self) -> Bytes raise RtcpError
+pub fn PictureLossIndicationPacket::new(sender_ssrc~ : UInt, media_ssrc~ : UInt) -> Self
+pub fn PictureLossIndicationPacket::to_packet(Self) -> Packet raise RtcpError
+
+pub(all) struct ReceiverEstimatedMaximumBitratePacket {
+  sender_ssrc : UInt
+  bitrate : UInt64
+  ssrcs : Array[UInt]
+} derive(Eq, @debug.Debug)
+pub fn ReceiverEstimatedMaximumBitratePacket::marshal(Self) -> Bytes raise RtcpError
+pub fn ReceiverEstimatedMaximumBitratePacket::new(sender_ssrc~ : UInt, bitrate~ : UInt64, ssrcs~ : Array[UInt]) -> Self raise RtcpError
+pub fn ReceiverEstimatedMaximumBitratePacket::to_packet(Self) -> Packet raise RtcpError
+
+pub(all) struct ReceiverReportPacket {
+  sender_ssrc : UInt
+  reports : Array[ReceptionReport]
+  profile_extensions : Bytes
+} derive(Eq, @debug.Debug)
+pub fn ReceiverReportPacket::marshal(Self) -> Bytes raise RtcpError
+pub fn ReceiverReportPacket::new(sender_ssrc~ : UInt, reports? : Array[ReceptionReport], profile_extensions? : Bytes) -> Self raise RtcpError
+pub fn ReceiverReportPacket::to_packet(Self) -> Packet raise RtcpError
+
+pub(all) struct ReceptionReport {
+  ssrc : UInt
+  fraction_lost : Byte
+  cumulative_lost : Int
+  extended_sequence_number : UInt
+  jitter : UInt
+  last_sender_report : UInt
+  delay_since_last_sender_report : UInt
+} derive(Eq, @debug.Debug)
+pub fn ReceptionReport::cumulative_lost(Self) -> Int
+pub fn ReceptionReport::delay_since_last_sender_report(Self) -> UInt
+pub fn ReceptionReport::extended_sequence_number(Self) -> UInt
+pub fn ReceptionReport::fraction_lost(Self) -> Byte
+pub fn ReceptionReport::jitter(Self) -> UInt
+pub fn ReceptionReport::last_sender_report(Self) -> UInt
+pub fn ReceptionReport::new(ssrc~ : UInt, fraction_lost? : Byte, cumulative_lost? : Int, extended_sequence_number? : UInt, jitter? : UInt, last_sender_report? : UInt, delay_since_last_sender_report? : UInt) -> Self raise RtcpError
+pub fn ReceptionReport::ssrc(Self) -> UInt
+
+pub(all) struct SenderReportPacket {
+  sender_ssrc : UInt
+  ntp_timestamp : UInt64
+  rtp_timestamp : UInt
+  packet_count : UInt
+  octet_count : UInt
+  reports : Array[ReceptionReport]
+  profile_extensions : Bytes
+} derive(Eq, @debug.Debug)
+pub fn SenderReportPacket::marshal(Self) -> Bytes raise RtcpError
+pub fn SenderReportPacket::new(sender_ssrc~ : UInt, ntp_timestamp~ : UInt64, rtp_timestamp~ : UInt, packet_count~ : UInt, octet_count~ : UInt, reports? : Array[ReceptionReport], profile_extensions? : Bytes) -> Self raise RtcpError
+pub fn SenderReportPacket::to_packet(Self) -> Packet raise RtcpError
+
+pub(all) struct SourceDescriptionChunk {
+  source : UInt
+  items : Array[SourceDescriptionItem]
+} derive(Eq, @debug.Debug)
+pub fn SourceDescriptionChunk::new(source~ : UInt, items? : Array[SourceDescriptionItem]) -> Self
+
+pub(all) struct SourceDescriptionItem {
+  item_type : SourceDescriptionType
+  value : Bytes
+} derive(Eq, @debug.Debug)
+pub fn SourceDescriptionItem::new(item_type~ : SourceDescriptionType, value~ : Bytes) -> Self raise RtcpError
+
+pub(all) struct SourceDescriptionPacket {
+  chunks : Array[SourceDescriptionChunk]
+} derive(Eq, @debug.Debug)
+pub fn SourceDescriptionPacket::marshal(Self) -> Bytes raise RtcpError
+pub fn SourceDescriptionPacket::new(chunks~ : Array[SourceDescriptionChunk]) -> Self raise RtcpError
+pub fn SourceDescriptionPacket::to_packet(Self) -> Packet raise RtcpError
+
+pub(all) enum SourceDescriptionType {
+  Cname
+  Name
+  Email
+  Phone
+  Location
+  Tool
+  Note
+  Private
+  Unknown(Byte)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct TransportLayerNackPacket {
+  sender_ssrc : UInt
+  media_ssrc : UInt
+  nacks : Array[NackPair]
+} derive(Eq, @debug.Debug)
+pub fn TransportLayerNackPacket::marshal(Self) -> Bytes raise RtcpError
+pub fn TransportLayerNackPacket::new(sender_ssrc~ : UInt, media_ssrc~ : UInt, nacks~ : Array[NackPair]) -> Self
+pub fn TransportLayerNackPacket::to_packet(Self) -> Packet raise RtcpError
+
+pub(all) struct TransportWideCcPacket {
+  sender_ssrc : UInt
+  media_ssrc : UInt
+  base_sequence_number : UInt16
+  reference_time : UInt
+  feedback_packet_count : Byte
+  statuses : Array[TransportWideStatus]
+} derive(Eq, @debug.Debug)
+pub fn TransportWideCcPacket::marshal(Self) -> Bytes raise RtcpError
+pub fn TransportWideCcPacket::new(sender_ssrc~ : UInt, media_ssrc~ : UInt, base_sequence_number~ : UInt16, reference_time~ : UInt, feedback_packet_count? : Byte, statuses~ : Array[TransportWideStatus]) -> Self raise RtcpError
+pub fn TransportWideCcPacket::to_packet(Self) -> Packet raise RtcpError
+
+pub(all) enum TransportWideStatus {
+  PacketNotReceived
+  PacketReceivedSmallDelta(Int)
+  PacketReceivedLargeDelta(Int)
+  PacketReceivedWithoutDelta
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
+

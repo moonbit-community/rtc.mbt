@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+fixture_directory="$(mktemp -d)"
+rust_pid=""
+
+cleanup() {
+  if [[ -n "${rust_pid}" ]]; then
+    kill "${rust_pid}" 2>/dev/null || true
+    wait "${rust_pid}" 2>/dev/null || true
+  fi
+  if [[ "${KEEP_INTEROP_ARTIFACTS:-0}" == "1" ]]; then
+    echo "Interop artifacts kept at ${fixture_directory}" >&2
+  else
+    rm -rf "${fixture_directory}"
+  fi
+}
+trap cleanup EXIT
+
+# Keep Rust compilation outside the MoonBit peer's protocol timeout.
+cargo build --locked \
+  --manifest-path "${repository_root}/interop/rust-peer/Cargo.toml"
+
+base_port=$((43000 + ($$ % 10000) * 2))
+if (( base_port > 63000 )); then
+  base_port=$((base_port - 20000))
+fi
+dump_failure() {
+  local offer_path="$1"
+  local answer_path="$2"
+  local rust_log="$3"
+  if [[ -f "${offer_path}" ]]; then
+    sed -n '1,240p' "${offer_path}" >&2
+  fi
+  if [[ -f "${answer_path}" ]]; then
+    sed -n '1,300p' "${answer_path}" >&2
+  fi
+  cat "${rust_log}" >&2
+}
+
+run_case() {
+  local case_name="$1"
+  local moon_role="$2"
+  local rust_role="$3"
+  local mode="$4"
+  local moon_port="$5"
+  local case_directory="${fixture_directory}/${case_name}"
+  local offer_path="${case_directory}/offer.sdp"
+  local answer_path="${case_directory}/answer.sdp"
+  local moon_result_path="${case_directory}/moon.ok"
+  local rust_result_path="${case_directory}/rust.ok"
+  local rust_log="${case_directory}/rust.log"
+  mkdir -p "${case_directory}"
+
+  (
+    cd "${repository_root}/interop/rust-peer"
+    cargo run --locked -- "${rust_role}" \
+      "${mode}" \
+      "${offer_path}" \
+      "${answer_path}" \
+      "${moon_result_path}" \
+      "${rust_result_path}"
+  ) >"${rust_log}" 2>&1 &
+  rust_pid=$!
+
+  set +e
+  (
+    cd "${repository_root}"
+    moon run interop/moon-peer --target native -- \
+      "${moon_role}" \
+      "${mode}" \
+      "${moon_port}" \
+      "${offer_path}" \
+      "${answer_path}" \
+      "${moon_result_path}" \
+      "${rust_result_path}"
+  )
+  local moon_status=$?
+  set -e
+
+  if (( moon_status != 0 )); then
+    kill "${rust_pid}" 2>/dev/null || true
+    wait "${rust_pid}" 2>/dev/null || true
+    rust_pid=""
+    dump_failure "${offer_path}" "${answer_path}" "${rust_log}"
+    return "${moon_status}"
+  fi
+
+  set +e
+  wait "${rust_pid}"
+  local rust_status=$?
+  set -e
+  rust_pid=""
+  if (( rust_status != 0 )); then
+    dump_failure "${offer_path}" "${answer_path}" "${rust_log}"
+    return "${rust_status}"
+  fi
+
+  grep -qx 'ok' "${moon_result_path}"
+  grep -qx 'ok' "${rust_result_path}"
+}
+
+run_case "moon-offerer-reliable" "offer" "answer" "reliable" \
+  "${base_port}"
+echo "MoonBit offerer ↔ fixed Rust webrtc 0.14.0 answerer (reliable): PASS"
+
+run_case "rust-offerer-reliable" "answer" "offer" "reliable" \
+  "$((base_port + 1))"
+echo "Fixed Rust webrtc 0.14.0 offerer ↔ MoonBit answerer (reliable): PASS"
+
+run_case "moon-offerer-partial" "offer" "answer" "partial" \
+  "$((base_port + 2))"
+echo "MoonBit offerer ↔ fixed Rust webrtc 0.14.0 answerer (partial/unordered): PASS"
+
+run_case "rust-offerer-partial" "answer" "offer" "partial" \
+  "$((base_port + 3))"
+echo "Fixed Rust webrtc 0.14.0 offerer ↔ MoonBit answerer (partial/unordered): PASS"
+
+run_case "moon-offerer-media" "offer" "answer" "media" \
+  "$((base_port + 4))"
+echo "MoonBit offerer ↔ fixed Rust webrtc 0.14.0 answerer (audio/video): PASS"
+
+run_case "rust-offerer-media" "answer" "offer" "media" \
+  "$((base_port + 5))"
+echo "Fixed Rust webrtc 0.14.0 offerer ↔ MoonBit answerer (audio/video): PASS"

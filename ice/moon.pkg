@@ -1,0 +1,9 @@
+import {
+  "moonbit-community/rtc/mdns",
+  "moonbit-community/rtc/stun",
+  "moonbit-community/rtc/transport",
+  "moonbit-community/rtc/turn",
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/queue",
+  "moonbitlang/core/strconv",
+}

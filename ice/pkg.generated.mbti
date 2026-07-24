@@ -1,0 +1,234 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/ice"
+
+import {
+  "moonbit-community/rtc/mdns",
+  "moonbit-community/rtc/stun",
+  "moonbit-community/rtc/transport",
+  "moonbit-community/rtc/turn",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/queue",
+}
+
+// Values
+
+// Errors
+pub(all) suberror IceError {
+  InvalidCandidate(String)
+  InvalidCredentials
+  InvalidState(String)
+  RoleConflict
+  ChecklistFailed
+  Time(@transport.TimeError)
+  Stun(@stun.StunError)
+  Turn(@turn.TurnError)
+  Mdns(@mdns.MdnsError)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) enum CandidateAddress {
+  IpAddress(@transport.IpAddress)
+  MdnsName(String)
+} derive(Eq, @debug.Debug)
+pub fn CandidateAddress::parse(String) -> Self raise IceError
+pub fn CandidateAddress::to_string(Self) -> String
+
+pub struct CandidatePair {
+  local_candidate : IceCandidate
+  remote_candidate : IceCandidate
+  priority : UInt64
+  mut state : CandidatePairState
+  mut nominated : Bool
+} derive(Eq, @debug.Debug)
+pub fn CandidatePair::is_nominated(Self) -> Bool
+pub fn CandidatePair::local_candidate(Self) -> IceCandidate
+pub fn CandidatePair::priority(Self) -> UInt64
+pub fn CandidatePair::remote_candidate(Self) -> IceCandidate
+pub fn CandidatePair::state(Self) -> CandidatePairState
+
+pub(all) enum CandidatePairState {
+  PairWaiting
+  PairInProgress
+  PairSucceeded
+  PairFailed
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CandidateType {
+  Host
+  ServerReflexive
+  PeerReflexive
+  Relay
+} derive(Eq, @debug.Debug)
+pub fn CandidateType::preference(Self) -> UInt16
+pub fn CandidateType::to_string(Self) -> String
+
+pub struct IceAgent {
+  local_credentials : IceCredentials
+  mut remote_credentials : IceCredentials?
+  mut role : IceRole
+  tie_breaker : UInt64
+  local_candidates : Array[IceCandidate]
+  remote_candidates : Array[IceCandidate]
+  pairs : Array[CandidatePair]
+  transactions : Map[@stun.TransactionId, (Int, Bytes, @transport.TransportContext, Int, Int64, @transport.Instant)]
+  outputs : @queue.Queue[@transport.OutboundDatagram]
+  events : @queue.Queue[IceEvent]
+  mut state : IceConnectionState
+  mut selected_pair_index : Int?
+  mut next_check : @transport.Instant?
+  check_interval : @transport.Duration
+  initial_rto : @transport.Duration
+  reliable_timeout : @transport.Duration
+  max_retransmissions : Int
+  disconnected_timeout : @transport.Duration
+  failed_timeout : @transport.Duration
+  keepalive_interval : @transport.Duration
+  mut next_keepalive : @transport.Instant?
+  mut disconnected_deadline : @transport.Instant?
+  mut failed_deadline : @transport.Instant?
+}
+pub fn IceAgent::add_local_candidate(Self, IceCandidate, now? : @transport.Instant) -> Unit raise IceError
+pub fn IceAgent::add_remote_candidate(Self, IceCandidate, now? : @transport.Instant) -> Unit raise IceError
+pub fn IceAgent::candidate_pairs(Self) -> Array[CandidatePair]
+pub fn IceAgent::close(Self) -> Unit
+pub fn IceAgent::handle_datagram(Self, @transport.InboundDatagram) -> Unit raise IceError
+pub fn IceAgent::handle_timeout(Self, @transport.Instant) -> Unit raise IceError
+pub fn IceAgent::local_candidates(Self) -> Array[IceCandidate]
+pub fn IceAgent::local_credentials(Self) -> IceCredentials
+pub fn IceAgent::new(local_credentials~ : IceCredentials, role~ : IceRole, tie_breaker~ : UInt64, check_interval? : @transport.Duration, initial_rto? : @transport.Duration, reliable_timeout? : @transport.Duration, max_retransmissions? : Int, disconnected_timeout? : @transport.Duration, failed_timeout? : @transport.Duration, keepalive_interval? : @transport.Duration) -> Self raise IceError
+pub fn IceAgent::poll_datagram(Self) -> @transport.OutboundDatagram?
+pub fn IceAgent::poll_event(Self) -> IceEvent?
+pub fn IceAgent::poll_timeout(Self) -> @transport.Instant?
+pub fn IceAgent::remote_candidates(Self) -> Array[IceCandidate]
+pub fn IceAgent::remote_credentials(Self) -> IceCredentials?
+pub fn IceAgent::role(Self) -> IceRole
+pub fn IceAgent::selected_pair(Self) -> CandidatePair?
+pub fn IceAgent::send(Self, Bytes) -> Unit raise IceError
+pub fn IceAgent::set_remote_credentials(Self, IceCredentials) -> Unit raise IceError
+pub fn IceAgent::start(Self, @transport.Instant) -> Unit raise IceError
+pub fn IceAgent::state(Self) -> IceConnectionState
+
+pub struct IceCandidate {
+  foundation : String
+  component : UInt16
+  protocol : @transport.TransportProtocol
+  priority : UInt
+  address : CandidateAddress
+  port : UInt16
+  candidate_type : CandidateType
+  related_address : CandidateAddress?
+  related_port : UInt16?
+  tcp_type : TcpCandidateType?
+  extensions : Array[(String, String)]
+} derive(Eq, @debug.Debug)
+pub fn IceCandidate::address(Self) -> CandidateAddress
+pub fn IceCandidate::base_socket_address(Self) -> @transport.SocketAddress?
+pub fn IceCandidate::candidate_type(Self) -> CandidateType
+pub fn IceCandidate::component(Self) -> UInt16
+pub fn IceCandidate::extensions(Self) -> Array[(String, String)]
+pub fn IceCandidate::foundation(Self) -> String
+pub fn IceCandidate::host(foundation~ : String, @transport.SocketAddress, local_preference? : UInt16) -> Self raise IceError
+pub fn IceCandidate::marshal(Self) -> String
+pub fn IceCandidate::new(foundation~ : String, component~ : UInt16, protocol~ : @transport.TransportProtocol, priority~ : UInt, address~ : CandidateAddress, port~ : UInt16, candidate_type~ : CandidateType, related_address? : CandidateAddress, related_port? : UInt16, tcp_type? : TcpCandidateType, extensions? : Array[(String, String)]) -> Self raise IceError
+pub fn IceCandidate::parse(String) -> Self raise IceError
+pub fn IceCandidate::port(Self) -> UInt16
+pub fn IceCandidate::priority(Self) -> UInt
+pub fn IceCandidate::priority_value(candidate_type~ : CandidateType, local_preference~ : UInt16, component~ : UInt16) -> UInt raise IceError
+pub fn IceCandidate::protocol(Self) -> @transport.TransportProtocol
+pub fn IceCandidate::related_address(Self) -> CandidateAddress?
+pub fn IceCandidate::related_port(Self) -> UInt16?
+pub fn IceCandidate::resolve_mdns(Self, @transport.IpAddress) -> Self raise IceError
+pub fn IceCandidate::socket_address(Self) -> @transport.SocketAddress?
+pub fn IceCandidate::tcp_host(foundation~ : String, @transport.SocketAddress, tcp_type~ : TcpCandidateType, local_preference? : UInt16) -> Self raise IceError
+pub fn IceCandidate::tcp_type(Self) -> TcpCandidateType?
+pub fn IceCandidate::to_sdp_attribute(Self) -> String
+pub fn IceCandidate::with_mdns_name(Self, String) -> Self raise IceError
+
+pub(all) enum IceConnectionState {
+  New
+  Checking
+  Connected
+  Completed
+  Disconnected
+  Failed
+  Closed
+} derive(Eq, @debug.Debug)
+
+pub struct IceCredentials {
+  username_fragment : String
+  password : String
+} derive(Eq, @debug.Debug)
+pub fn IceCredentials::new(username_fragment~ : String, password~ : String) -> Self raise IceError
+pub fn IceCredentials::password(Self) -> String
+pub fn IceCredentials::username_fragment(Self) -> String
+
+pub(all) enum IceEvent {
+  ConnectionStateChanged(IceConnectionState)
+  RoleChanged(IceRole)
+  SelectedPair(CandidatePair)
+  ApplicationDatagram(@transport.InboundDatagram)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum IceGatheringState {
+  New
+  Gathering
+  Complete
+} derive(Eq, @debug.Debug)
+
+pub(all) enum IceRole {
+  Controlling
+  Controlled
+} derive(Eq, @debug.Debug)
+
+pub(all) enum IceTransportPolicy {
+  All
+  Relay
+} derive(Eq, @debug.Debug)
+
+pub(all) enum SrflxEvent {
+  ServerReflexiveCandidate(IceCandidate)
+  SrflxStateChanged(SrflxGatheringState)
+} derive(Eq, @debug.Debug)
+
+pub struct SrflxGatherer {
+  local_candidate : IceCandidate
+  server : @transport.SocketAddress
+  outputs : @queue.Queue[@transport.OutboundDatagram]
+  events : @queue.Queue[SrflxEvent]
+  mut state : SrflxGatheringState
+  mut transaction_id : @stun.TransactionId?
+  mut request : Bytes?
+  mut deadline : @transport.Instant?
+  mut rto_milliseconds : Int64
+  mut retransmissions : Int
+}
+pub fn SrflxGatherer::close(Self) -> Unit
+pub fn SrflxGatherer::handle_datagram(Self, @transport.InboundDatagram) -> Unit raise IceError
+pub fn SrflxGatherer::handle_timeout(Self, @transport.Instant) -> Unit raise IceError
+pub fn SrflxGatherer::handles_context(Self, @transport.TransportContext) -> Bool
+pub fn SrflxGatherer::new(local_candidate~ : IceCandidate, server~ : @transport.SocketAddress) -> Self raise IceError
+pub fn SrflxGatherer::poll_datagram(Self) -> @transport.OutboundDatagram?
+pub fn SrflxGatherer::poll_event(Self) -> SrflxEvent?
+pub fn SrflxGatherer::poll_timeout(Self) -> @transport.Instant?
+pub fn SrflxGatherer::start(Self, @transport.Instant) -> Unit raise IceError
+pub fn SrflxGatherer::state(Self) -> SrflxGatheringState
+
+pub(all) enum SrflxGatheringState {
+  SrflxNew
+  SrflxGathering
+  SrflxComplete
+  SrflxFailed
+  SrflxClosed
+} derive(Eq, @debug.Debug)
+
+pub(all) enum TcpCandidateType {
+  Active
+  Passive
+  SimultaneousOpen
+} derive(Eq, @debug.Debug)
+pub fn TcpCandidateType::to_string(Self) -> String
+
+// Type aliases
+
+// Traits
+

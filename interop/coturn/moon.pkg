@@ -1,0 +1,15 @@
+import {
+  "moonbit-community/rtc",
+  "moonbit-community/rtc/datachannel",
+  "moonbit-community/rtc/ice",
+  "moonbit-community/rtc/runtime/async" @rtc_async,
+  "moonbit-community/rtc/stun",
+  "moonbitlang/async" @async_runtime,
+  "moonbitlang/async/socket",
+  "moonbitlang/core/env",
+  "moonbitlang/core/string",
+}
+
+supported_targets = "-all+native"
+
+pkgtype(kind: "executable")

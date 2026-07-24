@@ -1,0 +1,92 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/mdns"
+
+import {
+  "moonbit-community/rtc/transport",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/queue",
+}
+
+// Values
+
+// Errors
+pub(all) suberror MdnsError {
+  InvalidName(String)
+  InvalidPacket(String)
+  QueryTimedOut
+  NameConflict(String)
+  UnsupportedMode
+  Time(@transport.TimeError)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) enum MdnsEvent {
+  Resolved(QueryId, Resolution)
+  TimedOut(QueryId)
+  Cancelled(QueryId)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Mode {
+  QueryOnly
+  QueryAndGather
+} derive(Eq, @debug.Debug)
+
+pub struct OutboundQuery {
+  query_id : QueryId
+  destination : @transport.SocketAddress
+  payload : Bytes
+} derive(Eq, @debug.Debug)
+pub fn OutboundQuery::destination(Self) -> @transport.SocketAddress
+pub fn OutboundQuery::payload(Self) -> Bytes
+pub fn OutboundQuery::query_id(Self) -> QueryId
+
+type PendingQuery
+
+pub(all) struct Query {
+  name : String
+  now : @transport.Instant
+} derive(Eq, @debug.Debug)
+
+pub(all) struct QueryId(UInt64) derive(Eq, Hash, @debug.Debug)
+
+pub(all) struct Resolution {
+  name : String
+  addresses : Array[@transport.IpAddress]
+  expires_at : @transport.Instant
+} derive(Eq, @debug.Debug)
+pub fn Resolution::addresses(Self) -> Array[@transport.IpAddress]
+pub fn Resolution::expires_at(Self) -> @transport.Instant
+pub fn Resolution::name(Self) -> String
+
+pub struct Resolver {
+  mode : Mode
+  retry_interval : @transport.Duration
+  query_timeout : @transport.Duration
+  mut next_query_id : UInt64
+  pending : Map[QueryId, PendingQuery]
+  cache : Map[String, Resolution]
+  registrations : Map[String, Array[@transport.IpAddress]]
+  outputs : @queue.Queue[OutboundQuery]
+  events : @queue.Queue[MdnsEvent]
+}
+pub fn Resolver::answer_query(Self, Bytes, ttl_seconds? : UInt) -> Bytes? raise MdnsError
+pub fn Resolver::cached(Self, String, @transport.Instant) -> Resolution? raise MdnsError
+pub fn Resolver::cancel(Self, QueryId) -> Unit
+pub fn Resolver::handle_response(Self, @transport.Instant, Bytes) -> Unit raise MdnsError
+pub fn Resolver::handle_timeout(Self, @transport.Instant) -> Unit raise MdnsError
+pub fn Resolver::is_pending(Self, QueryId) -> Bool
+pub fn Resolver::mode(Self) -> Mode
+pub fn Resolver::new(mode? : Mode, retry_interval? : @transport.Duration, query_timeout? : @transport.Duration) -> Self raise MdnsError
+pub fn Resolver::pending_count(Self) -> Int
+pub fn Resolver::poll_event(Self) -> MdnsEvent?
+pub fn Resolver::poll_output(Self) -> OutboundQuery?
+pub fn Resolver::poll_timeout(Self) -> @transport.Instant?
+pub fn Resolver::query(Self, String, @transport.Instant) -> QueryId raise MdnsError
+pub fn Resolver::register(Self, String, Array[@transport.IpAddress]) -> Unit raise MdnsError
+pub fn Resolver::registered(Self, String) -> Array[@transport.IpAddress]? raise MdnsError
+pub fn Resolver::unregister(Self, String) -> Unit raise MdnsError
+
+// Type aliases
+
+// Traits
+

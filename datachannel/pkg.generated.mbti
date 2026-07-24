@@ -1,0 +1,178 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/datachannel"
+
+import {
+  "moonbit-community/rtc/sctp",
+  "moonbit-community/rtc/transport",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/queue",
+}
+
+// Values
+
+// Errors
+pub(all) suberror DataChannelError {
+  InvalidConfiguration(String)
+  ProtocolViolation(String)
+  BufferFull
+  Sctp(@sctp.SctpError)
+  Closed
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) enum ChannelType {
+  ReliableChannel
+  ReliableUnorderedChannel
+  PartialReliableRetransmitChannel
+  PartialReliableRetransmitUnorderedChannel
+  PartialReliableTimedChannel
+  PartialReliableTimedUnorderedChannel
+} derive(Eq, @debug.Debug)
+
+pub struct DataChannel {
+  mut id : @sctp.StreamId
+  label : String
+  protocol : String
+  ordering : @sctp.Ordering
+  reliability : @sctp.Reliability
+  negotiated : Bool
+  priority : UInt16
+  mut state : DataChannelState
+} derive(Eq, @debug.Debug)
+pub fn DataChannel::id(Self) -> @sctp.StreamId
+pub fn DataChannel::is_negotiated(Self) -> Bool
+pub fn DataChannel::label(Self) -> String
+pub fn DataChannel::new(id~ : @sctp.StreamId, label~ : String, protocol? : String, ordering? : @sctp.Ordering, reliability? : @sctp.Reliability, negotiated? : Bool, priority? : UInt16) -> Self
+pub fn DataChannel::ordering(Self) -> @sctp.Ordering
+pub fn DataChannel::priority(Self) -> UInt16
+pub fn DataChannel::protocol(Self) -> String
+pub fn DataChannel::reliability(Self) -> @sctp.Reliability
+pub fn DataChannel::state(Self) -> DataChannelState
+
+pub(all) enum DataChannelCommand {
+  SendSctp(@sctp.Message, @sctp.Reliability)
+  ResetSctpStream(@sctp.StreamId)
+} derive(Eq, @debug.Debug)
+
+pub struct DataChannelConfig {
+  label : String
+  protocol : String
+  ordering : @sctp.Ordering
+  reliability : @sctp.Reliability
+  negotiated : Bool
+  id : @sctp.StreamId?
+  priority : UInt16
+} derive(Eq, @debug.Debug)
+pub fn DataChannelConfig::id(Self) -> @sctp.StreamId?
+pub fn DataChannelConfig::is_negotiated(Self) -> Bool
+pub fn DataChannelConfig::label(Self) -> String
+pub fn DataChannelConfig::new(label~ : String, protocol? : String, ordering? : @sctp.Ordering, reliability? : @sctp.Reliability, negotiated? : Bool, id? : @sctp.StreamId, priority? : UInt16) -> Self raise DataChannelError
+pub fn DataChannelConfig::ordering(Self) -> @sctp.Ordering
+pub fn DataChannelConfig::priority(Self) -> UInt16
+pub fn DataChannelConfig::protocol(Self) -> String
+pub fn DataChannelConfig::reliability(Self) -> @sctp.Reliability
+
+pub(all) enum DataChannelEvent {
+  Opened(DataChannel)
+  MessageReceived(@sctp.StreamId, DataChannelMessage)
+  ClosedEvent(@sctp.StreamId)
+  BufferedAmountLowEvent(@sctp.StreamId)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum DataChannelMessage {
+  Text(String)
+  Binary(Bytes)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum DataChannelState {
+  Connecting
+  Open
+  Closing
+  Closed
+} derive(Eq, @debug.Debug)
+
+pub(all) enum DcepMessage {
+  Open(DcepOpen)
+  Acknowledgement
+} derive(Eq, @debug.Debug)
+pub fn DcepMessage::decode(Bytes) -> Self raise DataChannelError
+pub fn DcepMessage::encode(Self) -> Bytes raise DataChannelError
+
+pub struct DcepOpen {
+  channel_type : ChannelType
+  priority : UInt16
+  reliability_parameter : UInt
+  label : String
+  protocol : String
+} derive(Eq, @debug.Debug)
+pub fn DcepOpen::channel_type(Self) -> ChannelType
+pub fn DcepOpen::label(Self) -> String
+pub fn DcepOpen::new(channel_type~ : ChannelType, priority? : UInt16, reliability_parameter? : UInt, label~ : String, protocol? : String) -> Self raise DataChannelError
+pub fn DcepOpen::priority(Self) -> UInt16
+pub fn DcepOpen::protocol(Self) -> String
+pub fn DcepOpen::reliability_parameter(Self) -> UInt
+
+pub struct Manager {
+  mut role : StreamRole
+  channels : Map[@sctp.StreamId, DataChannel]
+  local_channels : Map[@sctp.StreamId, Bool]
+  incoming_resets : Map[@sctp.StreamId, Bool]
+  outgoing_resets : Map[@sctp.StreamId, Bool]
+  acknowledged_resets : Map[@sctp.StreamId, Bool]
+  commands : @queue.Queue[DataChannelCommand]
+  events : @queue.Queue[DataChannelEvent]
+  mut transport_ready : Bool
+  mut next_stream : UInt
+}
+pub fn Manager::all_channels(Self) -> Array[DataChannel]
+pub fn Manager::channel(Self, @sctp.StreamId) -> DataChannel?
+pub fn Manager::close_channel(Self, @sctp.StreamId) -> Unit raise DataChannelError
+pub fn Manager::create_channel(Self, DataChannelConfig) -> DataChannel raise DataChannelError
+pub fn Manager::handle_sctp_event(Self, @sctp.AssociationEvent) -> Unit raise DataChannelError
+pub fn Manager::new(role~ : StreamRole) -> Self
+pub fn Manager::poll_command(Self) -> DataChannelCommand?
+pub fn Manager::poll_event(Self) -> DataChannelEvent?
+pub fn Manager::role(Self) -> StreamRole
+pub fn Manager::send(Self, @sctp.StreamId, DataChannelMessage) -> Unit raise DataChannelError
+pub fn Manager::set_role(Self, StreamRole) -> Array[(@sctp.StreamId, @sctp.StreamId)] raise DataChannelError
+
+pub(all) enum PayloadProtocolIdentifier {
+  Dcep
+  StringPayload
+  BinaryPayload
+  StringEmptyPayload
+  BinaryEmptyPayload
+} derive(Eq, @debug.Debug)
+pub fn PayloadProtocolIdentifier::code(Self) -> UInt
+pub fn PayloadProtocolIdentifier::from_code(UInt) -> Self raise DataChannelError
+
+pub(all) enum StreamRole {
+  DtlsClient
+  DtlsServer
+} derive(Eq, @debug.Debug)
+
+pub struct Transport {
+  association : @sctp.Association
+  manager : Manager
+}
+pub fn Transport::association_state(Self) -> @sctp.AssociationState
+pub fn Transport::buffered_amount(Self, @sctp.StreamId) -> UInt64
+pub fn Transport::channel(Self, @sctp.StreamId) -> DataChannel?
+pub fn Transport::close(Self, @transport.Instant) -> Unit raise DataChannelError
+pub fn Transport::close_channel(Self, @sctp.StreamId, @transport.Instant) -> Unit raise DataChannelError
+pub fn Transport::create_channel(Self, DataChannelConfig, @transport.Instant) -> DataChannel raise DataChannelError
+pub fn Transport::handle_datagram(Self, @transport.Instant, Bytes) -> Unit raise DataChannelError
+pub fn Transport::handle_timeout(Self, @transport.Instant) -> Unit raise DataChannelError
+pub fn Transport::new(role~ : StreamRole, association_config~ : @sctp.AssociationConfig) -> Self raise DataChannelError
+pub fn Transport::poll_datagram(Self) -> Bytes?
+pub fn Transport::poll_event(Self) -> DataChannelEvent?
+pub fn Transport::poll_timeout(Self) -> @transport.Instant?
+pub fn Transport::send(Self, @sctp.StreamId, DataChannelMessage, @transport.Instant) -> Unit raise DataChannelError
+pub fn Transport::set_buffered_amount_low_threshold(Self, @sctp.StreamId, UInt64) -> Unit
+pub fn Transport::start(Self, @transport.Instant) -> Unit raise DataChannelError
+pub fn Transport::with_manager(manager~ : Manager, association_config~ : @sctp.AssociationConfig) -> Self raise DataChannelError
+
+// Type aliases
+
+// Traits
+

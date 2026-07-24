@@ -1,0 +1,12 @@
+/_build/
+/.moon/
+/.mooncakes/
+/.repos/
+/upstream/
+/coverage/
+/profile.json
+/*.trace
+*.tmp
+*.log
+/interop/rust-peer/target/
+/interop/chromium/node_modules/

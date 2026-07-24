@@ -1,0 +1,471 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc"
+
+import {
+  "moonbit-community/rtc/datachannel",
+  "moonbit-community/rtc/dtls",
+  "moonbit-community/rtc/ice",
+  "moonbit-community/rtc/interceptor",
+  "moonbit-community/rtc/mdns",
+  "moonbit-community/rtc/media",
+  "moonbit-community/rtc/rtcp",
+  "moonbit-community/rtc/rtp",
+  "moonbit-community/rtc/sctp",
+  "moonbit-community/rtc/sdp",
+  "moonbit-community/rtc/srtp",
+  "moonbit-community/rtc/stun",
+  "moonbit-community/rtc/transport",
+  "moonbit-community/rtc/turn",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/queue",
+}
+
+// Values
+
+// Errors
+pub(all) suberror RtcError {
+  InvalidConfiguration(String)
+  InvalidState(String)
+  BackpressureExceeded
+  CryptoUnavailable(String)
+  Sdp(@sdp.SdpError)
+  Stun(@stun.StunError)
+  Turn(@turn.TurnError)
+  Mdns(@mdns.MdnsError)
+  Ice(@ice.IceError)
+  Dtls(@dtls.DtlsError)
+  Srtp(@srtp.SrtpError)
+  Sctp(@sctp.SctpError)
+  DataChannel(@datachannel.DataChannelError)
+  Interceptor(@interceptor.InterceptorError)
+  Closed
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+type ActiveRtcListener
+
+type ActiveRtcStream
+
+pub(all) struct CandidatePairStats {
+  id : String
+  local_candidate : @ice.IceCandidate
+  remote_candidate : @ice.IceCandidate
+  priority : UInt64
+  state : @ice.CandidatePairState
+  nominated : Bool
+  selected : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CodecStats {
+  id : String
+  payload_type : Byte
+  mime_type : String
+  clock_rate : UInt
+  channels : UInt16
+  fmtp : String
+} derive(Eq, @debug.Debug)
+
+pub struct Configuration {
+  ice_servers : Array[IceServer]
+  ice_transport_policy : @ice.IceTransportPolicy
+  mdns_mode : @mdns.Mode
+  host_candidates : Array[@ice.IceCandidate]
+  sctp_port : UInt16
+  max_message_size : UInt64
+  command_capacity : Int
+  event_capacity : Int
+  message_capacity : Int
+  settings : Settings
+  interceptor_pipeline : @interceptor.Pipeline
+  encoded_transform_pipeline : @media.EncodedTransformPipeline
+}
+pub fn Configuration::command_capacity(Self) -> Int
+pub fn Configuration::encoded_transform_pipeline(Self) -> @media.EncodedTransformPipeline
+pub fn Configuration::event_capacity(Self) -> Int
+pub fn Configuration::host_candidates(Self) -> Array[@ice.IceCandidate]
+pub fn Configuration::ice_servers(Self) -> Array[IceServer]
+pub fn Configuration::ice_transport_policy(Self) -> @ice.IceTransportPolicy
+pub fn Configuration::interceptor_pipeline(Self) -> @interceptor.Pipeline
+pub fn Configuration::max_message_size(Self) -> UInt64
+pub fn Configuration::mdns_mode(Self) -> @mdns.Mode
+pub fn Configuration::message_capacity(Self) -> Int
+pub fn Configuration::new(ice_servers? : Array[IceServer], ice_transport_policy? : @ice.IceTransportPolicy, mdns_mode? : @mdns.Mode, host_candidates? : Array[@ice.IceCandidate], sctp_port? : UInt16, max_message_size? : UInt64, command_capacity? : Int, event_capacity? : Int, message_capacity? : Int, settings? : Settings, interceptor_pipeline? : @interceptor.Pipeline, encoded_transform_pipeline? : @media.EncodedTransformPipeline) -> Self raise RtcError
+pub fn Configuration::sctp_port(Self) -> UInt16
+pub fn Configuration::settings(Self) -> Settings
+
+pub(all) struct DataChannelStats {
+  id : String
+  stream_id : @sctp.StreamId
+  label : String
+  protocol : String
+  state : @datachannel.DataChannelState
+  buffered_amount : UInt64
+} derive(Eq, @debug.Debug)
+
+pub(all) struct DetailedStatsReport {
+  timestamp : @transport.WallTime
+  codecs : Array[CodecStats]
+  outbound_rtp : Array[RtpStreamStats]
+  inbound_rtp : Array[RtpStreamStats]
+  candidate_pairs : Array[CandidatePairStats]
+  data_channels : Array[DataChannelStats]
+  transport : TransportStats
+} derive(Eq, @debug.Debug)
+
+pub(all) struct IceServer {
+  urls : Array[String]
+  username : String?
+  credential : String?
+} derive(Eq, @debug.Debug)
+pub fn IceServer::credential(Self) -> String?
+pub fn IceServer::new(urls~ : Array[String], username? : String, credential? : String) -> Self raise RtcError
+pub fn IceServer::urls(Self) -> Array[String]
+pub fn IceServer::username(Self) -> String?
+
+type LocalMediaSection
+
+pub(all) enum OfferCollisionPolicy {
+  Polite
+  Impolite
+} derive(Eq, @debug.Debug)
+
+pub struct PeerConnection {
+  configuration : Configuration
+  clock_sample : @transport.ClockSample
+  signaling : @sdp.SignalingStateMachine
+  identity : @dtls.CertificateIdentity
+  mut local_credentials : @ice.IceCredentials
+  session_id : UInt64
+  mut session_version : UInt64
+  tie_breaker : UInt64
+  events : @queue.Queue[PeerEvent]
+  messages : @queue.Queue[RtcMessage]
+  outbound : @queue.Queue[@transport.OutboundDatagram]
+  io_actions : @queue.Queue[@transport.IoAction]
+  pending_streams : Array[PendingRtcStream]
+  active_streams : Array[ActiveRtcStream]
+  active_listeners : Array[ActiveRtcListener]
+  mut next_connection_id : UInt64
+  mut next_listener_id : UInt64
+  local_transport_candidates : Array[@ice.IceCandidate]
+  local_advertised_candidates : Array[@ice.IceCandidate]
+  srflx_gatherers : Array[@ice.SrflxGatherer]
+  turn_allocations : Array[@turn.Allocation]
+  pending_relay_datagrams : Array[PendingRelayDatagram]
+  remote_candidates : Array[@ice.IceCandidate]
+  mdns_resolver : @mdns.Resolver
+  pending_mdns_candidates : Map[@mdns.QueryId, @ice.IceCandidate]
+  mut state : PeerConnectionState
+  mut gathering_state : @ice.IceGatheringState
+  mut data_manager : @datachannel.Manager?
+  mut ice_agent : @ice.IceAgent?
+  mut dtls_endpoint : @dtls.Endpoint?
+  mut data_transport : @datachannel.Transport?
+  local_media_sections : Array[LocalMediaSection]
+  remote_media_sections : Array[RemoteMediaSection]
+  mut outbound_srtp : @srtp.Context?
+  mut inbound_srtp : @srtp.Context?
+  mut media_started : Bool
+  rtcp_sender_ssrc : UInt
+  mut next_rtcp_report : @transport.Instant?
+  mut next_transport_sequence : UInt16
+  mut remote_twcc_recorder : @interceptor.TwccRecorder?
+  data_channel_buffered_amount_low_thresholds : Map[@sctp.StreamId, UInt64]
+  mut transport_started : Bool
+  mut ice_restart_pending : Bool
+  mut dtls_started : Bool
+  mut data_started : Bool
+  mut closing : Bool
+  mut bytes_sent : UInt64
+  mut bytes_received : UInt64
+  mut packets_sent : UInt64
+  mut packets_received : UInt64
+  mut data_channels_opened : UInt
+  mut data_channels_closed : UInt
+}
+pub fn PeerConnection::add_ice_candidate(Self, @ice.IceCandidate, @transport.Instant) -> Unit raise RtcError
+pub fn PeerConnection::add_track(Self, @media.MediaTrack, @transport.Instant) -> @media.RtpTransceiver raise RtcError
+pub fn PeerConnection::add_transceiver(Self, @media.MediaKind, direction? : @media.TransceiverDirection, now~ : @transport.Instant) -> @media.RtpTransceiver raise RtcError
+pub fn PeerConnection::close(Self, @transport.Instant) -> Unit raise RtcError
+pub fn PeerConnection::close_data_channel(Self, @sctp.StreamId, @transport.Instant) -> Unit raise RtcError
+pub fn PeerConnection::connection_state(Self) -> PeerConnectionState
+pub fn PeerConnection::create_answer(Self, @transport.Instant) -> @sdp.SessionDescription raise RtcError
+pub fn PeerConnection::create_data_channel(Self, @datachannel.DataChannelConfig, @transport.Instant) -> @datachannel.DataChannel raise RtcError
+pub fn PeerConnection::create_offer(Self, @transport.Instant) -> @sdp.SessionDescription raise RtcError
+pub fn PeerConnection::create_pranswer(Self, @transport.Instant) -> @sdp.SessionDescription raise RtcError
+pub fn PeerConnection::data_channel_buffered_amount(Self, @sctp.StreamId) -> UInt64
+pub fn PeerConnection::data_channel_buffered_amount_low_threshold(Self, @sctp.StreamId) -> UInt64
+pub fn PeerConnection::detailed_stats(Self, @transport.Instant) -> DetailedStatsReport
+pub fn PeerConnection::driver_command_capacity(Self) -> Int
+pub fn PeerConnection::driver_event_capacity(Self) -> Int
+pub fn PeerConnection::driver_message_capacity(Self) -> Int
+pub fn PeerConnection::driver_receive_mtu(Self) -> Int
+pub fn PeerConnection::handle_datagram(Self, @transport.InboundDatagram) -> Unit raise RtcError
+pub fn PeerConnection::handle_io_event(Self, @transport.IoEvent) -> Unit raise RtcError
+pub fn PeerConnection::handle_mdns_datagram(Self, @transport.InboundDatagram) -> Unit raise RtcError
+pub fn PeerConnection::handle_message(Self, RtcMessage, @transport.Instant) -> Unit raise RtcError
+pub fn PeerConnection::handle_timeout(Self, @transport.Instant) -> Unit raise RtcError
+pub fn PeerConnection::local_description(Self) -> @sdp.SessionDescription?
+pub fn PeerConnection::local_host_candidates(Self) -> Array[@ice.IceCandidate]
+pub fn PeerConnection::local_track_encodings(Self, String) -> Array[@media.RtpEncodingParameters]
+pub fn PeerConnection::local_track_payload_type(Self, String) -> Byte?
+pub fn PeerConnection::local_track_ssrc(Self, String) -> UInt?
+pub fn PeerConnection::new(Configuration, @transport.ClockSample) -> Self raise RtcError
+pub fn PeerConnection::poll_datagram(Self) -> @transport.OutboundDatagram?
+pub fn PeerConnection::poll_event(Self) -> PeerEvent?
+pub fn PeerConnection::poll_io_action(Self) -> @transport.IoAction?
+pub fn PeerConnection::poll_message(Self) -> RtcMessage?
+pub fn PeerConnection::poll_timeout(Self) -> @transport.Instant?
+pub fn PeerConnection::remote_description(Self) -> @sdp.SessionDescription?
+pub fn PeerConnection::remove_track(Self, String, @transport.Instant) -> Unit raise RtcError
+pub fn PeerConnection::restart_ice(Self, @transport.Instant) -> Unit raise RtcError
+pub fn PeerConnection::rollback(Self, @transport.Instant) -> Unit raise RtcError
+pub fn PeerConnection::set_data_channel_buffered_amount_low_threshold(Self, @sctp.StreamId, UInt64) -> Unit raise RtcError
+pub fn PeerConnection::set_local_description(Self, @sdp.SessionDescription, @transport.Instant) -> Unit raise RtcError
+pub fn PeerConnection::set_remote_description(Self, @sdp.SessionDescription, @transport.Instant) -> Unit raise RtcError
+pub fn PeerConnection::set_remote_description_perfect(Self, @sdp.SessionDescription, OfferCollisionPolicy, @transport.Instant) -> Unit raise RtcError
+pub fn PeerConnection::set_sender_encodings(Self, String, Array[@media.RtpEncodingParameters], @transport.Instant) -> Unit raise RtcError
+pub fn PeerConnection::signaling_state(Self) -> @sdp.SignalingState
+pub fn PeerConnection::stats(Self, @transport.Instant) -> StatsReport
+pub fn PeerConnection::transceivers(Self) -> Array[@media.RtpTransceiver]
+
+pub(all) enum PeerConnectionState {
+  New
+  Connecting
+  Connected
+  Disconnected
+  Failed
+  Closed
+} derive(Eq, @debug.Debug)
+
+pub(all) enum PeerEvent {
+  SignalingStateChanged(@sdp.SignalingState)
+  IceGatheringStateChanged(@ice.IceGatheringState)
+  IceConnectionStateChanged(@ice.IceConnectionState)
+  ConnectionStateChanged(PeerConnectionState)
+  IceCandidateDiscovered(@ice.IceCandidate)
+  TrackOpened(@media.MediaTrack)
+  TrackClosed(String)
+  DataChannelOpened(@datachannel.DataChannel)
+  DataChannelClosed(@sctp.StreamId)
+  BufferedAmountLow(@sctp.StreamId)
+  NegotiationNeeded
+  Closed
+} derive(@debug.Debug)
+
+type PendingRelayDatagram
+
+type PendingRtcStream
+
+type RemoteMediaSection
+
+pub(all) enum RtcMessage {
+  Rtp(track_id~ : String, packet~ : @rtp.Packet)
+  Rtcp(@rtcp.Packet)
+  DataChannel(channel_id~ : @sctp.StreamId, message~ : @datachannel.DataChannelMessage)
+} derive(Eq, @debug.Debug)
+
+type RtcStreamOwner derive(Eq, @debug.Debug)
+
+pub(all) struct RtpStreamStats {
+  id : String
+  track_id : String
+  kind : @media.MediaKind
+  outbound : Bool
+  ssrc : UInt
+  rid : String?
+  codec_id : String
+  packets : UInt64
+  bytes : UInt64
+  packets_lost : UInt64
+  jitter : UInt64
+  retransmitted_packets : UInt64
+  retransmitted_bytes : UInt64
+  active : Bool
+} derive(Eq, @debug.Debug)
+
+pub struct Settings {
+  ice_credentials : @ice.IceCredentials?
+  ice_check_interval : @transport.Duration
+  ice_initial_rto : @transport.Duration
+  ice_reliable_timeout : @transport.Duration
+  ice_max_retransmissions : Int
+  ice_disconnected_timeout : @transport.Duration
+  ice_failed_timeout : @transport.Duration
+  ice_keepalive_interval : @transport.Duration
+  mdns_retry_interval : @transport.Duration
+  mdns_query_timeout : @transport.Duration
+  mdns_local_name : String?
+  answering_dtls_role : @dtls.Role?
+  verify_peer_fingerprint : Bool
+  dtls_certificate_key_type : @dtls.CertificateKeyType
+  dtls_cipher_suites : Array[@dtls.CipherSuite]
+  dtls_psk : Bytes?
+  dtls_psk_identity : Bytes?
+  dtls_srtp_profiles : Array[@dtls.SrtpProtectionProfile]
+  dtls_flight_interval : @transport.Duration
+  dtls_mtu : Int
+  dtls_replay_window : Int
+  srtp_replay_window : Int
+  srtcp_replay_window : Int
+  sctp_max_payload_size : Int
+  sctp_send_buffer_size : UInt64
+  sctp_receive_buffer_size : UInt
+  sctp_initial_rto : @transport.Duration
+  receive_mtu : Int
+  ignore_rid_pause_for_recv : Bool
+  write_ssrc_attributes_for_simulcast : Bool
+}
+pub fn Settings::answering_dtls_role(Self) -> @dtls.Role?
+pub fn Settings::dtls_certificate_key_type(Self) -> @dtls.CertificateKeyType
+pub fn Settings::dtls_cipher_suites(Self) -> Array[@dtls.CipherSuite]
+pub fn Settings::dtls_flight_interval(Self) -> @transport.Duration
+pub fn Settings::dtls_mtu(Self) -> Int
+pub fn Settings::dtls_psk(Self) -> Bytes?
+pub fn Settings::dtls_psk_identity(Self) -> Bytes?
+pub fn Settings::dtls_replay_window(Self) -> Int
+pub fn Settings::dtls_srtp_profiles(Self) -> Array[@dtls.SrtpProtectionProfile]
+pub fn Settings::ice_check_interval(Self) -> @transport.Duration
+pub fn Settings::ice_credentials(Self) -> @ice.IceCredentials?
+pub fn Settings::ice_disconnected_timeout(Self) -> @transport.Duration
+pub fn Settings::ice_failed_timeout(Self) -> @transport.Duration
+pub fn Settings::ice_initial_rto(Self) -> @transport.Duration
+pub fn Settings::ice_keepalive_interval(Self) -> @transport.Duration
+pub fn Settings::ice_max_retransmissions(Self) -> Int
+pub fn Settings::ice_reliable_timeout(Self) -> @transport.Duration
+pub fn Settings::ignore_rid_pause_for_recv(Self) -> Bool
+pub fn Settings::mdns_local_name(Self) -> String?
+pub fn Settings::mdns_query_timeout(Self) -> @transport.Duration
+pub fn Settings::mdns_retry_interval(Self) -> @transport.Duration
+pub fn Settings::new(ice_credentials? : @ice.IceCredentials, ice_check_interval? : @transport.Duration, ice_initial_rto? : @transport.Duration, ice_reliable_timeout? : @transport.Duration, ice_max_retransmissions? : Int, ice_disconnected_timeout? : @transport.Duration, ice_failed_timeout? : @transport.Duration, ice_keepalive_interval? : @transport.Duration, mdns_retry_interval? : @transport.Duration, mdns_query_timeout? : @transport.Duration, mdns_local_name? : String, answering_dtls_role? : @dtls.Role, verify_peer_fingerprint? : Bool, dtls_certificate_key_type? : @dtls.CertificateKeyType, dtls_cipher_suites? : Array[@dtls.CipherSuite], dtls_psk? : Bytes, dtls_psk_identity? : Bytes, dtls_srtp_profiles? : Array[@dtls.SrtpProtectionProfile], dtls_flight_interval? : @transport.Duration, dtls_mtu? : Int, dtls_replay_window? : Int, srtp_replay_window? : Int, srtcp_replay_window? : Int, sctp_max_payload_size? : Int, sctp_send_buffer_size? : UInt64, sctp_receive_buffer_size? : UInt, sctp_initial_rto? : @transport.Duration, receive_mtu? : Int, ignore_rid_pause_for_recv? : Bool, write_ssrc_attributes_for_simulcast? : Bool) -> Self raise RtcError
+pub fn Settings::receive_mtu(Self) -> Int
+pub fn Settings::sctp_initial_rto(Self) -> @transport.Duration
+pub fn Settings::sctp_max_payload_size(Self) -> Int
+pub fn Settings::sctp_receive_buffer_size(Self) -> UInt
+pub fn Settings::sctp_send_buffer_size(Self) -> UInt64
+pub fn Settings::srtcp_replay_window(Self) -> Int
+pub fn Settings::srtp_replay_window(Self) -> Int
+pub fn Settings::verify_peer_fingerprint(Self) -> Bool
+pub fn Settings::write_ssrc_attributes_for_simulcast(Self) -> Bool
+
+pub(all) struct StatsReport {
+  timestamp : @transport.WallTime
+  bytes_sent : UInt64
+  bytes_received : UInt64
+  packets_sent : UInt64
+  packets_received : UInt64
+  packets_lost : UInt64
+  data_channels_opened : UInt
+  data_channels_closed : UInt
+} derive(Eq, @debug.Debug)
+
+pub(all) struct TransportStats {
+  id : String
+  ice_state : @ice.IceConnectionState
+  dtls_state : @dtls.State?
+  selected_candidate_pair_id : String?
+  bytes_sent : UInt64
+  bytes_received : UInt64
+  packets_sent : UInt64
+  packets_received : UInt64
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+pub using @ice {type CandidateType}
+
+pub using @transport {type ClockSample}
+
+pub using @media {type CodecCapability}
+
+pub using @transport {type ConnectionId}
+
+pub using @interceptor {type Context}
+
+pub using @datachannel {type DataChannel}
+
+pub using @datachannel {type DataChannelConfig}
+
+pub using @datachannel {type DataChannelMessage}
+
+pub using @datachannel {type DataChannelState}
+
+pub using @interceptor {type Direction}
+
+pub using @transport {type Duration}
+
+pub using @transport {type EcnCodepoint}
+
+pub using @media {type EncodedFrameContext}
+
+pub using @media {type EncodedTransform}
+
+pub using @media {type EncodedTransformPipeline}
+
+pub using @ice {type IceCandidate}
+
+pub using @ice {type IceConnectionState}
+
+pub using @ice {type IceGatheringState}
+
+pub using @ice {type IceRole}
+
+pub using @ice {type IceTransportPolicy}
+
+pub using @transport {type InboundDatagram}
+
+pub using @transport {type Instant}
+
+pub using @transport {type IoAction}
+
+pub using @transport {type IoEvent}
+
+pub using @transport {type IpAddress}
+
+pub using @transport {type ListenerId}
+
+pub using @transport {type ManualClock}
+
+pub using @media {type MediaKind}
+
+pub using @media {type MediaTrack}
+
+pub using @transport {type OutboundDatagram}
+
+pub using @interceptor {type Pipeline}
+
+pub using @media {type RtpEncodingParameters}
+
+pub using @media {type RtpParameters}
+
+pub using @media {type RtpReceiver}
+
+pub using @media {type RtpSender}
+
+pub using @media {type RtpTransceiver}
+
+pub using @sdp {type SdpType}
+
+pub using @sdp {type SessionDescription}
+
+pub using @sdp {type SignalingState}
+
+pub using @transport {type SocketAddress}
+
+pub using @interceptor {type Stage}
+
+pub using @ice {type TcpCandidateType}
+
+pub using @media {type TransceiverDirection}
+
+pub using @media {type TransformDirection}
+
+pub using @transport {type TransportContext}
+
+pub using @transport {type TransportProtocol}
+
+pub using @turn {type TurnTransport}
+
+pub using @transport {type WallTime}
+
+// Traits
+

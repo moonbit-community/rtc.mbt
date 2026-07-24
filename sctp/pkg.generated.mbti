@@ -1,0 +1,276 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/sctp"
+
+import {
+  "moonbit-community/rtc/internal/crypto",
+  "moonbit-community/rtc/transport",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/queue",
+}
+
+// Values
+
+// Errors
+pub(all) suberror SctpError {
+  InvalidPacket(String)
+  ChecksumMismatch
+  InvalidState(String)
+  AssociationFailed(String)
+  StreamResetFailed(UInt16)
+  MessageTooLarge(UInt64)
+  BufferFull
+  Time(@transport.TimeError)
+  CryptoUnavailable(String)
+  Closed
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub struct Association {
+  config : AssociationConfig
+  provider : @crypto.Provider
+  outputs : @queue.Queue[Bytes]
+  events : @queue.Queue[AssociationEvent]
+  mut started : Bool
+  mut state : AssociationState
+  local_tag : UInt
+  local_initial_tsn : UInt
+  mut peer_tag : UInt?
+  mut peer_initial_tsn : UInt?
+  mut next_tsn : UInt
+  mut cumulative_tsn : UInt?
+  mut cookie : Bytes?
+  mut init_ack_packet : Bytes?
+  mut peer_supports_reconfig : Bool
+  mut peer_supports_forward_tsn : Bool
+  mut last_control_packet : Bytes?
+  mut control_deadline : @transport.Instant?
+  mut control_rto_milliseconds : Int64
+  mut control_retransmissions : Int
+  outstanding : Map[UInt, OutstandingData]
+  abandoned : Map[UInt, DataChunk]
+  mut peer_cumulative_tsn_ack : UInt
+  mut forward_tsn_transaction : ForwardTsnTransaction?
+  received : Map[UInt, DataChunk]
+  duplicates : Array[UInt]
+  send_sequences : Map[StreamId, UInt16]
+  receive_sequences : Map[StreamId, UInt16]
+  reassemblies : Map[UInt64, Reassembly]
+  completed_messages : Map[UInt64, Message]
+  buffered_by_stream : Map[StreamId, UInt64]
+  buffered_amount_low_thresholds : Map[StreamId, UInt64]
+  mut buffered_amount : UInt64
+  mut next_reset_request : UInt
+  mut expected_peer_reset_request : UInt?
+  reset_transactions : Map[UInt, ResetTransaction]
+  pending_resets : Map[UInt, PendingReset]
+  reset_responses : Map[UInt, Bytes]
+}
+pub fn Association::buffered_amount(Self, StreamId) -> UInt64
+pub fn Association::close(Self, @transport.Instant) -> Unit raise SctpError
+pub fn Association::handle_datagram(Self, @transport.Instant, Bytes) -> Unit raise SctpError
+pub fn Association::handle_timeout(Self, @transport.Instant) -> Unit raise SctpError
+pub fn Association::new(AssociationConfig) -> Self raise SctpError
+pub fn Association::poll_datagram(Self) -> Bytes?
+pub fn Association::poll_event(Self) -> AssociationEvent?
+pub fn Association::poll_timeout(Self) -> @transport.Instant?
+pub fn Association::reset_stream(Self, StreamId, @transport.Instant) -> Unit raise SctpError
+pub fn Association::send(Self, Message, reliability? : Reliability, now~ : @transport.Instant) -> Unit raise SctpError
+pub fn Association::set_buffered_amount_low_threshold(Self, StreamId, UInt64) -> Unit
+pub fn Association::start(Self, @transport.Instant) -> Unit raise SctpError
+pub fn Association::state(Self) -> AssociationState
+
+pub struct AssociationConfig {
+  role : AssociationRole
+  local_port : UInt16
+  remote_port : UInt16
+  max_message_size : UInt64
+  max_payload_size : Int
+  send_buffer_size : UInt64
+  receive_buffer_size : UInt
+  initial_tag : UInt?
+  initial_tsn : UInt?
+  initial_rto : @transport.Duration
+}
+pub fn AssociationConfig::new(role~ : AssociationRole, local_port? : UInt16, remote_port? : UInt16, max_message_size? : UInt64, max_payload_size? : Int, send_buffer_size? : UInt64, receive_buffer_size? : UInt, initial_tag? : UInt, initial_tsn? : UInt, initial_rto? : @transport.Duration) -> Self raise SctpError
+pub fn AssociationConfig::role(Self) -> AssociationRole
+
+pub(all) enum AssociationEvent {
+  StateChanged(AssociationState)
+  MessageReceived(Message)
+  StreamReset(StreamId)
+  StreamResetAcknowledged(StreamId)
+  BufferedAmountLow(StreamId)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum AssociationRole {
+  Active
+  Passive
+} derive(Eq, @debug.Debug)
+
+pub(all) enum AssociationState {
+  ClosedState
+  CookieWait
+  CookieEchoed
+  Established
+  ShutdownPending
+  ShutdownSent
+  ShutdownReceived
+  ShutdownAckSent
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Chunk {
+  InitChunkValue(InitChunk)
+  DataChunkValue(DataChunk)
+  SackChunkValue(SackChunk)
+  HeartbeatChunk(Bytes)
+  HeartbeatAckChunk(Bytes)
+  AbortChunk(Bytes)
+  ShutdownChunk(UInt)
+  ShutdownAckChunk
+  ErrorChunk(Bytes)
+  CookieEchoChunk(Bytes)
+  CookieAckChunk
+  ShutdownCompleteChunk
+  ReconfigChunk(Array[ReconfigParameter])
+  ForwardTsnChunk(ForwardTsn)
+  UnknownChunk(Byte, Byte, Bytes)
+} derive(Eq, @debug.Debug)
+
+pub struct DataChunk {
+  unordered : Bool
+  beginning : Bool
+  ending : Bool
+  immediate_sack : Bool
+  tsn : UInt
+  stream : StreamId
+  stream_sequence : UInt16
+  protocol_id : UInt
+  user_data : Bytes
+} derive(Eq, @debug.Debug)
+pub fn DataChunk::is_beginning(Self) -> Bool
+pub fn DataChunk::is_ending(Self) -> Bool
+pub fn DataChunk::is_unordered(Self) -> Bool
+pub fn DataChunk::new(unordered? : Bool, beginning? : Bool, ending? : Bool, immediate_sack? : Bool, tsn~ : UInt, stream~ : StreamId, stream_sequence~ : UInt16, protocol_id~ : UInt, user_data~ : Bytes) -> Self
+pub fn DataChunk::protocol_id(Self) -> UInt
+pub fn DataChunk::stream(Self) -> StreamId
+pub fn DataChunk::stream_sequence(Self) -> UInt16
+pub fn DataChunk::tsn(Self) -> UInt
+pub fn DataChunk::user_data(Self) -> Bytes
+
+pub struct ForwardTsn {
+  new_cumulative_tsn : UInt
+  streams : Array[ForwardTsnStream]
+} derive(Eq, @debug.Debug)
+pub fn ForwardTsn::new(new_cumulative_tsn~ : UInt, streams? : Array[ForwardTsnStream]) -> Self
+pub fn ForwardTsn::new_cumulative_tsn(Self) -> UInt
+pub fn ForwardTsn::streams(Self) -> Array[ForwardTsnStream]
+
+pub(all) struct ForwardTsnStream {
+  stream : StreamId
+  sequence : UInt16
+} derive(Eq, @debug.Debug)
+pub fn ForwardTsnStream::new(stream~ : StreamId, sequence~ : UInt16) -> Self
+pub fn ForwardTsnStream::sequence(Self) -> UInt16
+pub fn ForwardTsnStream::stream(Self) -> StreamId
+
+type ForwardTsnTransaction
+
+pub(all) struct GapAckBlock {
+  start : UInt16
+  end : UInt16
+} derive(Eq, @debug.Debug)
+
+pub struct InitChunk {
+  acknowledgement : Bool
+  initiate_tag : UInt
+  advertised_receiver_window : UInt
+  outbound_streams : UInt16
+  inbound_streams : UInt16
+  initial_tsn : UInt
+  parameters : Array[Parameter]
+} derive(Eq, @debug.Debug)
+pub fn InitChunk::advertised_receiver_window(Self) -> UInt
+pub fn InitChunk::inbound_streams(Self) -> UInt16
+pub fn InitChunk::initial_tsn(Self) -> UInt
+pub fn InitChunk::initiate_tag(Self) -> UInt
+pub fn InitChunk::is_acknowledgement(Self) -> Bool
+pub fn InitChunk::new(acknowledgement? : Bool, initiate_tag~ : UInt, advertised_receiver_window? : UInt, outbound_streams? : UInt16, inbound_streams? : UInt16, initial_tsn~ : UInt, parameters? : Array[Parameter]) -> Self raise SctpError
+pub fn InitChunk::outbound_streams(Self) -> UInt16
+pub fn InitChunk::parameters(Self) -> Array[Parameter]
+
+pub struct Message {
+  stream : StreamId
+  protocol_id : UInt
+  unordered : Bool
+  payload : Bytes
+} derive(Eq, @debug.Debug)
+pub fn Message::is_unordered(Self) -> Bool
+pub fn Message::new(stream~ : StreamId, protocol_id~ : UInt, unordered? : Bool, payload~ : Bytes) -> Self
+pub fn Message::payload(Self) -> Bytes
+pub fn Message::protocol_id(Self) -> UInt
+pub fn Message::stream(Self) -> StreamId
+
+pub(all) enum Ordering {
+  Ordered
+  Unordered
+} derive(Eq, @debug.Debug)
+
+type OutstandingData
+
+pub struct Packet {
+  source_port : UInt16
+  destination_port : UInt16
+  verification_tag : UInt
+  chunks : Array[Chunk]
+} derive(Eq, @debug.Debug)
+pub fn Packet::chunks(Self) -> Array[Chunk]
+pub fn Packet::decode(Bytes) -> Self raise SctpError
+pub fn Packet::destination_port(Self) -> UInt16
+pub fn Packet::encode(Self) -> Bytes raise SctpError
+pub fn Packet::new(source_port~ : UInt16, destination_port~ : UInt16, verification_tag~ : UInt, chunks~ : Array[Chunk]) -> Self raise SctpError
+pub fn Packet::source_port(Self) -> UInt16
+pub fn Packet::verification_tag(Self) -> UInt
+
+pub(all) enum Parameter {
+  StateCookieParameter(Bytes)
+  SupportedExtensionsParameter(Bytes)
+  ForwardTsnSupportedParameter
+  UnknownParameter(UInt16, Bytes)
+} derive(Eq, @debug.Debug)
+
+type PendingReset
+
+type Reassembly
+
+pub(all) enum ReconfigParameter {
+  OutgoingResetRequest(request_sequence~ : UInt, response_sequence~ : UInt, sender_last_tsn~ : UInt, streams~ : Array[StreamId])
+  ReconfigResponse(request_sequence~ : UInt, result~ : UInt)
+  UnknownReconfigParameter(UInt16, Bytes)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Reliability {
+  Reliable
+  RetransmitCount(UInt16)
+  Timed(UInt)
+} derive(Eq, @debug.Debug)
+
+type ResetTransaction
+
+pub struct SackChunk {
+  cumulative_tsn_ack : UInt
+  advertised_receiver_window : UInt
+  gap_ack_blocks : Array[GapAckBlock]
+  duplicate_tsns : Array[UInt]
+} derive(Eq, @debug.Debug)
+pub fn SackChunk::cumulative_tsn_ack(Self) -> UInt
+pub fn SackChunk::duplicate_tsns(Self) -> Array[UInt]
+pub fn SackChunk::gap_ack_blocks(Self) -> Array[GapAckBlock]
+pub fn SackChunk::new(cumulative_tsn_ack~ : UInt, advertised_receiver_window? : UInt, gap_ack_blocks? : Array[GapAckBlock], duplicate_tsns? : Array[UInt]) -> Self
+
+pub(all) struct StreamId(UInt16) derive(Eq, Hash, @debug.Debug)
+pub fn StreamId::value(Self) -> UInt16
+
+// Type aliases
+
+// Traits
+

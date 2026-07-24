@@ -1,0 +1,233 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/sdp"
+
+import {
+  "moonbit-community/rtc/ice",
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+pub(all) suberror SdpError {
+  InvalidSyntax(String)
+  UnsupportedAttribute(String)
+  InvalidState(String)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub struct DataChannelParameters {
+  mid : String
+  bundle_mids : Array[String]
+  ice_credentials : @ice.IceCredentials
+  fingerprint : DtlsFingerprint
+  setup : DtlsSetup
+  candidates : Array[String]
+  end_of_candidates : Bool
+  sctp_port : UInt16
+  max_message_size : UInt64
+} derive(Eq, @debug.Debug)
+pub fn DataChannelParameters::bundle_mids(Self) -> Array[String]
+pub fn DataChannelParameters::candidates(Self) -> Array[String]
+pub fn DataChannelParameters::end_of_candidates(Self) -> Bool
+pub fn DataChannelParameters::fingerprint(Self) -> DtlsFingerprint
+pub fn DataChannelParameters::ice_credentials(Self) -> @ice.IceCredentials
+pub fn DataChannelParameters::max_message_size(Self) -> UInt64
+pub fn DataChannelParameters::mid(Self) -> String
+pub fn DataChannelParameters::sctp_port(Self) -> UInt16
+pub fn DataChannelParameters::setup(Self) -> DtlsSetup
+pub fn DataChannelParameters::validate_for_type(Self, SdpType) -> Unit raise SdpError
+
+pub struct DtlsFingerprint {
+  algorithm : String
+  value : String
+} derive(Eq, @debug.Debug)
+pub fn DtlsFingerprint::algorithm(Self) -> String
+pub fn DtlsFingerprint::new(algorithm~ : String, value~ : String) -> Self raise SdpError
+pub fn DtlsFingerprint::value(Self) -> String
+
+pub(all) enum DtlsSetup {
+  ActPass
+  Active
+  Passive
+  HoldConn
+} derive(Eq, @debug.Debug)
+pub fn DtlsSetup::parse(String) -> Self raise SdpError
+pub fn DtlsSetup::to_string(Self) -> String
+
+pub struct MediaDescription {
+  media_kind : String
+  port : UInt16
+  port_count : UInt16?
+  protocol : String
+  formats : Array[String]
+  fields : Array[SdpField]
+} derive(Eq, @debug.Debug)
+pub fn MediaDescription::add_attribute(Self, SdpAttribute) -> Unit raise SdpError
+pub fn MediaDescription::add_field(Self, SdpField) -> Unit
+pub fn MediaDescription::attribute(Self, String) -> SdpAttribute? raise SdpError
+pub fn MediaDescription::attributes(Self, String) -> Array[SdpAttribute] raise SdpError
+pub fn MediaDescription::fields(Self) -> Array[SdpField]
+pub fn MediaDescription::formats(Self) -> Array[String]
+pub fn MediaDescription::media_kind(Self) -> String
+pub fn MediaDescription::new(media_kind~ : String, port~ : UInt16, port_count? : UInt16, protocol~ : String, formats~ : Array[String], fields? : Array[SdpField]) -> Self raise SdpError
+pub fn MediaDescription::port(Self) -> UInt16
+pub fn MediaDescription::port_count(Self) -> UInt16?
+pub fn MediaDescription::protocol(Self) -> String
+
+pub(all) enum MediaDirection {
+  SendRecv
+  SendOnly
+  RecvOnly
+  Inactive
+} derive(Eq, @debug.Debug)
+pub fn MediaDirection::parse(String) -> Self raise SdpError
+pub fn MediaDirection::to_string(Self) -> String
+
+pub(all) enum RidDirection {
+  RidSend
+  RidRecv
+} derive(Eq, @debug.Debug)
+
+pub(all) struct RtpCodecParameters {
+  payload_type : Byte
+  encoding_name : String
+  clock_rate : UInt
+  channels : UInt16
+  fmtp : String
+  rtcp_feedback : Array[String]
+} derive(Eq, @debug.Debug)
+pub fn RtpCodecParameters::channels(Self) -> UInt16
+pub fn RtpCodecParameters::clock_rate(Self) -> UInt
+pub fn RtpCodecParameters::encoding_name(Self) -> String
+pub fn RtpCodecParameters::fmtp(Self) -> String
+pub fn RtpCodecParameters::new(payload_type~ : Byte, encoding_name~ : String, clock_rate~ : UInt, channels? : UInt16, fmtp? : String, rtcp_feedback? : Array[String]) -> Self raise SdpError
+pub fn RtpCodecParameters::payload_type(Self) -> Byte
+pub fn RtpCodecParameters::rtcp_feedback(Self) -> Array[String]
+
+pub(all) struct RtpHeaderExtensionParameters {
+  id : Byte
+  uri : String
+} derive(Eq, @debug.Debug)
+pub fn RtpHeaderExtensionParameters::id(Self) -> Byte
+pub fn RtpHeaderExtensionParameters::new(id~ : Byte, uri~ : String) -> Self raise SdpError
+pub fn RtpHeaderExtensionParameters::uri(Self) -> String
+
+pub(all) struct RtpMediaParameters {
+  kind : String
+  mid : String
+  direction : MediaDirection
+  codecs : Array[RtpCodecParameters]
+  header_extensions : Array[RtpHeaderExtensionParameters]
+  stream_id : String?
+  track_id : String?
+  ssrc : UInt?
+  rtx_ssrc : UInt?
+  streams : Array[RtpStreamParameters]
+  cname : String?
+} derive(Eq, @debug.Debug)
+pub fn RtpMediaParameters::cname(Self) -> String?
+pub fn RtpMediaParameters::codecs(Self) -> Array[RtpCodecParameters]
+pub fn RtpMediaParameters::direction(Self) -> MediaDirection
+pub fn RtpMediaParameters::header_extensions(Self) -> Array[RtpHeaderExtensionParameters]
+pub fn RtpMediaParameters::kind(Self) -> String
+pub fn RtpMediaParameters::mid(Self) -> String
+pub fn RtpMediaParameters::new(kind~ : String, mid~ : String, direction? : MediaDirection, codecs~ : Array[RtpCodecParameters], header_extensions? : Array[RtpHeaderExtensionParameters], stream_id? : String, track_id? : String, ssrc? : UInt, rtx_ssrc? : UInt, streams? : Array[RtpStreamParameters], cname? : String) -> Self raise SdpError
+pub fn RtpMediaParameters::rtx_ssrc(Self) -> UInt?
+pub fn RtpMediaParameters::ssrc(Self) -> UInt?
+pub fn RtpMediaParameters::stream_id(Self) -> String?
+pub fn RtpMediaParameters::streams(Self) -> Array[RtpStreamParameters]
+pub fn RtpMediaParameters::track_id(Self) -> String?
+
+pub(all) struct RtpStreamParameters {
+  ssrc : UInt?
+  rtx_ssrc : UInt?
+  rid : String?
+  paused : Bool
+  rid_direction : RidDirection
+} derive(Eq, @debug.Debug)
+pub fn RtpStreamParameters::new(ssrc? : UInt, rtx_ssrc? : UInt, rid? : String, paused? : Bool, rid_direction? : RidDirection) -> Self raise SdpError
+
+pub struct SdpAttribute {
+  key : String
+  value : String?
+} derive(Eq, @debug.Debug)
+pub fn SdpAttribute::key(Self) -> String
+pub fn SdpAttribute::new(key~ : String, value? : String) -> Self raise SdpError
+pub fn SdpAttribute::value(Self) -> String?
+
+pub struct SdpDocument {
+  session_fields : Array[SdpField]
+  media_descriptions : Array[MediaDescription]
+} derive(Eq, @debug.Debug)
+pub fn SdpDocument::datachannel_parameters(Self) -> DataChannelParameters raise SdpError
+pub fn SdpDocument::marshal(Self) -> String
+pub fn SdpDocument::media_descriptions(Self) -> Array[MediaDescription]
+pub fn SdpDocument::new(session_fields~ : Array[SdpField], media_descriptions? : Array[MediaDescription]) -> Self raise SdpError
+pub fn SdpDocument::new_datachannel(session_id~ : UInt64, session_version~ : UInt64, mid~ : String, ice_credentials~ : @ice.IceCredentials, fingerprint~ : DtlsFingerprint, setup~ : DtlsSetup, candidates? : Array[String], end_of_candidates? : Bool, sctp_port? : UInt16, max_message_size? : UInt64, media_sections? : Array[RtpMediaParameters], application_index? : Int) -> Self raise SdpError
+pub fn SdpDocument::parse(String) -> Self raise SdpError
+pub fn SdpDocument::rtp_media_parameters(Self) -> Array[RtpMediaParameters] raise SdpError
+pub fn SdpDocument::session_attribute(Self, String) -> SdpAttribute? raise SdpError
+pub fn SdpDocument::session_attributes(Self, String) -> Array[SdpAttribute] raise SdpError
+pub fn SdpDocument::session_fields(Self) -> Array[SdpField]
+
+pub struct SdpField {
+  kind : Byte
+  value : String
+} derive(Eq, @debug.Debug)
+pub fn SdpField::kind(Self) -> Byte
+pub fn SdpField::new(kind~ : Byte, value~ : String) -> Self raise SdpError
+pub fn SdpField::value(Self) -> String
+
+pub(all) enum SdpType {
+  Offer
+  Pranswer
+  Answer
+  Rollback
+} derive(Eq, @debug.Debug)
+
+pub struct SessionDescription {
+  sdp_type : SdpType
+  sdp : String
+} derive(Eq, @debug.Debug)
+pub fn SessionDescription::datachannel_parameters(Self) -> DataChannelParameters raise SdpError
+pub fn SessionDescription::document(Self) -> SdpDocument raise SdpError
+pub fn SessionDescription::from_document(sdp_type~ : SdpType, SdpDocument) -> Self raise SdpError
+pub fn SessionDescription::new(sdp_type~ : SdpType, sdp~ : String) -> Self
+pub fn SessionDescription::rtp_media_parameters(Self) -> Array[RtpMediaParameters] raise SdpError
+pub fn SessionDescription::sdp(Self) -> String
+pub fn SessionDescription::sdp_type(Self) -> SdpType
+
+pub(all) enum SignalingState {
+  Stable
+  HaveLocalOffer
+  HaveRemoteOffer
+  HaveLocalPranswer
+  HaveRemotePranswer
+  Closed
+} derive(Eq, @debug.Debug)
+
+pub struct SignalingStateMachine {
+  mut state : SignalingState
+  mut current_local : SessionDescription?
+  mut current_remote : SessionDescription?
+  mut pending_local : SessionDescription?
+  mut pending_remote : SessionDescription?
+}
+pub fn SignalingStateMachine::close(Self) -> Unit
+pub fn SignalingStateMachine::current_local_description(Self) -> SessionDescription?
+pub fn SignalingStateMachine::current_remote_description(Self) -> SessionDescription?
+pub fn SignalingStateMachine::local_description(Self) -> SessionDescription?
+pub fn SignalingStateMachine::new() -> Self
+pub fn SignalingStateMachine::pending_local_description(Self) -> SessionDescription?
+pub fn SignalingStateMachine::pending_remote_description(Self) -> SessionDescription?
+pub fn SignalingStateMachine::remote_description(Self) -> SessionDescription?
+pub fn SignalingStateMachine::set_local_description(Self, SessionDescription) -> Unit raise SdpError
+pub fn SignalingStateMachine::set_remote_description(Self, SessionDescription) -> Unit raise SdpError
+pub fn SignalingStateMachine::state(Self) -> SignalingState
+
+// Type aliases
+pub using @ice {type IceCredentials}
+
+// Traits
+

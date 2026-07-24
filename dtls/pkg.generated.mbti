@@ -1,0 +1,378 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/dtls"
+
+import {
+  "moonbit-community/rtc/internal/crypto",
+  "moonbit-community/rtc/transport",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/queue",
+}
+
+// Values
+pub fn decode_handshakes(Bytes) -> Array[HandshakeFragment] raise DtlsError
+
+pub fn decode_records(Bytes) -> Array[Record] raise DtlsError
+
+pub fn encode_records(Array[Record]) -> Bytes raise DtlsError
+
+// Errors
+pub(all) suberror DtlsError {
+  InvalidRecord(String)
+  InvalidHandshake(String)
+  UnsupportedVersion
+  UnsupportedCipherSuite(UInt16)
+  UnsupportedSrtpProfile(UInt16)
+  HandshakeFailed(String)
+  FingerprintMismatch
+  ReplayRejected
+  CryptoUnavailable(String)
+  Time(@transport.TimeError)
+  Closed
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) enum AlertDescription {
+  CloseNotify
+  UnexpectedMessage
+  BadRecordMac
+  HandshakeFailure
+  BadCertificate
+  IllegalParameter
+  DecodeError
+  DecryptError
+  ProtocolVersionAlert
+  InternalError
+  UnsupportedExtension
+  UnknownAlert(Byte)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum AlertLevel {
+  WarningAlert
+  FatalAlert
+} derive(Eq, @debug.Debug)
+
+pub struct CertificateIdentity {
+  provider : @crypto.Provider
+  private_key : @crypto.PrivateKey
+  certificate : @crypto.Certificate
+  certificate_der : Bytes
+  key_type : CertificateKeyType
+}
+pub fn CertificateIdentity::certificate_der(Self) -> Bytes
+pub fn CertificateIdentity::fingerprint(Self, algorithm? : FingerprintAlgorithm) -> Fingerprint raise DtlsError
+pub fn CertificateIdentity::generate(common_name? : String, key_type? : CertificateKeyType, not_before~ : @transport.WallTime, not_after~ : @transport.WallTime) -> Self raise DtlsError
+pub fn CertificateIdentity::key_type(Self) -> CertificateKeyType
+
+pub(all) enum CertificateKeyType {
+  EcdsaCertificate
+  RsaCertificate
+} derive(Eq, @debug.Debug)
+
+pub struct CertificateMessage {
+  certificates : Array[Bytes]
+} derive(Eq, @debug.Debug)
+
+pub struct CertificateRequestMessage {
+  certificate_types : Array[Byte]
+  signature_algorithms : Array[UInt16]
+} derive(Eq, @debug.Debug)
+
+pub struct CertificateVerifyMessage {
+  signature_algorithm : UInt16
+  signature : Bytes
+} derive(Eq, @debug.Debug)
+
+pub(all) enum CipherSuite {
+  EcdheEcdsaAes128Ccm
+  EcdheEcdsaAes128Ccm8
+  EcdheEcdsaAes128GcmSha256
+  EcdheRsaAes128GcmSha256
+  EcdheEcdsaAes256CbcSha
+  EcdheRsaAes256CbcSha
+  PskAes128Ccm
+  PskAes128Ccm8
+  PskAes128GcmSha256
+  EcdheRsaChacha20Poly1305Sha256
+  EcdheEcdsaChacha20Poly1305Sha256
+} derive(Eq, @debug.Debug)
+pub fn CipherSuite::code(Self) -> UInt16
+pub fn CipherSuite::from_code(UInt16) -> Self raise DtlsError
+pub fn CipherSuite::is_psk(Self) -> Bool
+pub fn CipherSuite::maximum_record_expansion(Self) -> Int
+pub fn CipherSuite::uses_rsa(Self) -> Bool
+
+pub struct ClientHelloMessage {
+  random : Bytes
+  session_id : Bytes
+  cookie : Bytes
+  cipher_suites : Array[UInt16]
+  compression_methods : Array[Byte]
+  extensions : HelloExtensions
+} derive(Eq, @debug.Debug)
+pub fn ClientHelloMessage::cipher_suites(Self) -> Array[UInt16]
+pub fn ClientHelloMessage::cookie(Self) -> Bytes
+pub fn ClientHelloMessage::extensions(Self) -> HelloExtensions
+pub fn ClientHelloMessage::new(random~ : Bytes, cookie? : Bytes, cipher_suites? : Array[CipherSuite], extensions~ : HelloExtensions) -> Self raise DtlsError
+pub fn ClientHelloMessage::random(Self) -> Bytes
+
+pub struct ClientKeyExchangeMessage {
+  public_key : Bytes
+  identity_hint : Bytes?
+} derive(Eq, @debug.Debug)
+
+pub struct Config {
+  role : Role
+  identity : CertificateIdentity
+  expected_peer_fingerprint : Fingerprint
+  wall_time : @transport.WallTime
+  cipher_suites : Array[CipherSuite]
+  psk : Bytes?
+  psk_identity : Bytes?
+  srtp_profiles : Array[SrtpProtectionProfile]
+  flight_interval : @transport.Duration
+  mtu : Int
+  replay_window : Int
+  verify_peer_fingerprint : Bool
+}
+pub fn Config::cipher_suites(Self) -> Array[CipherSuite]
+pub fn Config::local_fingerprint(Self) -> Fingerprint raise DtlsError
+pub fn Config::new(role~ : Role, identity~ : CertificateIdentity, expected_peer_fingerprint~ : Fingerprint, wall_time~ : @transport.WallTime, cipher_suites? : Array[CipherSuite], psk? : Bytes, psk_identity? : Bytes, srtp_profiles? : Array[SrtpProtectionProfile], flight_interval? : @transport.Duration, mtu? : Int, replay_window? : Int, verify_peer_fingerprint? : Bool) -> Self raise DtlsError
+pub fn Config::psk_identity(Self) -> Bytes?
+pub fn Config::role(Self) -> Role
+pub fn Config::srtp_profiles(Self) -> Array[SrtpProtectionProfile]
+
+pub(all) enum ContentType {
+  ChangeCipherSpec
+  Alert
+  Handshake
+  ApplicationData
+} derive(Eq, @debug.Debug)
+pub fn ContentType::code(Self) -> Byte
+
+pub(all) enum DtlsEvent {
+  StateChanged(State)
+  ConnectedWithSrtp(SrtpProtectionProfile?)
+  ApplicationDataReceived(Bytes)
+  AlertReceived(AlertLevel, AlertDescription)
+} derive(Eq, @debug.Debug)
+
+pub struct Endpoint {
+  config : Config
+  provider : @crypto.Provider
+  outputs : @queue.Queue[Bytes]
+  events : @queue.Queue[DtlsEvent]
+  mut state : State
+  mut phase : HandshakePhase
+  fragments : FragmentBuffer
+  transcript : Array[Bytes]
+  mut local_handshake_sequence : UInt16
+  mut epoch_zero_sequence : UInt64
+  mut epoch_one_sequence : UInt64
+  mut client_random : Bytes?
+  mut server_random : Bytes?
+  mut initial_client_hello : Bytes?
+  mut cookie : Bytes?
+  mut local_ephemeral : @crypto.PrivateKey?
+  mut peer_ephemeral : @crypto.PublicKey?
+  mut peer_certificate_key : @crypto.PublicKey?
+  mut master_secret : @crypto.Secret?
+  mut cipher : RecordCipher?
+  mut selected_cipher_suite : CipherSuite?
+  mut selected_srtp_profile : SrtpProtectionProfile?
+  mut certificate_requested : Bool
+  mut client_server_stage : Int
+  mut server_client_stage : Int
+  mut peer_changed_cipher_spec : Bool
+  mut last_flight : Array[Bytes]
+  mut retransmit_deadline : @transport.Instant?
+  mut retransmit_interval_milliseconds : Int64
+  mut retransmissions : Int
+}
+pub fn Endpoint::close(Self) -> Unit raise DtlsError
+pub fn Endpoint::export_keying_material(Self, String, Int) -> Bytes raise DtlsError
+pub fn Endpoint::handle_datagram(Self, @transport.Instant, Bytes) -> Unit raise DtlsError
+pub fn Endpoint::handle_timeout(Self, @transport.Instant) -> Unit raise DtlsError
+pub fn Endpoint::new(Config) -> Self
+pub fn Endpoint::poll_datagram(Self) -> Bytes?
+pub fn Endpoint::poll_event(Self) -> DtlsEvent?
+pub fn Endpoint::poll_timeout(Self) -> @transport.Instant?
+pub fn Endpoint::role(Self) -> Role
+pub fn Endpoint::selected_cipher_suite(Self) -> CipherSuite?
+pub fn Endpoint::selected_srtp_profile(Self) -> SrtpProtectionProfile?
+pub fn Endpoint::send_application_data(Self, Bytes) -> Unit raise DtlsError
+pub fn Endpoint::start(Self, @transport.Instant) -> Unit raise DtlsError
+pub fn Endpoint::state(Self) -> State
+
+pub struct Fingerprint {
+  algorithm : FingerprintAlgorithm
+  value : Bytes
+} derive(Eq, @debug.Debug)
+pub fn Fingerprint::algorithm(Self) -> FingerprintAlgorithm
+pub fn Fingerprint::new(algorithm~ : FingerprintAlgorithm, value~ : Bytes) -> Self raise DtlsError
+pub fn Fingerprint::value(Self) -> Bytes
+
+pub(all) enum FingerprintAlgorithm {
+  Sha256
+  Sha384
+  Sha512
+} derive(Eq, @debug.Debug)
+
+pub struct FinishedMessage {
+  verify_data : Bytes
+} derive(Eq, @debug.Debug)
+
+type FragmentBuffer
+
+pub struct HandshakeFragment {
+  handshake_type : HandshakeType
+  total_length : UInt
+  message_sequence : UInt16
+  fragment_offset : UInt
+  body : Bytes
+} derive(Eq, @debug.Debug)
+pub fn HandshakeFragment::body(Self) -> Bytes
+pub fn HandshakeFragment::encode(Self) -> Bytes raise DtlsError
+pub fn HandshakeFragment::fragment_offset(Self) -> UInt
+pub fn HandshakeFragment::handshake_type(Self) -> HandshakeType
+pub fn HandshakeFragment::is_complete(Self) -> Bool
+pub fn HandshakeFragment::message_sequence(Self) -> UInt16
+pub fn HandshakeFragment::new(handshake_type~ : HandshakeType, total_length~ : UInt, message_sequence~ : UInt16, fragment_offset~ : UInt, body~ : Bytes) -> Self raise DtlsError
+pub fn HandshakeFragment::total_length(Self) -> UInt
+
+pub(all) enum HandshakeMessage {
+  ClientHelloHandshake(ClientHelloMessage)
+  ServerHelloHandshake(ServerHelloMessage)
+  HelloVerifyRequestHandshake(HelloVerifyRequestMessage)
+  CertificateHandshake(CertificateMessage)
+  ServerKeyExchangeHandshake(ServerKeyExchangeMessage)
+  CertificateRequestHandshake(CertificateRequestMessage)
+  ServerHelloDoneHandshake
+  CertificateVerifyHandshake(CertificateVerifyMessage)
+  ClientKeyExchangeHandshake(ClientKeyExchangeMessage)
+  FinishedHandshake(FinishedMessage)
+} derive(Eq, @debug.Debug)
+pub fn HandshakeMessage::decode(HandshakeFragment) -> Self raise DtlsError
+pub fn HandshakeMessage::encode_body(Self) -> Bytes raise DtlsError
+pub fn HandshakeMessage::handshake_type(Self) -> HandshakeType
+pub fn HandshakeMessage::to_fragment(Self, UInt16) -> HandshakeFragment raise DtlsError
+
+type HandshakePhase derive(Eq, @debug.Debug)
+
+pub(all) enum HandshakeType {
+  HelloRequest
+  ClientHello
+  ServerHello
+  HelloVerifyRequest
+  Certificate
+  ServerKeyExchange
+  CertificateRequest
+  ServerHelloDone
+  CertificateVerify
+  ClientKeyExchange
+  Finished
+  UnknownHandshake(Byte)
+} derive(Eq, @debug.Debug)
+pub fn HandshakeType::code(Self) -> Byte
+
+pub struct HelloExtensions {
+  supported_groups : Array[UInt16]
+  point_formats : Array[Byte]
+  signature_algorithms : Array[UInt16]
+  srtp_profiles : Array[UInt16]
+  extended_master_secret : Bool
+  renegotiation_info : Bool
+  unknown : Array[(UInt16, Bytes)]
+} derive(Eq, @debug.Debug)
+pub fn HelloExtensions::signature_algorithms(Self) -> Array[UInt16]
+pub fn HelloExtensions::srtp_profile_codes(Self) -> Array[UInt16]
+pub fn HelloExtensions::supports_group(Self, UInt16) -> Bool
+pub fn HelloExtensions::uses_extended_master_secret(Self) -> Bool
+pub fn HelloExtensions::webrtc(srtp_profiles? : Array[SrtpProtectionProfile]) -> Self
+
+pub struct HelloVerifyRequestMessage {
+  cookie : Bytes
+} derive(Eq, @debug.Debug)
+
+pub(all) enum ProtocolVersion {
+  Dtls10
+  Dtls12
+} derive(Eq, @debug.Debug)
+pub fn ProtocolVersion::major(Self) -> Byte
+pub fn ProtocolVersion::minor(Self) -> Byte
+
+pub struct Record {
+  header : RecordHeader
+  payload : Bytes
+} derive(Eq, @debug.Debug)
+pub fn Record::encode(Self) -> Bytes raise DtlsError
+pub fn Record::header(Self) -> RecordHeader
+pub fn Record::new(content_type~ : ContentType, version? : ProtocolVersion, epoch~ : UInt16, sequence_number~ : UInt64, payload~ : Bytes) -> Self raise DtlsError
+pub fn Record::payload(Self) -> Bytes
+
+type RecordCipher
+
+pub struct RecordHeader {
+  content_type : ContentType
+  version : ProtocolVersion
+  epoch : UInt16
+  sequence_number : UInt64
+  content_length : UInt16
+} derive(Eq, @debug.Debug)
+pub fn RecordHeader::content_length(Self) -> UInt16
+pub fn RecordHeader::content_type(Self) -> ContentType
+pub fn RecordHeader::epoch(Self) -> UInt16
+pub fn RecordHeader::new(content_type~ : ContentType, version? : ProtocolVersion, epoch~ : UInt16, sequence_number~ : UInt64, content_length~ : UInt16) -> Self raise DtlsError
+pub fn RecordHeader::sequence_number(Self) -> UInt64
+pub fn RecordHeader::version(Self) -> ProtocolVersion
+
+pub(all) enum Role {
+  Auto
+  Client
+  Server
+} derive(Eq, @debug.Debug)
+
+pub struct ServerHelloMessage {
+  random : Bytes
+  session_id : Bytes
+  cipher_suite : UInt16
+  compression_method : Byte
+  extensions : HelloExtensions
+} derive(Eq, @debug.Debug)
+pub fn ServerHelloMessage::cipher_suite(Self) -> UInt16
+pub fn ServerHelloMessage::extensions(Self) -> HelloExtensions
+pub fn ServerHelloMessage::new(random~ : Bytes, cipher_suite? : CipherSuite, selected_srtp_profile? : UInt16) -> Self raise DtlsError
+pub fn ServerHelloMessage::random(Self) -> Bytes
+
+pub struct ServerKeyExchangeMessage {
+  named_curve : UInt16
+  public_key : Bytes
+  signature_algorithm : UInt16
+  signature : Bytes
+  identity_hint : Bytes?
+} derive(Eq, @debug.Debug)
+
+pub(all) enum SrtpProtectionProfile {
+  SrtpAes128CmHmacSha1_80
+  SrtpAes128CmHmacSha1_32
+  SrtpAeadAes128Gcm
+  SrtpAeadAes256Gcm
+} derive(Eq, @debug.Debug)
+pub fn SrtpProtectionProfile::aead_aes128_gcm() -> Self
+pub fn SrtpProtectionProfile::aead_aes256_gcm() -> Self
+pub fn SrtpProtectionProfile::aes128_cm_hmac_sha1_32() -> Self
+pub fn SrtpProtectionProfile::aes128_cm_hmac_sha1_80() -> Self
+pub fn SrtpProtectionProfile::code(Self) -> UInt16
+
+pub(all) enum State {
+  New
+  Connecting
+  Connected
+  Closing
+  Closed
+  Failed
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
+

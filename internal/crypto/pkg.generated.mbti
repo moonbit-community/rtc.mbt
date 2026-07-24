@@ -1,0 +1,103 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/internal/crypto"
+
+import {
+  "moonbit-community/rtc/transport",
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+pub(all) suberror CryptoError {
+  CryptoUnavailable(String)
+  InvalidLength(Int)
+  OperationFailed(String)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) enum AeadAlgorithm {
+  Aes128Gcm
+  Aes256Gcm
+  Aes128Ccm
+  Aes256Ccm
+  Chacha20Poly1305
+} derive(Eq, @debug.Debug)
+
+pub struct AeadSealed {
+  ciphertext : Bytes
+  tag : Bytes
+} derive(Eq, @debug.Debug)
+pub fn AeadSealed::ciphertext(Self) -> Bytes
+pub fn AeadSealed::new(ciphertext~ : Bytes, tag~ : Bytes) -> Self raise CryptoError
+pub fn AeadSealed::tag(Self) -> Bytes
+
+pub type Certificate
+pub fn Certificate::fingerprint(Self, Provider, DigestAlgorithm) -> Bytes raise CryptoError
+pub fn Certificate::is_valid_at(Self, Provider, @transport.WallTime) -> Bool raise CryptoError
+pub fn Certificate::public_key(Self, Provider) -> PublicKey raise CryptoError
+pub fn Certificate::to_der(Self, Provider) -> Bytes raise CryptoError
+pub fn Certificate::verify_self_signature(Self, Provider) -> Bool raise CryptoError
+
+pub(all) enum CipherAlgorithm {
+  Aes128Cbc
+  Aes256Cbc
+  Aes128Ctr
+  Aes256Ctr
+} derive(Eq, @debug.Debug)
+
+pub(all) enum DigestAlgorithm {
+  Sha1
+  Sha256
+  Sha384
+  Sha512
+} derive(Eq, @debug.Debug)
+
+pub(all) enum KeyAlgorithm {
+  P256
+  P384
+  X25519
+  Rsa2048
+} derive(Eq, @debug.Debug)
+
+pub type PrivateKey
+pub fn PrivateKey::public_der(Self, Provider) -> Bytes raise CryptoError
+
+pub type Provider
+pub fn Provider::aead_open(Self, AeadAlgorithm, Secret, Bytes, Bytes, AeadSealed) -> Bytes raise CryptoError
+pub fn Provider::aead_seal(Self, AeadAlgorithm, Secret, Bytes, Bytes, Bytes, tag_length? : Int) -> AeadSealed raise CryptoError
+pub fn Provider::cipher_decrypt(Self, CipherAlgorithm, Secret, Bytes, Bytes) -> Bytes raise CryptoError
+pub fn Provider::cipher_encrypt(Self, CipherAlgorithm, Secret, Bytes, Bytes) -> Bytes raise CryptoError
+pub fn Provider::constant_time_equal(Self, Bytes, Bytes) -> Bool
+pub fn Provider::derive_shared_secret(Self, PrivateKey, PublicKey) -> Secret raise CryptoError
+pub fn Provider::digest(Self, DigestAlgorithm, Bytes) -> Bytes raise CryptoError
+pub fn Provider::generate_private_key(Self, KeyAlgorithm) -> PrivateKey raise CryptoError
+pub fn Provider::hmac(Self, DigestAlgorithm, Secret, Bytes) -> Bytes raise CryptoError
+pub fn Provider::import_certificate(Self, Bytes) -> Certificate raise CryptoError
+pub fn Provider::import_public_key(Self, Bytes) -> PublicKey raise CryptoError
+pub fn Provider::open(path? : String, property_query? : String) -> Self raise CryptoError
+pub fn Provider::random_bytes(Self, Int) -> Bytes raise CryptoError
+pub fn Provider::random_secret(Self, Int) -> Secret raise CryptoError
+pub fn Provider::self_signed_certificate(Self, PrivateKey, String, @transport.WallTime, @transport.WallTime) -> Certificate raise CryptoError
+pub fn Provider::sign(Self, SignatureAlgorithm, PrivateKey, Bytes) -> Bytes raise CryptoError
+pub fn Provider::verify(Self, SignatureAlgorithm, PublicKey, Bytes, Bytes) -> Bool raise CryptoError
+pub fn Provider::version(Self) -> String
+
+pub type PublicKey
+
+pub type Secret
+pub fn Secret::constant_time_equal(Self, Provider, Self) -> Bool
+pub fn Secret::from_bytes(Bytes) -> Self
+pub fn Secret::length(Self) -> Int
+
+pub(all) enum SignatureAlgorithm {
+  EcdsaSha256
+  EcdsaSha384
+  RsaPssSha256
+  RsaPkcs1Sha256
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
+

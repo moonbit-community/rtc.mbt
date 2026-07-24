@@ -1,0 +1,192 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/stun"
+
+import {
+  "moonbit-community/rtc/transport",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/queue",
+}
+
+// Values
+
+// Errors
+pub(all) suberror StunError {
+  InvalidMessage(String)
+  IntegrityFailure
+  UnknownRequiredAttribute(UInt16)
+  TransactionTimedOut
+  AgentClosed
+  TransactionAlreadyExists
+  TransactionNotFound
+  CryptoUnavailable(String)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub struct Attribute {
+  attribute_type : AttributeType
+  value : Bytes
+  padding : Bytes
+} derive(Eq, @debug.Debug)
+pub fn Attribute::as_network_cost(Self) -> (UInt16, UInt16) raise StunError
+pub fn Attribute::as_text(Self) -> String raise StunError
+pub fn Attribute::as_u32(Self) -> UInt raise StunError
+pub fn Attribute::as_u64(Self) -> UInt64 raise StunError
+pub fn Attribute::attribute_type(Self) -> AttributeType
+pub fn Attribute::channel_number(UInt16) -> Self raise StunError
+pub fn Attribute::from_address(@transport.SocketAddress, attribute_type? : AttributeType) -> Self raise StunError
+pub fn Attribute::from_error(ResponseError) -> Self raise StunError
+pub fn Attribute::from_unknown_attributes(Array[UInt16]) -> Self raise StunError
+pub fn Attribute::from_xor_address(@transport.SocketAddress, TransactionId, attribute_type? : AttributeType) -> Self raise StunError
+pub fn Attribute::ice_controlled(UInt64) -> Self raise StunError
+pub fn Attribute::ice_controlling(UInt64) -> Self raise StunError
+pub fn Attribute::lifetime(UInt) -> Self raise StunError
+pub fn Attribute::network_cost(UInt16, UInt16) -> Self raise StunError
+pub fn Attribute::new(attribute_type~ : AttributeType, value~ : Bytes) -> Self raise StunError
+pub fn Attribute::nonce(String) -> Self raise StunError
+pub fn Attribute::priority(UInt) -> Self raise StunError
+pub fn Attribute::realm(String) -> Self raise StunError
+pub fn Attribute::software(String) -> Self raise StunError
+pub fn Attribute::to_address(Self) -> @transport.SocketAddress raise StunError
+pub fn Attribute::to_error(Self) -> ResponseError raise StunError
+pub fn Attribute::to_unknown_attributes(Self) -> Array[UInt16] raise StunError
+pub fn Attribute::to_xor_address(Self, TransactionId) -> @transport.SocketAddress raise StunError
+pub fn Attribute::use_candidate() -> Self raise StunError
+pub fn Attribute::username(String) -> Self raise StunError
+pub fn Attribute::value(Self) -> Bytes
+
+pub(all) enum AttributeType {
+  MappedAddress
+  ChangeRequest
+  SourceAddress
+  ChangedAddress
+  Username
+  MessageIntegrity
+  ErrorCode
+  UnknownAttributes
+  ChannelNumber
+  Lifetime
+  XorPeerAddress
+  DataAttribute
+  Realm
+  Nonce
+  XorRelayedAddress
+  RequestedAddressFamily
+  EvenPort
+  RequestedTransport
+  DontFragment
+  MessageIntegritySha256
+  PasswordAlgorithm
+  Userhash
+  XorMappedAddress
+  ReservationToken
+  Priority
+  UseCandidate
+  PaddingAttribute
+  ResponsePort
+  ConnectionId
+  PasswordAlgorithms
+  AlternateDomain
+  Software
+  AlternateServer
+  CacheTimeout
+  Fingerprint
+  IceControlled
+  IceControlling
+  ResponseOrigin
+  OtherAddress
+  Origin
+  NetworkCost
+  UnknownAttribute(UInt16)
+} derive(Eq, @debug.Debug)
+pub fn AttributeType::code(Self) -> UInt16
+pub fn AttributeType::from_code(UInt16) -> Self
+pub fn AttributeType::is_comprehension_required(Self) -> Bool
+
+pub struct Message {
+  class : MessageClass
+  stun_method : Method
+  transaction_id : TransactionId
+  attributes : Array[Attribute]
+} derive(Eq, @debug.Debug)
+pub fn Message::add_attribute(Self, Attribute) -> Unit
+pub fn Message::attributes(Self) -> Array[Attribute]
+pub fn Message::class(Self) -> MessageClass
+pub fn Message::decode(Bytes) -> Self raise StunError
+pub fn Message::encode(Self) -> Bytes raise StunError
+pub fn Message::encode_authenticated(Self, Bytes, sha256? : Bool, fingerprint? : Bool) -> Bytes raise StunError
+pub fn Message::error_response(Self, ResponseError) -> Self raise StunError
+pub fn Message::first_attribute(Self, AttributeType) -> Attribute?
+pub fn Message::is_stun(Bytes) -> Bool
+pub fn Message::new(class~ : MessageClass, stun_method~ : Method, transaction_id~ : TransactionId, attributes? : Array[Attribute]) -> Self
+pub fn Message::stun_method(Self) -> Method
+pub fn Message::transaction_id(Self) -> TransactionId
+pub fn Message::unknown_required_attributes(Self) -> Array[UInt16]
+pub fn Message::verify_fingerprint(Self) -> Unit raise StunError
+pub fn Message::verify_integrity(Self, Bytes, sha256? : Bool) -> Unit raise StunError
+
+pub(all) enum MessageClass {
+  Request
+  Indication
+  SuccessResponse
+  ErrorResponse
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Method {
+  Binding
+  Allocate
+  Refresh
+  Send
+  Data
+  CreatePermission
+  ChannelBind
+  Unknown(UInt16)
+} derive(Eq, @debug.Debug)
+
+pub struct ResponseError {
+  code : UInt16
+  reason : String
+} derive(Eq, @debug.Debug)
+pub fn ResponseError::code(Self) -> UInt16
+pub fn ResponseError::new(code~ : UInt16, reason~ : String) -> Self raise StunError
+pub fn ResponseError::reason(Self) -> String
+pub fn ResponseError::with_default_reason(UInt16) -> Self raise StunError
+
+pub struct TransactionAgent {
+  transactions : Map[TransactionId, @transport.Instant]
+  events : @queue.Queue[TransactionEvent]
+  mut closed : Bool
+}
+pub fn TransactionAgent::close(Self) -> Unit raise StunError
+pub fn TransactionAgent::collect(Self, @transport.Instant) -> Unit raise StunError
+pub fn TransactionAgent::is_closed(Self) -> Bool
+pub fn TransactionAgent::new() -> Self
+pub fn TransactionAgent::poll_event(Self) -> TransactionEvent?
+pub fn TransactionAgent::poll_timeout(Self) -> @transport.Instant?
+pub fn TransactionAgent::process(Self, Message) -> Unit raise StunError
+pub fn TransactionAgent::start(Self, TransactionId, @transport.Instant) -> Unit raise StunError
+pub fn TransactionAgent::stop(Self, TransactionId) -> Unit raise StunError
+pub fn TransactionAgent::transaction_count(Self) -> Int
+
+pub struct TransactionEvent {
+  transaction_id : TransactionId
+  event : TransactionEventKind
+} derive(Eq, @debug.Debug)
+pub fn TransactionEvent::event(Self) -> TransactionEventKind
+pub fn TransactionEvent::transaction_id(Self) -> TransactionId
+
+pub(all) enum TransactionEventKind {
+  Received(Message)
+  TimedOut
+  Stopped
+  Closed
+} derive(Eq, @debug.Debug)
+
+pub struct TransactionId(Bytes) derive(Eq, Hash, @debug.Debug)
+pub fn TransactionId::as_bytes(Self) -> Bytes
+pub fn TransactionId::from_bytes(Bytes) -> Self raise StunError
+pub fn TransactionId::random() -> Self raise StunError
+
+// Type aliases
+
+// Traits
+

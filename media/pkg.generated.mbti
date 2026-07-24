@@ -1,0 +1,426 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/media"
+
+import {
+  "moonbit-community/rtc/rtp",
+  "moonbit-community/rtc/transport",
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+pub(all) suberror MediaError {
+  InvalidCodec(String)
+  InvalidTrack(String)
+  InvalidMedia(String)
+  EndOfStream
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub struct AudioBuffer {
+  samples : Array[Int16]
+  channels : Int
+  layout : AudioLayout
+} derive(Eq, @debug.Debug)
+pub fn AudioBuffer::channels(Self) -> Int
+pub fn AudioBuffer::frames(Self) -> Int
+pub fn AudioBuffer::from_pcm_s16(Bytes, channels~ : Int, little_endian? : Bool, layout? : AudioLayout) -> Self raise MediaError
+pub fn AudioBuffer::layout(Self) -> AudioLayout
+pub fn AudioBuffer::new(samples~ : Array[Int16], channels~ : Int, layout? : AudioLayout) -> Self raise MediaError
+pub fn AudioBuffer::sample(Self, Int, Int) -> Int16 raise MediaError
+pub fn AudioBuffer::sample_count(Self) -> Int
+pub fn AudioBuffer::samples(Self) -> Array[Int16]
+pub fn AudioBuffer::slice_frames(Self, Int, Int) -> Self raise MediaError
+pub fn AudioBuffer::to_pcm_s16(Self, little_endian? : Bool) -> Bytes
+pub fn AudioBuffer::with_layout(Self, AudioLayout) -> Self
+
+pub(all) enum AudioLayout {
+  Interleaved
+  Deinterleaved
+} derive(Eq, @debug.Debug)
+
+pub(all) struct CodecCapability {
+  mime_type : String
+  clock_rate : UInt
+  channels : UInt16
+  fmtp : String
+  rtcp_feedback : Array[String]
+} derive(Eq, @debug.Debug)
+pub fn CodecCapability::channels(Self) -> UInt16
+pub fn CodecCapability::clock_rate(Self) -> UInt
+pub fn CodecCapability::encoding_name(Self) -> String
+pub fn CodecCapability::fmtp(Self) -> String
+pub fn CodecCapability::mime_type(Self) -> String
+pub fn CodecCapability::new(mime_type~ : String, clock_rate~ : UInt, channels? : UInt16, fmtp? : String, rtcp_feedback? : Array[String]) -> Self raise MediaError
+pub fn CodecCapability::rtcp_feedback(Self) -> Array[String]
+
+pub(all) struct EncodedFrameContext {
+  direction : TransformDirection
+  track_id : String?
+  codec : CodecCapability
+  ssrc : UInt
+  sequence_number : UInt16
+  timestamp : UInt
+  marker : Bool
+} derive(Eq, @debug.Debug)
+pub fn EncodedFrameContext::new(direction~ : TransformDirection, track_id? : String, codec~ : CodecCapability, ssrc~ : UInt, sequence_number~ : UInt16, timestamp~ : UInt, marker~ : Bool) -> Self
+
+pub struct EncodedTransform {
+  name : String
+  handler : (EncodedFrameContext, Bytes) -> Bytes raise MediaError
+}
+pub fn EncodedTransform::name(Self) -> String
+pub fn EncodedTransform::new(name~ : String, handler~ : (EncodedFrameContext, Bytes) -> Bytes raise MediaError) -> Self raise MediaError
+
+pub struct EncodedTransformPipeline {
+  stages : Array[EncodedTransform]
+}
+pub fn EncodedTransformPipeline::add(Self, EncodedTransform) -> Unit raise MediaError
+pub fn EncodedTransformPipeline::length(Self) -> Int
+pub fn EncodedTransformPipeline::new() -> Self
+pub fn EncodedTransformPipeline::process(Self, EncodedFrameContext, Bytes) -> Bytes raise MediaError
+
+pub(all) enum H26xCodec {
+  Avc
+  Hevc
+} derive(Eq, @debug.Debug)
+
+pub(all) struct H26xNal {
+  codec : H26xCodec
+  unit_type : Byte
+  forbidden_zero_bit : Bool
+  layer_id : Byte
+  temporal_id_plus_one : Byte
+  data : Bytes
+} derive(Eq, @debug.Debug)
+pub fn H26xNal::codec(Self) -> H26xCodec
+pub fn H26xNal::data(Self) -> Bytes
+pub fn H26xNal::forbidden_zero_bit(Self) -> Bool
+pub fn H26xNal::layer_id(Self) -> Byte
+pub fn H26xNal::temporal_id_plus_one(Self) -> Byte
+pub fn H26xNal::unit_type(Self) -> Byte
+
+pub struct H26xReader {
+  codec : H26xCodec
+  data : Bytes
+  ranges : Array[(Int, Int)]
+  mut index : Int
+}
+pub fn H26xReader::new(codec~ : H26xCodec, data~ : Bytes) -> Self raise MediaError
+pub fn H26xReader::next_nal(Self) -> H26xNal? raise MediaError
+pub fn H26xReader::reset(Self) -> Unit
+
+pub struct H26xWriter {
+  codec : H26xCodec
+  output : Array[Byte]
+  pending_payloads : Array[Bytes]
+  mut pending_timestamp : UInt?
+  mut closed : Bool
+  mut dropped_incomplete_samples : UInt
+}
+pub fn H26xWriter::bytes(Self) -> Bytes
+pub fn H26xWriter::close(Self) -> Unit
+pub fn H26xWriter::dropped_incomplete_samples(Self) -> UInt
+pub fn H26xWriter::new(H26xCodec) -> Self
+pub fn H26xWriter::write_payloads(Self, Array[Bytes]) -> Unit raise MediaError
+pub fn H26xWriter::write_rtp(Self, @rtp.Packet) -> Unit raise MediaError
+pub fn H26xWriter::write_sample(Self, Sample) -> Unit raise MediaError
+
+pub(all) enum IvfCodec {
+  Vp8
+  Vp9
+  Av1
+} derive(Eq, @debug.Debug)
+pub fn IvfCodec::fourcc(Self) -> Bytes
+pub fn IvfCodec::from_fourcc(Bytes) -> Self raise MediaError
+
+pub(all) struct IvfFrame {
+  data : Bytes
+  timestamp : UInt64
+} derive(Eq, @debug.Debug)
+pub fn IvfFrame::data(Self) -> Bytes
+pub fn IvfFrame::new(data~ : Bytes, timestamp~ : UInt64) -> Self
+pub fn IvfFrame::timestamp(Self) -> UInt64
+
+pub(all) struct IvfHeader {
+  codec : IvfCodec
+  width : UInt16
+  height : UInt16
+  timebase_denominator : UInt
+  timebase_numerator : UInt
+  num_frames : UInt
+} derive(Eq, @debug.Debug)
+pub fn IvfHeader::codec(Self) -> IvfCodec
+pub fn IvfHeader::height(Self) -> UInt16
+pub fn IvfHeader::new(codec~ : IvfCodec, width~ : UInt16, height~ : UInt16, timebase_denominator~ : UInt, timebase_numerator~ : UInt, num_frames? : UInt) -> Self raise MediaError
+pub fn IvfHeader::num_frames(Self) -> UInt
+pub fn IvfHeader::timebase_denominator(Self) -> UInt
+pub fn IvfHeader::timebase_numerator(Self) -> UInt
+pub fn IvfHeader::width(Self) -> UInt16
+
+pub struct IvfReader {
+  data : Bytes
+  header : IvfHeader
+  mut offset : Int
+  mut frame_index : UInt
+}
+pub fn IvfReader::bytes_read(Self) -> Int
+pub fn IvfReader::header(Self) -> IvfHeader
+pub fn IvfReader::new(Bytes) -> Self raise MediaError
+pub fn IvfReader::next_frame(Self) -> IvfFrame? raise MediaError
+
+pub struct IvfWriter {
+  header : IvfHeader
+  output : Array[Byte]
+  mut frame_count : UInt
+  mut closed : Bool
+}
+pub fn IvfWriter::bytes(Self) -> Bytes
+pub fn IvfWriter::close(Self) -> Unit
+pub fn IvfWriter::frame_count(Self) -> UInt
+pub fn IvfWriter::new(IvfHeader) -> Self
+pub fn IvfWriter::write_frame(Self, Bytes, UInt64) -> Unit raise MediaError
+
+pub(all) enum MediaKind {
+  Audio
+  Video
+} derive(Eq, @debug.Debug)
+
+pub struct MediaTrack {
+  id : String
+  stream_id : String
+  kind : MediaKind
+  codec : CodecCapability
+} derive(@debug.Debug)
+pub fn MediaTrack::codec(Self) -> CodecCapability
+pub fn MediaTrack::id(Self) -> String
+pub fn MediaTrack::kind(Self) -> MediaKind
+pub fn MediaTrack::new(id~ : String, stream_id~ : String, kind~ : MediaKind, codec~ : CodecCapability) -> Self
+pub fn MediaTrack::stream_id(Self) -> String
+
+pub(all) struct OggHeader {
+  version : Byte
+  channels : Byte
+  pre_skip : UInt16
+  sample_rate : UInt
+  output_gain : UInt16
+  channel_mapping_family : Byte
+  stream_count : Byte
+  coupled_count : Byte
+  channel_mapping : Bytes
+} derive(Eq, @debug.Debug)
+pub fn OggHeader::channel_mapping(Self) -> Bytes
+pub fn OggHeader::channel_mapping_family(Self) -> Byte
+pub fn OggHeader::channels(Self) -> Byte
+pub fn OggHeader::coupled_count(Self) -> Byte
+pub fn OggHeader::output_gain(Self) -> UInt16
+pub fn OggHeader::pre_skip(Self) -> UInt16
+pub fn OggHeader::sample_rate(Self) -> UInt
+pub fn OggHeader::stream_count(Self) -> Byte
+pub fn OggHeader::version(Self) -> Byte
+
+pub(all) struct OggPacket {
+  data : Bytes
+  granule_position : UInt64
+  end_of_stream : Bool
+} derive(Eq, @debug.Debug)
+pub fn OggPacket::data(Self) -> Bytes
+pub fn OggPacket::granule_position(Self) -> UInt64
+pub fn OggPacket::is_end_of_stream(Self) -> Bool
+
+pub(all) struct OggPage {
+  header : OggPageHeader
+  payload : Bytes
+} derive(Eq, @debug.Debug)
+pub fn OggPage::header(Self) -> OggPageHeader
+pub fn OggPage::payload(Self) -> Bytes
+
+pub(all) struct OggPageHeader {
+  header_type : Byte
+  granule_position : UInt64
+  serial : UInt
+  sequence : UInt
+  checksum : UInt
+  segments : Bytes
+} derive(Eq, @debug.Debug)
+pub fn OggPageHeader::checksum(Self) -> UInt
+pub fn OggPageHeader::granule_position(Self) -> UInt64
+pub fn OggPageHeader::header_type(Self) -> Byte
+pub fn OggPageHeader::is_beginning_of_stream(Self) -> Bool
+pub fn OggPageHeader::is_end_of_stream(Self) -> Bool
+pub fn OggPageHeader::segments(Self) -> Bytes
+pub fn OggPageHeader::sequence(Self) -> UInt
+pub fn OggPageHeader::serial(Self) -> UInt
+
+pub struct OggReader {
+  data : Bytes
+  header : OggHeader
+  tags : OpusTags
+  verify_checksum : Bool
+  mut offset : Int
+  pending : Array[Byte]
+  queued : Array[OggPacket]
+  serial : UInt
+  mut expected_sequence : UInt
+  mut reached_eos : Bool
+}
+pub fn OggReader::bytes_read(Self) -> Int
+pub fn OggReader::header(Self) -> OggHeader
+pub fn OggReader::new(Bytes, verify_checksum? : Bool) -> Self raise MediaError
+pub fn OggReader::next_packet(Self) -> OggPacket? raise MediaError
+pub fn OggReader::tags(Self) -> OpusTags
+
+pub struct OggWriter {
+  sample_rate : UInt
+  channels : Byte
+  pre_skip : UInt16
+  serial : UInt
+  output : Array[Byte]
+  mut sequence : UInt
+  mut last_granule_position : UInt64
+  mut last_rtp_timestamp : UInt?
+  mut closed : Bool
+}
+pub fn OggWriter::bytes(Self) -> Bytes
+pub fn OggWriter::close(Self) -> Unit raise MediaError
+pub fn OggWriter::new(sample_rate~ : UInt, channels~ : Byte, pre_skip? : UInt16, serial? : UInt, tags? : OpusTags) -> Self raise MediaError
+pub fn OggWriter::write_opus_packet(Self, Bytes, UInt64) -> Unit raise MediaError
+pub fn OggWriter::write_rtp(Self, @rtp.Packet) -> Unit raise MediaError
+
+pub(all) struct OpusTags {
+  vendor : String
+  comments : Array[UserComment]
+} derive(Eq, @debug.Debug)
+pub fn OpusTags::comments(Self) -> Array[UserComment]
+pub fn OpusTags::new(vendor~ : String, comments? : Array[UserComment]) -> Self
+pub fn OpusTags::vendor(Self) -> String
+
+pub(all) struct RtpEncodingParameters {
+  ssrc : UInt?
+  payload_type : Byte?
+  rtx_ssrc : UInt?
+  rtx_payload_type : Byte?
+  rid : String?
+  active : Bool
+  max_bitrate : UInt64?
+  scale_resolution_down_by : Double?
+  scalability_mode : String?
+} derive(Eq, @debug.Debug)
+pub fn RtpEncodingParameters::new(ssrc? : UInt, payload_type? : Byte, rtx_ssrc? : UInt, rtx_payload_type? : Byte, rid? : String, active? : Bool, max_bitrate? : UInt64, scale_resolution_down_by? : Double, scalability_mode? : String) -> Self raise MediaError
+
+pub struct RtpParameters {
+  codec : CodecCapability
+  encodings : Array[RtpEncodingParameters]
+} derive(Eq, @debug.Debug)
+pub fn RtpParameters::codec(Self) -> CodecCapability
+pub fn RtpParameters::encodings(Self) -> Array[RtpEncodingParameters]
+pub fn RtpParameters::new(codec~ : CodecCapability, encodings? : Array[RtpEncodingParameters]) -> Self raise MediaError
+
+pub struct RtpReceiver {
+  kind : MediaKind
+  mut track : MediaTrack?
+  mut parameters : RtpParameters?
+} derive(@debug.Debug)
+pub fn RtpReceiver::kind(Self) -> MediaKind
+pub fn RtpReceiver::new(kind~ : MediaKind) -> Self
+pub fn RtpReceiver::parameters(Self) -> RtpParameters?
+pub fn RtpReceiver::set_parameters(Self, RtpParameters?) -> Unit
+pub fn RtpReceiver::set_track(Self, MediaTrack?) -> Unit raise MediaError
+pub fn RtpReceiver::track(Self) -> MediaTrack?
+
+pub struct RtpSender {
+  kind : MediaKind
+  mut track : MediaTrack?
+  mut parameters : RtpParameters?
+} derive(@debug.Debug)
+pub fn RtpSender::kind(Self) -> MediaKind
+pub fn RtpSender::new(kind~ : MediaKind) -> Self
+pub fn RtpSender::parameters(Self) -> RtpParameters?
+pub fn RtpSender::replace_track(Self, MediaTrack?) -> Unit raise MediaError
+pub fn RtpSender::set_parameters(Self, RtpParameters?) -> Unit
+pub fn RtpSender::track(Self) -> MediaTrack?
+
+pub struct RtpTransceiver {
+  mut mid : String?
+  kind : MediaKind
+  mut direction : TransceiverDirection
+  mut current_direction : TransceiverDirection?
+  sender : RtpSender
+  receiver : RtpReceiver
+} derive(@debug.Debug)
+pub fn RtpTransceiver::assign_mid(Self, String) -> Unit raise MediaError
+pub fn RtpTransceiver::current_direction(Self) -> TransceiverDirection?
+pub fn RtpTransceiver::direction(Self) -> TransceiverDirection
+pub fn RtpTransceiver::kind(Self) -> MediaKind
+pub fn RtpTransceiver::mid(Self) -> String?
+pub fn RtpTransceiver::new(kind~ : MediaKind, direction? : TransceiverDirection) -> Self
+pub fn RtpTransceiver::receiver(Self) -> RtpReceiver
+pub fn RtpTransceiver::sender(Self) -> RtpSender
+pub fn RtpTransceiver::set_current_direction(Self, TransceiverDirection) -> Unit
+pub fn RtpTransceiver::set_direction(Self, TransceiverDirection) -> Unit raise MediaError
+pub fn RtpTransceiver::stop(Self) -> Unit
+
+pub(all) struct Sample {
+  data : Bytes
+  timestamp : @transport.WallTime
+  duration : @transport.Duration
+  packet_timestamp : UInt
+  prev_dropped_packets : UInt16
+  prev_padding_packets : UInt16
+} derive(Eq, @debug.Debug)
+pub fn Sample::data(Self) -> Bytes
+pub fn Sample::duration(Self) -> @transport.Duration
+pub fn Sample::packet_timestamp(Self) -> UInt
+pub fn Sample::prev_dropped_packets(Self) -> UInt16
+pub fn Sample::prev_padding_packets(Self) -> UInt16
+pub fn Sample::timestamp(Self) -> @transport.WallTime
+
+pub struct SampleBuilder {
+  max_late : Int
+  codec : @rtp.PayloadCodec
+  sample_rate : UInt
+  mut max_late_timestamp : UInt
+  packets : Array[@rtp.Packet]
+  ready : Array[Sample]
+  mut next_sequence : UInt16?
+  mut consumed_any : Bool
+  mut last_sample_timestamp : UInt?
+  mut dropped_packets : UInt16
+  mut padding_packets : UInt16
+  mut generated_at : @transport.WallTime
+}
+pub fn SampleBuilder::flush(Self) -> Unit raise MediaError
+pub fn SampleBuilder::new(max_late~ : UInt16, codec~ : @rtp.PayloadCodec, sample_rate~ : UInt, generated_at? : @transport.WallTime) -> Self raise MediaError
+pub fn SampleBuilder::pop(Self) -> Sample? raise MediaError
+pub fn SampleBuilder::pop_with_timestamp(Self) -> (Sample, UInt)? raise MediaError
+pub fn SampleBuilder::push(Self, @rtp.Packet) -> Unit raise MediaError
+pub fn SampleBuilder::push_at(Self, @rtp.Packet, @transport.WallTime) -> Unit raise MediaError
+pub fn SampleBuilder::set_generated_at(Self, @transport.WallTime) -> Unit
+pub fn SampleBuilder::with_max_time_delay(Self, @transport.Duration) -> Self
+
+pub(all) enum TransceiverDirection {
+  SendRecv
+  SendOnly
+  RecvOnly
+  Inactive
+  Stopped
+} derive(Eq, @debug.Debug)
+
+pub(all) enum TransformDirection {
+  TransformInbound
+  TransformOutbound
+} derive(Eq, @debug.Debug)
+
+pub(all) struct UserComment {
+  key : String
+  value : String
+} derive(Eq, @debug.Debug)
+pub fn UserComment::key(Self) -> String
+pub fn UserComment::new(key~ : String, value~ : String) -> Self
+pub fn UserComment::value(Self) -> String
+
+// Type aliases
+
+// Traits
+

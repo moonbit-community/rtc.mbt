@@ -1,0 +1,7 @@
+import {
+  "moonbit-community/rtc/internal/codec",
+  "moonbit-community/rtc/sctp",
+  "moonbit-community/rtc/transport",
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/queue",
+}

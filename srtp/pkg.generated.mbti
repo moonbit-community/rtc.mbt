@@ -1,0 +1,72 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/srtp"
+
+import {
+  "moonbit-community/rtc/internal/crypto",
+  "moonbit-community/rtc/rtcp",
+  "moonbit-community/rtc/rtp",
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+pub(all) suberror SrtpError {
+  InvalidPacket(String)
+  AuthenticationFailed
+  ReplayRejected
+  KeyExpired
+  CryptoUnavailable(String)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub struct Context {
+  provider : @crypto.Provider
+  profile : ProtectionProfile
+  rtp_material : SessionMaterial
+  rtcp_material : SessionMaterial
+  send_rtp_states : Map[UInt, RtpIndexState]
+  receive_rtp_states : Map[UInt, RtpReceiveState]
+  send_rtcp_indices : Map[UInt, UInt]
+  receive_rtcp_states : Map[UInt, SrtcpReceiveState]
+  rtp_replay_window : Int
+  rtcp_replay_window : Int
+  mut closed : Bool
+}
+pub fn Context::close(Self) -> Unit
+pub fn Context::decrypt_rtcp(Self, Bytes) -> Bytes raise SrtpError
+pub fn Context::decrypt_rtp(Self, Bytes) -> Bytes raise SrtpError
+pub fn Context::encrypt_rtcp(Self, Bytes) -> Bytes raise SrtpError
+pub fn Context::encrypt_rtp(Self, Bytes) -> Bytes raise SrtpError
+pub fn Context::new(profile~ : ProtectionProfile, master_key~ : Bytes, master_salt~ : Bytes, rtp_replay_window? : Int, rtcp_replay_window? : Int) -> Self raise SrtpError
+pub fn Context::profile(Self) -> ProtectionProfile
+pub fn Context::protect_rtcp(Self, Array[@rtcp.Packet]) -> Bytes raise SrtpError
+pub fn Context::protect_rtp(Self, @rtp.Packet) -> Bytes raise SrtpError
+pub fn Context::unprotect_rtcp(Self, Bytes) -> Array[@rtcp.Packet] raise SrtpError
+pub fn Context::unprotect_rtp(Self, Bytes) -> @rtp.Packet raise SrtpError
+
+pub(all) enum ProtectionProfile {
+  Aes128CmHmacSha1_80
+  Aes128CmHmacSha1_32
+  AeadAes128Gcm
+  AeadAes256Gcm
+} derive(Eq, @debug.Debug)
+pub fn ProtectionProfile::code(Self) -> UInt16
+pub fn ProtectionProfile::from_code(UInt16) -> Self raise SrtpError
+pub fn ProtectionProfile::key_length(Self) -> Int
+pub fn ProtectionProfile::rtcp_auth_tag_length(Self) -> Int
+pub fn ProtectionProfile::rtp_auth_tag_length(Self) -> Int
+pub fn ProtectionProfile::salt_length(Self) -> Int
+
+type RtpIndexState
+
+type RtpReceiveState
+
+type SessionMaterial
+
+type SrtcpReceiveState
+
+// Type aliases
+
+// Traits
+

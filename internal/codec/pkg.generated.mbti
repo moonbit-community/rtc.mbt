@@ -1,0 +1,48 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/internal/codec"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+pub(all) suberror CodecError {
+  InvalidLength(Int)
+  Truncated(needed~ : Int, remaining~ : Int)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub struct Reader {
+  data : Bytes
+  mut offset : Int
+}
+pub fn Reader::new(Bytes) -> Self
+pub fn Reader::position(Self) -> Int
+pub fn Reader::read_bytes(Self, Int) -> Bytes raise CodecError
+pub fn Reader::read_u16_be(Self) -> UInt16 raise CodecError
+pub fn Reader::read_u24_be(Self) -> UInt raise CodecError
+pub fn Reader::read_u32_be(Self) -> UInt raise CodecError
+pub fn Reader::read_u64_be(Self) -> UInt64 raise CodecError
+pub fn Reader::read_u8(Self) -> Byte raise CodecError
+pub fn Reader::remaining(Self) -> Int
+pub fn Reader::skip(Self, Int) -> Unit raise CodecError
+
+pub struct Writer {
+  bytes : Array[Byte]
+}
+pub fn Writer::finish(Self) -> Bytes
+pub fn Writer::length(Self) -> Int
+pub fn Writer::new(capacity? : Int) -> Self raise CodecError
+pub fn Writer::write_bytes(Self, Bytes) -> Unit
+pub fn Writer::write_u16_be(Self, UInt16) -> Unit
+pub fn Writer::write_u24_be(Self, UInt) -> Unit
+pub fn Writer::write_u32_be(Self, UInt) -> Unit
+pub fn Writer::write_u64_be(Self, UInt64) -> Unit
+pub fn Writer::write_u8(Self, Byte) -> Unit
+
+// Type aliases
+
+// Traits
+

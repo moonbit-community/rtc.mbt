@@ -1,0 +1,153 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/rtc/rtp"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn depacketize_payload(PayloadCodec, Array[Bytes]) -> Bytes raise RtpError
+
+pub fn packetize_payload(PayloadCodec, Bytes, Int) -> Array[Bytes] raise RtpError
+
+// Errors
+pub(all) suberror RtpError {
+  InvalidPacket(String)
+  InvalidExtension(String)
+  PayloadTooLarge(Int)
+} derive(Eq, @debug.Debug)
+
+// Types and methods
+pub(all) struct AbsSendTimeExtension {
+  timestamp : UInt64
+} derive(Eq, @debug.Debug)
+pub fn AbsSendTimeExtension::estimate(Self, UInt64) -> UInt64
+pub fn AbsSendTimeExtension::from_timestamp(UInt64) -> Self raise RtpError
+pub fn AbsSendTimeExtension::marshal(Self) -> Bytes raise RtpError
+pub fn AbsSendTimeExtension::new(UInt64) -> Self
+pub fn AbsSendTimeExtension::timestamp(Self) -> UInt64
+pub fn AbsSendTimeExtension::unmarshal(Bytes) -> Self raise RtpError
+
+pub(all) struct AudioLevelExtension {
+  level : Byte
+  voice : Bool
+} derive(Eq, @debug.Debug)
+pub fn AudioLevelExtension::level(Self) -> Byte
+pub fn AudioLevelExtension::marshal(Self) -> Bytes raise RtpError
+pub fn AudioLevelExtension::new(level~ : Byte, voice? : Bool) -> Self raise RtpError
+pub fn AudioLevelExtension::unmarshal(Bytes) -> Self raise RtpError
+pub fn AudioLevelExtension::voice(Self) -> Bool
+
+pub(all) enum CameraDirection {
+  Front
+  Back
+} derive(Eq, @debug.Debug)
+
+pub(all) struct HeaderExtension {
+  id : Byte
+  payload : Bytes
+} derive(Eq, @debug.Debug)
+pub fn HeaderExtension::id(Self) -> Byte
+pub fn HeaderExtension::new(id~ : Byte, payload~ : Bytes) -> Self raise RtpError
+pub fn HeaderExtension::payload(Self) -> Bytes
+
+pub(all) struct Packet {
+  marker : Bool
+  payload_type : Byte
+  sequence_number : UInt16
+  timestamp : UInt
+  ssrc : UInt
+  csrc : Array[UInt]
+  extensions : Array[HeaderExtension]
+  payload : Bytes
+} derive(Eq, @debug.Debug)
+pub fn Packet::csrc(Self) -> Array[UInt]
+pub fn Packet::decode(Bytes) -> Self raise RtpError
+pub fn Packet::encode(Self) -> Bytes raise RtpError
+pub fn Packet::extensions(Self) -> Array[HeaderExtension]
+pub fn Packet::header_size(Self) -> Int raise RtpError
+pub fn Packet::marker(Self) -> Bool
+pub fn Packet::marshal(Self) -> Bytes raise RtpError
+pub fn Packet::marshal_size(Self) -> Int raise RtpError
+pub fn Packet::new(marker? : Bool, payload_type~ : Byte, sequence_number~ : UInt16, timestamp~ : UInt, ssrc~ : UInt, csrc? : Array[UInt], extensions? : Array[HeaderExtension], payload~ : Bytes) -> Self raise RtpError
+pub fn Packet::payload(Self) -> Bytes
+pub fn Packet::payload_type(Self) -> Byte
+pub fn Packet::sequence_number(Self) -> UInt16
+pub fn Packet::ssrc(Self) -> UInt
+pub fn Packet::timestamp(Self) -> UInt
+pub fn Packet::unmarshal(Bytes) -> Self raise RtpError
+
+pub struct Packetizer {
+  mtu : Int
+  payload_type : Byte
+  ssrc : UInt
+  clock_rate : UInt
+  codec : PayloadCodec
+  include_vp8_picture_id : Bool
+  mut sequence_number : UInt16
+  mut timestamp : UInt
+  mut picture_id : UInt16
+  mut h264_sps : Bytes?
+  mut h264_pps : Bytes?
+}
+pub fn Packetizer::clock_rate(Self) -> UInt
+pub fn Packetizer::new(mtu~ : Int, payload_type~ : Byte, ssrc~ : UInt, clock_rate~ : UInt, codec~ : PayloadCodec, sequence_number? : UInt16, timestamp? : UInt, picture_id? : UInt16, include_vp8_picture_id? : Bool) -> Self raise RtpError
+pub fn Packetizer::packetize(Self, Bytes, UInt, extensions? : Array[HeaderExtension]) -> Array[Packet] raise RtpError
+pub fn Packetizer::sequence_number(Self) -> UInt16
+pub fn Packetizer::skip_samples(Self, UInt) -> Unit
+pub fn Packetizer::timestamp(Self) -> UInt
+
+pub(all) enum PayloadCodec {
+  Opus
+  G711
+  G722
+  Vp8
+  Vp9
+  H264
+  H265
+  Av1
+} derive(Eq, @debug.Debug)
+pub fn PayloadCodec::is_partition_head(Self, Bytes) -> Bool
+pub fn PayloadCodec::is_partition_tail(Self, Bool, Bytes) -> Bool
+
+pub(all) struct PlayoutDelayExtension {
+  min_delay : UInt16
+  max_delay : UInt16
+} derive(Eq, @debug.Debug)
+pub fn PlayoutDelayExtension::marshal(Self) -> Bytes raise RtpError
+pub fn PlayoutDelayExtension::max_delay(Self) -> UInt16
+pub fn PlayoutDelayExtension::min_delay(Self) -> UInt16
+pub fn PlayoutDelayExtension::new(min_delay~ : UInt16, max_delay~ : UInt16) -> Self raise RtpError
+pub fn PlayoutDelayExtension::unmarshal(Bytes) -> Self raise RtpError
+
+pub(all) struct TransportCcExtension {
+  transport_sequence : UInt16
+} derive(Eq, @debug.Debug)
+pub fn TransportCcExtension::marshal(Self) -> Bytes
+pub fn TransportCcExtension::new(transport_sequence~ : UInt16) -> Self
+pub fn TransportCcExtension::transport_sequence(Self) -> UInt16
+pub fn TransportCcExtension::unmarshal(Bytes) -> Self raise RtpError
+
+pub(all) struct VideoOrientationExtension {
+  direction : CameraDirection
+  flip : Bool
+  rotation : VideoRotation
+} derive(Eq, @debug.Debug)
+pub fn VideoOrientationExtension::direction(Self) -> CameraDirection
+pub fn VideoOrientationExtension::flip(Self) -> Bool
+pub fn VideoOrientationExtension::marshal(Self) -> Bytes
+pub fn VideoOrientationExtension::new(direction? : CameraDirection, flip? : Bool, rotation? : VideoRotation) -> Self
+pub fn VideoOrientationExtension::rotation(Self) -> VideoRotation
+pub fn VideoOrientationExtension::unmarshal(Bytes) -> Self raise RtpError
+
+pub(all) enum VideoRotation {
+  Degree0
+  Degree90
+  Degree180
+  Degree270
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
+
