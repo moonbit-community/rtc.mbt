@@ -96,8 +96,10 @@ moon info
 ```
 
 The ASan entry point is `scripts/run-asan.mjs`. The performance gate is
-`scripts/bench-gate.mjs`; it requires a clean committed baseline so its
-manifest can contain a real commit SHA. See
+`scripts/bench-gate.mjs`. Its committed
+[`benchmarks/baseline.json`](benchmarks/baseline.json) binds the fixed
+workloads and 20 raw samples to clean commit
+`29f4ff26dcb507715a0bfdacd58a0a3b48f3c776`. See
 [`benchmarks/README.md`](benchmarks/README.md).
 
 The generated per-item upstream inventory is
@@ -105,6 +107,5 @@ The generated per-item upstream inventory is
 are reviewed through every `pkg.generated.mbti`; DTLS record ciphers, PRF/key
 schedule helpers, crypto providers, parsers, and replay state remain internal.
 
-The project is dual-licensed under MIT or Apache-2.0. It remains pre-1.0 until
-the first clean release commit can provide the benchmark baseline's truthful
-commit identity.
+The project is dual-licensed under MIT or Apache-2.0. It remains pre-1.0 while
+the reviewed public API is intentionally experimental.

@@ -108,8 +108,6 @@ The repository contains:
   stubs while disabling the bundled allocator;
 - seven native release benchmarks and a self-testing interleaved regression
   gate;
+- a five-warmup, twenty-sample raw benchmark baseline tied to clean commit
+  `29f4ff26dcb507715a0bfdacd58a0a3b48f3c776`;
 - generated `.mbti` files for public-interface review.
-
-`benchmarks/baseline.json` must be recorded from the first clean release
-commit; this repository currently has no commit from which a truthful
-baseline SHA can be recorded.

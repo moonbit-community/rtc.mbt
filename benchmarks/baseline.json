@@ -1,0 +1,558 @@
+{
+  "aggregate": {
+    "bench DTLS application-data crypto": {
+      "kind": "latency",
+      "maximum": 1.271e-05,
+      "median": 1.0685e-05,
+      "minimum": 9.039999999999998e-06
+    },
+    "bench RTP and RTCP codecs": {
+      "kind": "latency",
+      "maximum": 3.97e-06,
+      "median": 3.3199999999999996e-06,
+      "minimum": 2.8e-06
+    },
+    "bench SCTP reliable throughput": {
+      "kind": "throughput",
+      "maximum": 32304749.886625785,
+      "median": 27090904.42506937,
+      "minimum": 23236090.822708514
+    },
+    "bench SDP parse and marshal": {
+      "kind": "latency",
+      "maximum": 1.049e-05,
+      "median": 8.22e-06,
+      "minimum": 6.9400000000000005e-06
+    },
+    "bench SRTP protect and unprotect": {
+      "kind": "latency",
+      "maximum": 7.07e-06,
+      "median": 5.9849999999999994e-06,
+      "minimum": 4.96e-06
+    },
+    "bench STUN decode and encode": {
+      "kind": "latency",
+      "maximum": 1.84e-06,
+      "median": 1.485e-06,
+      "minimum": 1.2299999999999999e-06
+    },
+    "bench end-to-end PeerConnection DataChannel pipeline": {
+      "kind": "throughput",
+      "maximum": 20281243.810655575,
+      "median": 17136472.385351434,
+      "minimum": 14518644.548419112
+    }
+  },
+  "baseline_commit": "29f4ff26dcb507715a0bfdacd58a0a3b48f3c776",
+  "benchmark_command": [
+    "moon",
+    "bench",
+    "--release",
+    "--target",
+    "native",
+    "--no-parallelize",
+    "-p",
+    "moonbit-community/rtc",
+    "-f",
+    "rtc_bench_test.mbt"
+  ],
+  "benchmark_source": "rtc_bench_test.mbt",
+  "benchmark_source_sha256": "3b0efbfd5944a1ee0365ddbb7ee658e080b2ed28113e5040b1d01bc4709710f1",
+  "definitions": {
+    "bench DTLS application-data crypto": {
+      "kind": "latency"
+    },
+    "bench RTP and RTCP codecs": {
+      "kind": "latency"
+    },
+    "bench SCTP reliable throughput": {
+      "kind": "throughput",
+      "workload_bytes": 16384
+    },
+    "bench SDP parse and marshal": {
+      "kind": "latency"
+    },
+    "bench SRTP protect and unprotect": {
+      "kind": "latency"
+    },
+    "bench STUN decode and encode": {
+      "kind": "latency"
+    },
+    "bench end-to-end PeerConnection DataChannel pipeline": {
+      "kind": "throughput",
+      "workload_bytes": 4096
+    }
+  },
+  "dirty": false,
+  "format_version": 2,
+  "raw_results": [
+    {
+      "elapsed_seconds": 11.419613837031648,
+      "metrics": {
+        "bench DTLS application-data crypto": 9.179999999999999e-06,
+        "bench RTP and RTCP codecs": 3.5199999999999998e-06,
+        "bench SCTP reliable throughput": 25929384.208777122,
+        "bench SDP parse and marshal": 7.2199999999999995e-06,
+        "bench SRTP protect and unprotect": 6.19e-06,
+        "bench STUN decode and encode": 1.2299999999999999e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 16585010.325140705
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 9.179999999999999e-06,
+        "bench RTP and RTCP codecs": 3.5199999999999998e-06,
+        "bench SCTP reliable throughput": 0.00063187,
+        "bench SDP parse and marshal": 7.2199999999999995e-06,
+        "bench SRTP protect and unprotect": 6.19e-06,
+        "bench STUN decode and encode": 1.2299999999999999e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00024697
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   7.22 \u00b5s \u00b1 267.74 ns     6.90 \u00b5s \u2026   7.53 \u00b5s  in 10 \u00d7  14154 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.23 \u00b5s \u00b1  12.84 ns     1.22 \u00b5s \u2026   1.25 \u00b5s  in 10 \u00d7  82285 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.18 \u00b5s \u00b1 215.45 ns     8.96 \u00b5s \u2026   9.61 \u00b5s  in 10 \u00d7  10786 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   6.19 \u00b5s \u00b1 600.04 ns     5.32 \u00b5s \u2026   7.22 \u00b5s  in 10 \u00d7  17155 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.52 \u00b5s \u00b1 256.72 ns     3.18 \u00b5s \u2026   3.90 \u00b5s  in 10 \u00d7  27775 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 631.87 \u00b5s \u00b1  43.69 \u00b5s   585.75 \u00b5s \u2026 703.87 \u00b5s  in 10 \u00d7    164 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 246.97 \u00b5s \u00b1   4.65 \u00b5s   241.31 \u00b5s \u2026 256.25 \u00b5s  in 10 \u00d7    403 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.294626475078985,
+      "metrics": {
+        "bench DTLS application-data crypto": 1.208e-05,
+        "bench RTP and RTCP codecs": 3.9e-06,
+        "bench SCTP reliable throughput": 24907266.646397084,
+        "bench SDP parse and marshal": 8.64e-06,
+        "bench SRTP protect and unprotect": 6.66e-06,
+        "bench STUN decode and encode": 1.59e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 15672469.86799311
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 1.208e-05,
+        "bench RTP and RTCP codecs": 3.9e-06,
+        "bench SCTP reliable throughput": 0.0006577999999999999,
+        "bench SDP parse and marshal": 8.64e-06,
+        "bench SRTP protect and unprotect": 6.66e-06,
+        "bench STUN decode and encode": 1.59e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00026135000000000004
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   8.64 \u00b5s \u00b1 915.48 ns     7.93 \u00b5s \u2026  10.46 \u00b5s  in 10 \u00d7  11712 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.59 \u00b5s \u00b1  99.29 ns     1.52 \u00b5s \u2026   1.80 \u00b5s  in 10 \u00d7  61261 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n  12.08 \u00b5s \u00b1   1.20 \u00b5s    10.78 \u00b5s \u2026  14.01 \u00b5s  in 10 \u00d7   7931 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   6.66 \u00b5s \u00b1 464.31 ns     6.16 \u00b5s \u2026   7.56 \u00b5s  in 10 \u00d7  13417 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.90 \u00b5s \u00b1 191.61 ns     3.72 \u00b5s \u2026   4.26 \u00b5s  in 10 \u00d7  25934 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 657.80 \u00b5s \u00b1  30.47 \u00b5s   629.26 \u00b5s \u2026 700.46 \u00b5s  in 10 \u00d7    156 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 261.35 \u00b5s \u00b1  11.48 \u00b5s   245.28 \u00b5s \u2026 284.92 \u00b5s  in 10 \u00d7    374 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.372108044917695,
+      "metrics": {
+        "bench DTLS application-data crypto": 1.26e-05,
+        "bench RTP and RTCP codecs": 3.5899999999999995e-06,
+        "bench SCTP reliable throughput": 24901209.79998784,
+        "bench SDP parse and marshal": 9.06e-06,
+        "bench SRTP protect and unprotect": 6.49e-06,
+        "bench STUN decode and encode": 1.5599999999999999e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 15612731.084429197
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 1.26e-05,
+        "bench RTP and RTCP codecs": 3.5899999999999995e-06,
+        "bench SCTP reliable throughput": 0.00065796,
+        "bench SDP parse and marshal": 9.06e-06,
+        "bench SRTP protect and unprotect": 6.49e-06,
+        "bench STUN decode and encode": 1.5599999999999999e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00026235
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.06 \u00b5s \u00b1 484.82 ns     8.58 \u00b5s \u2026   9.97 \u00b5s  in 10 \u00d7  11825 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.56 \u00b5s \u00b1 179.28 ns     1.35 \u00b5s \u2026   1.82 \u00b5s  in 10 \u00d7  59600 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n  12.60 \u00b5s \u00b1   1.26 \u00b5s    11.56 \u00b5s \u2026  14.58 \u00b5s  in 10 \u00d7   8618 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   6.49 \u00b5s \u00b1 177.27 ns     6.25 \u00b5s \u2026   6.74 \u00b5s  in 10 \u00d7  15744 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.59 \u00b5s \u00b1  90.51 ns     3.49 \u00b5s \u2026   3.76 \u00b5s  in 10 \u00d7  24143 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 657.96 \u00b5s \u00b1  27.18 \u00b5s   623.43 \u00b5s \u2026 701.48 \u00b5s  in 10 \u00d7    159 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 262.35 \u00b5s \u00b1  20.82 \u00b5s   240.80 \u00b5s \u2026 295.98 \u00b5s  in 10 \u00d7    410 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.515760020003654,
+      "metrics": {
+        "bench DTLS application-data crypto": 1.21e-05,
+        "bench RTP and RTCP codecs": 3.4399999999999997e-06,
+        "bench SCTP reliable throughput": 26198890.256967876,
+        "bench SDP parse and marshal": 9.75e-06,
+        "bench SRTP protect and unprotect": 6.32e-06,
+        "bench STUN decode and encode": 1.5599999999999999e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 17079476.27387207
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 1.21e-05,
+        "bench RTP and RTCP codecs": 3.4399999999999997e-06,
+        "bench SCTP reliable throughput": 0.00062537,
+        "bench SDP parse and marshal": 9.75e-06,
+        "bench SRTP protect and unprotect": 6.32e-06,
+        "bench STUN decode and encode": 1.5599999999999999e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00023982
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.75 \u00b5s \u00b1 811.41 ns     8.94 \u00b5s \u2026  11.35 \u00b5s  in 10 \u00d7  11250 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.56 \u00b5s \u00b1  70.47 ns     1.50 \u00b5s \u2026   1.69 \u00b5s  in 10 \u00d7  65642 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n  12.10 \u00b5s \u00b1 369.34 ns    11.64 \u00b5s \u2026  12.72 \u00b5s  in 10 \u00d7   7872 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   6.32 \u00b5s \u00b1 151.24 ns     6.15 \u00b5s \u2026   6.64 \u00b5s  in 10 \u00d7  15233 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.44 \u00b5s \u00b1  47.72 ns     3.37 \u00b5s \u2026   3.49 \u00b5s  in 10 \u00d7  29142 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 625.37 \u00b5s \u00b1  34.15 \u00b5s   583.76 \u00b5s \u2026 685.12 \u00b5s  in 10 \u00d7    165 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 239.82 \u00b5s \u00b1   3.31 \u00b5s   236.07 \u00b5s \u2026 245.09 \u00b5s  in 10 \u00d7    389 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.274864809005521,
+      "metrics": {
+        "bench DTLS application-data crypto": 1.132e-05,
+        "bench RTP and RTCP codecs": 3.11e-06,
+        "bench SCTP reliable throughput": 27432857.81260465,
+        "bench SDP parse and marshal": 8.99e-06,
+        "bench SRTP protect and unprotect": 5.7999999999999995e-06,
+        "bench STUN decode and encode": 1.84e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 16981757.877280265
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 1.132e-05,
+        "bench RTP and RTCP codecs": 3.11e-06,
+        "bench SCTP reliable throughput": 0.00059724,
+        "bench SDP parse and marshal": 8.99e-06,
+        "bench SRTP protect and unprotect": 5.7999999999999995e-06,
+        "bench STUN decode and encode": 1.84e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00024119999999999998
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   8.99 \u00b5s \u00b1 844.86 ns     8.12 \u00b5s \u2026  10.78 \u00b5s  in 10 \u00d7  12028 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.84 \u00b5s \u00b1 378.29 ns     1.52 \u00b5s \u2026   2.44 \u00b5s  in 10 \u00d7  57555 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n  11.32 \u00b5s \u00b1 915.00 ns    10.08 \u00b5s \u2026  12.86 \u00b5s  in 10 \u00d7   9184 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   5.80 \u00b5s \u00b1 338.22 ns     5.39 \u00b5s \u2026   6.58 \u00b5s  in 10 \u00d7  17832 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.11 \u00b5s \u00b1 159.01 ns     2.91 \u00b5s \u2026   3.43 \u00b5s  in 10 \u00d7  31692 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 597.24 \u00b5s \u00b1  26.63 \u00b5s   558.17 \u00b5s \u2026 642.22 \u00b5s  in 10 \u00d7    153 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 241.20 \u00b5s \u00b1  28.44 \u00b5s   216.72 \u00b5s \u2026 297.99 \u00b5s  in 10 \u00d7    374 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.386212124023587,
+      "metrics": {
+        "bench DTLS application-data crypto": 9.800000000000001e-06,
+        "bench RTP and RTCP codecs": 3.4399999999999997e-06,
+        "bench SCTP reliable throughput": 26282102.696546305,
+        "bench SDP parse and marshal": 7.83e-06,
+        "bench SRTP protect and unprotect": 5.53e-06,
+        "bench STUN decode and encode": 1.3899999999999998e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 18844313.581155688
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 9.800000000000001e-06,
+        "bench RTP and RTCP codecs": 3.4399999999999997e-06,
+        "bench SCTP reliable throughput": 0.0006233899999999999,
+        "bench SDP parse and marshal": 7.83e-06,
+        "bench SRTP protect and unprotect": 5.53e-06,
+        "bench STUN decode and encode": 1.3899999999999998e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00021736
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   7.83 \u00b5s \u00b1 284.35 ns     7.41 \u00b5s \u2026   8.19 \u00b5s  in 10 \u00d7  10593 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.39 \u00b5s \u00b1  60.93 ns     1.34 \u00b5s \u2026   1.48 \u00b5s  in 10 \u00d7  73994 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.80 \u00b5s \u00b1 186.34 ns     9.49 \u00b5s \u2026  10.14 \u00b5s  in 10 \u00d7   9250 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   5.53 \u00b5s \u00b1 301.93 ns     5.11 \u00b5s \u2026   6.10 \u00b5s  in 10 \u00d7  18833 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.44 \u00b5s \u00b1 461.08 ns     2.94 \u00b5s \u2026   4.20 \u00b5s  in 10 \u00d7  33738 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 623.39 \u00b5s \u00b1  16.12 \u00b5s   600.50 \u00b5s \u2026 653.82 \u00b5s  in 10 \u00d7    161 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 217.36 \u00b5s \u00b1  22.88 \u00b5s   197.44 \u00b5s \u2026 263.04 \u00b5s  in 10 \u00d7    465 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.965809890069067,
+      "metrics": {
+        "bench DTLS application-data crypto": 9.339999999999999e-06,
+        "bench RTP and RTCP codecs": 2.83e-06,
+        "bench SCTP reliable throughput": 32229128.96372649,
+        "bench SDP parse and marshal": 7.23e-06,
+        "bench SRTP protect and unprotect": 5.219999999999999e-06,
+        "bench STUN decode and encode": 1.33e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 20135679.874152005
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 9.339999999999999e-06,
+        "bench RTP and RTCP codecs": 2.83e-06,
+        "bench SCTP reliable throughput": 0.00050836,
+        "bench SDP parse and marshal": 7.23e-06,
+        "bench SRTP protect and unprotect": 5.219999999999999e-06,
+        "bench STUN decode and encode": 1.33e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00020341999999999997
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   7.23 \u00b5s \u00b1 340.86 ns     6.87 \u00b5s \u2026   7.84 \u00b5s  in 10 \u00d7  13755 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.33 \u00b5s \u00b1 108.87 ns     1.24 \u00b5s \u2026   1.51 \u00b5s  in 10 \u00d7  79537 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.34 \u00b5s \u00b1 477.57 ns     8.99 \u00b5s \u2026  10.21 \u00b5s  in 10 \u00d7  10687 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   5.22 \u00b5s \u00b1 197.62 ns     5.02 \u00b5s \u2026   5.56 \u00b5s  in 10 \u00d7  20119 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   2.83 \u00b5s \u00b1  54.25 ns     2.78 \u00b5s \u2026   2.94 \u00b5s  in 10 \u00d7  34165 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 508.36 \u00b5s \u00b1   7.69 \u00b5s   501.13 \u00b5s \u2026 523.89 \u00b5s  in 10 \u00d7    191 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 203.42 \u00b5s \u00b1   3.37 \u00b5s   198.50 \u00b5s \u2026 208.14 \u00b5s  in 10 \u00d7    457 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 10.767040089005604,
+      "metrics": {
+        "bench DTLS application-data crypto": 9.15e-06,
+        "bench RTP and RTCP codecs": 2.87e-06,
+        "bench SCTP reliable throughput": 31980012.492192376,
+        "bench SDP parse and marshal": 7.33e-06,
+        "bench SRTP protect and unprotect": 4.96e-06,
+        "bench STUN decode and encode": 1.2499999999999999e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 20122819.94595922
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 9.15e-06,
+        "bench RTP and RTCP codecs": 2.87e-06,
+        "bench SCTP reliable throughput": 0.00051232,
+        "bench SDP parse and marshal": 7.33e-06,
+        "bench SRTP protect and unprotect": 4.96e-06,
+        "bench STUN decode and encode": 1.2499999999999999e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00020355000000000001
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   7.33 \u00b5s \u00b1 198.11 ns     7.11 \u00b5s \u2026   7.75 \u00b5s  in 10 \u00d7  14177 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.25 \u00b5s \u00b1  50.79 ns     1.22 \u00b5s \u2026   1.35 \u00b5s  in 10 \u00d7  81897 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.15 \u00b5s \u00b1 282.71 ns     8.87 \u00b5s \u2026   9.83 \u00b5s  in 10 \u00d7  10840 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   4.96 \u00b5s \u00b1  64.07 ns     4.88 \u00b5s \u2026   5.05 \u00b5s  in 10 \u00d7  20401 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   2.87 \u00b5s \u00b1  50.59 ns     2.80 \u00b5s \u2026   2.93 \u00b5s  in 10 \u00d7  34496 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 512.32 \u00b5s \u00b1   4.82 \u00b5s   507.08 \u00b5s \u2026 520.18 \u00b5s  in 10 \u00d7    196 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 203.55 \u00b5s \u00b1   2.38 \u00b5s   199.73 \u00b5s \u2026 207.22 \u00b5s  in 10 \u00d7    485 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.185996542917565,
+      "metrics": {
+        "bench DTLS application-data crypto": 9.09e-06,
+        "bench RTP and RTCP codecs": 2.8e-06,
+        "bench SCTP reliable throughput": 32304749.886625785,
+        "bench SDP parse and marshal": 7.099999999999999e-06,
+        "bench SRTP protect and unprotect": 5.059999999999999e-06,
+        "bench STUN decode and encode": 1.2299999999999999e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 19349962.207105063
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 9.09e-06,
+        "bench RTP and RTCP codecs": 2.8e-06,
+        "bench SCTP reliable throughput": 0.00050717,
+        "bench SDP parse and marshal": 7.099999999999999e-06,
+        "bench SRTP protect and unprotect": 5.059999999999999e-06,
+        "bench STUN decode and encode": 1.2299999999999999e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00021168
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   7.10 \u00b5s \u00b1 295.00 ns     6.79 \u00b5s \u2026   7.81 \u00b5s  in 10 \u00d7  14611 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.23 \u00b5s \u00b1  15.17 ns     1.21 \u00b5s \u2026   1.26 \u00b5s  in 10 \u00d7  81565 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.09 \u00b5s \u00b1 160.76 ns     8.97 \u00b5s \u2026   9.52 \u00b5s  in 10 \u00d7  11084 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   5.06 \u00b5s \u00b1 155.58 ns     4.92 \u00b5s \u2026   5.35 \u00b5s  in 10 \u00d7  20119 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   2.80 \u00b5s \u00b1  33.51 ns     2.76 \u00b5s \u2026   2.87 \u00b5s  in 10 \u00d7  35520 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 507.17 \u00b5s \u00b1   4.70 \u00b5s   501.48 \u00b5s \u2026 515.49 \u00b5s  in 10 \u00d7    199 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 211.68 \u00b5s \u00b1   7.94 \u00b5s   201.69 \u00b5s \u2026 227.55 \u00b5s  in 10 \u00d7    478 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 10.42782196495682,
+      "metrics": {
+        "bench DTLS application-data crypto": 9.08e-06,
+        "bench RTP and RTCP codecs": 2.8999999999999998e-06,
+        "bench SCTP reliable throughput": 32208221.11698677,
+        "bench SDP parse and marshal": 7.03e-06,
+        "bench SRTP protect and unprotect": 4.96e-06,
+        "bench STUN decode and encode": 1.24e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 20183305.41046615
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 9.08e-06,
+        "bench RTP and RTCP codecs": 2.8999999999999998e-06,
+        "bench SCTP reliable throughput": 0.00050869,
+        "bench SDP parse and marshal": 7.03e-06,
+        "bench SRTP protect and unprotect": 4.96e-06,
+        "bench STUN decode and encode": 1.24e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00020293999999999998
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   7.03 \u00b5s \u00b1 139.18 ns     6.92 \u00b5s \u2026   7.39 \u00b5s  in 10 \u00d7  14578 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.24 \u00b5s \u00b1  18.30 ns     1.22 \u00b5s \u2026   1.28 \u00b5s  in 10 \u00d7  80368 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.08 \u00b5s \u00b1  89.10 ns     8.99 \u00b5s \u2026   9.28 \u00b5s  in 10 \u00d7  11196 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   4.96 \u00b5s \u00b1  73.46 ns     4.89 \u00b5s \u2026   5.10 \u00b5s  in 10 \u00d7  20502 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   2.90 \u00b5s \u00b1 125.05 ns     2.80 \u00b5s \u2026   3.13 \u00b5s  in 10 \u00d7  35706 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 508.69 \u00b5s \u00b1   6.34 \u00b5s   501.90 \u00b5s \u2026 520.14 \u00b5s  in 10 \u00d7    195 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 202.94 \u00b5s \u00b1   6.64 \u00b5s   194.28 \u00b5s \u2026 213.46 \u00b5s  in 10 \u00d7    502 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 10.90423526300583,
+      "metrics": {
+        "bench DTLS application-data crypto": 9.05e-06,
+        "bench RTP and RTCP codecs": 2.89e-06,
+        "bench SCTP reliable throughput": 32021889.96384247,
+        "bench SDP parse and marshal": 6.9400000000000005e-06,
+        "bench SRTP protect and unprotect": 5.03e-06,
+        "bench STUN decode and encode": 1.24e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 20234155.01654893
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 9.05e-06,
+        "bench RTP and RTCP codecs": 2.89e-06,
+        "bench SCTP reliable throughput": 0.00051165,
+        "bench SDP parse and marshal": 6.9400000000000005e-06,
+        "bench SRTP protect and unprotect": 5.03e-06,
+        "bench STUN decode and encode": 1.24e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00020243
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   6.94 \u00b5s \u00b1 195.28 ns     6.79 \u00b5s \u2026   7.41 \u00b5s  in 10 \u00d7  14386 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.24 \u00b5s \u00b1  64.03 ns     1.21 \u00b5s \u2026   1.42 \u00b5s  in 10 \u00d7  77543 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.05 \u00b5s \u00b1 125.93 ns     8.95 \u00b5s \u2026   9.37 \u00b5s  in 10 \u00d7  10947 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   5.03 \u00b5s \u00b1 331.32 ns     4.86 \u00b5s \u2026   5.97 \u00b5s  in 10 \u00d7  18890 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   2.89 \u00b5s \u00b1  79.10 ns     2.81 \u00b5s \u2026   3.03 \u00b5s  in 10 \u00d7  34137 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 511.65 \u00b5s \u00b1   7.11 \u00b5s   504.52 \u00b5s \u2026 522.49 \u00b5s  in 10 \u00d7    199 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 202.43 \u00b5s \u00b1   4.55 \u00b5s   197.67 \u00b5s \u2026 208.60 \u00b5s  in 10 \u00d7    505 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.067740784026682,
+      "metrics": {
+        "bench DTLS application-data crypto": 9.039999999999998e-06,
+        "bench RTP and RTCP codecs": 2.89e-06,
+        "bench SCTP reliable throughput": 31818534.918045525,
+        "bench SDP parse and marshal": 7.33e-06,
+        "bench SRTP protect and unprotect": 5.33e-06,
+        "bench STUN decode and encode": 1.2499999999999999e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 20281243.810655575
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 9.039999999999998e-06,
+        "bench RTP and RTCP codecs": 2.89e-06,
+        "bench SCTP reliable throughput": 0.00051492,
+        "bench SDP parse and marshal": 7.33e-06,
+        "bench SRTP protect and unprotect": 5.33e-06,
+        "bench STUN decode and encode": 1.2499999999999999e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00020196
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   7.33 \u00b5s \u00b1 394.02 ns     6.84 \u00b5s \u2026   8.19 \u00b5s  in 10 \u00d7  13380 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.25 \u00b5s \u00b1  38.36 ns     1.22 \u00b5s \u2026   1.33 \u00b5s  in 10 \u00d7  78468 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.04 \u00b5s \u00b1 138.70 ns     8.88 \u00b5s \u2026   9.28 \u00b5s  in 10 \u00d7  10691 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   5.33 \u00b5s \u00b1 357.23 ns     4.92 \u00b5s \u2026   5.80 \u00b5s  in 10 \u00d7  19712 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   2.89 \u00b5s \u00b1 119.58 ns     2.77 \u00b5s \u2026   3.14 \u00b5s  in 10 \u00d7  35909 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 514.92 \u00b5s \u00b1   8.73 \u00b5s   502.65 \u00b5s \u2026 530.42 \u00b5s  in 10 \u00d7    200 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 201.96 \u00b5s \u00b1   3.75 \u00b5s   197.85 \u00b5s \u2026 208.73 \u00b5s  in 10 \u00d7    486 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.408799882978201,
+      "metrics": {
+        "bench DTLS application-data crypto": 9.630000000000001e-06,
+        "bench RTP and RTCP codecs": 3.18e-06,
+        "bench SCTP reliable throughput": 29178465.2098805,
+        "bench SDP parse and marshal": 7.15e-06,
+        "bench SRTP protect and unprotect": 5.1799999999999995e-06,
+        "bench STUN decode and encode": 1.26e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 17974372.476742145
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 9.630000000000001e-06,
+        "bench RTP and RTCP codecs": 3.18e-06,
+        "bench SCTP reliable throughput": 0.00056151,
+        "bench SDP parse and marshal": 7.15e-06,
+        "bench SRTP protect and unprotect": 5.1799999999999995e-06,
+        "bench STUN decode and encode": 1.26e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00022788
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   7.15 \u00b5s \u00b1 281.03 ns     6.91 \u00b5s \u2026   7.84 \u00b5s  in 10 \u00d7  14460 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.26 \u00b5s \u00b1  32.29 ns     1.23 \u00b5s \u2026   1.34 \u00b5s  in 10 \u00d7  81321 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.63 \u00b5s \u00b1 374.78 ns     9.25 \u00b5s \u2026  10.18 \u00b5s  in 10 \u00d7  11016 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   5.18 \u00b5s \u00b1 129.18 ns     5.03 \u00b5s \u2026   5.46 \u00b5s  in 10 \u00d7  19907 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.18 \u00b5s \u00b1  65.57 ns     3.10 \u00b5s \u2026   3.30 \u00b5s  in 10 \u00d7  32388 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 561.51 \u00b5s \u00b1  20.69 \u00b5s   531.71 \u00b5s \u2026 599.43 \u00b5s  in 10 \u00d7    180 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 227.88 \u00b5s \u00b1  13.46 \u00b5s   209.54 \u00b5s \u2026 246.54 \u00b5s  in 10 \u00d7    415 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.279658145969734,
+      "metrics": {
+        "bench DTLS application-data crypto": 1.0789999999999998e-05,
+        "bench RTP and RTCP codecs": 3.24e-06,
+        "bench SCTP reliable throughput": 27665861.77200655,
+        "bench SDP parse and marshal": 8.079999999999999e-06,
+        "bench SRTP protect and unprotect": 6.169999999999999e-06,
+        "bench STUN decode and encode": 1.46e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 17193468.496830795
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 1.0789999999999998e-05,
+        "bench RTP and RTCP codecs": 3.24e-06,
+        "bench SCTP reliable throughput": 0.00059221,
+        "bench SDP parse and marshal": 8.079999999999999e-06,
+        "bench SRTP protect and unprotect": 6.169999999999999e-06,
+        "bench STUN decode and encode": 1.46e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00023822999999999997
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   8.08 \u00b5s \u00b1 524.27 ns     7.35 \u00b5s \u2026   8.99 \u00b5s  in 10 \u00d7  13424 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.46 \u00b5s \u00b1  64.55 ns     1.38 \u00b5s \u2026   1.60 \u00b5s  in 10 \u00d7  69511 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n  10.79 \u00b5s \u00b1   1.05 \u00b5s     9.76 \u00b5s \u2026  12.59 \u00b5s  in 10 \u00d7   8028 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   6.17 \u00b5s \u00b1 287.69 ns     5.79 \u00b5s \u2026   6.63 \u00b5s  in 10 \u00d7  13448 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.24 \u00b5s \u00b1 141.94 ns     3.03 \u00b5s \u2026   3.47 \u00b5s  in 10 \u00d7  30530 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 592.21 \u00b5s \u00b1  29.13 \u00b5s   563.63 \u00b5s \u2026 659.16 \u00b5s  in 10 \u00d7    176 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 238.23 \u00b5s \u00b1  12.46 \u00b5s   229.63 \u00b5s \u2026 268.57 \u00b5s  in 10 \u00d7    426 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 10.956575730000623,
+      "metrics": {
+        "bench DTLS application-data crypto": 1.099e-05,
+        "bench RTP and RTCP codecs": 3.58e-06,
+        "bench SCTP reliable throughput": 25693540.54605047,
+        "bench SDP parse and marshal": 8.36e-06,
+        "bench SRTP protect and unprotect": 6.3399999999999994e-06,
+        "bench STUN decode and encode": 1.57e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 15446112.074817104
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 1.099e-05,
+        "bench RTP and RTCP codecs": 3.58e-06,
+        "bench SCTP reliable throughput": 0.0006376699999999999,
+        "bench SDP parse and marshal": 8.36e-06,
+        "bench SRTP protect and unprotect": 6.3399999999999994e-06,
+        "bench STUN decode and encode": 1.57e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00026518
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   8.36 \u00b5s \u00b1 303.28 ns     8.01 \u00b5s \u2026   8.84 \u00b5s  in 10 \u00d7  12180 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.57 \u00b5s \u00b1  92.15 ns     1.46 \u00b5s \u2026   1.71 \u00b5s  in 10 \u00d7  60616 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n  10.99 \u00b5s \u00b1 560.03 ns    10.17 \u00b5s \u2026  11.89 \u00b5s  in 10 \u00d7   9214 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   6.34 \u00b5s \u00b1 439.91 ns     5.74 \u00b5s \u2026   7.09 \u00b5s  in 10 \u00d7  15923 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.58 \u00b5s \u00b1 216.56 ns     3.25 \u00b5s \u2026   3.90 \u00b5s  in 10 \u00d7  25293 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 637.67 \u00b5s \u00b1  35.76 \u00b5s   599.03 \u00b5s \u2026 703.96 \u00b5s  in 10 \u00d7    160 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 265.18 \u00b5s \u00b1  16.50 \u00b5s   245.30 \u00b5s \u2026 293.47 \u00b5s  in 10 \u00d7    399 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.31167344993446,
+      "metrics": {
+        "bench DTLS application-data crypto": 1.163e-05,
+        "bench RTP and RTCP codecs": 3.7e-06,
+        "bench SCTP reliable throughput": 24658730.039281793,
+        "bench SDP parse and marshal": 9.41e-06,
+        "bench SRTP protect and unprotect": 6.789999999999999e-06,
+        "bench STUN decode and encode": 1.61e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 14518644.548419112
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 1.163e-05,
+        "bench RTP and RTCP codecs": 3.7e-06,
+        "bench SCTP reliable throughput": 0.0006644299999999999,
+        "bench SDP parse and marshal": 9.41e-06,
+        "bench SRTP protect and unprotect": 6.789999999999999e-06,
+        "bench STUN decode and encode": 1.61e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00028212
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.41 \u00b5s \u00b1 561.52 ns     8.62 \u00b5s \u2026  10.35 \u00b5s  in 10 \u00d7   9437 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.61 \u00b5s \u00b1  34.66 ns     1.57 \u00b5s \u2026   1.68 \u00b5s  in 10 \u00d7  64824 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n  11.63 \u00b5s \u00b1 435.68 ns    11.06 \u00b5s \u2026  12.30 \u00b5s  in 10 \u00d7   7093 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   6.79 \u00b5s \u00b1 454.76 ns     6.30 \u00b5s \u2026   7.59 \u00b5s  in 10 \u00d7  16356 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.70 \u00b5s \u00b1 173.89 ns     3.52 \u00b5s \u2026   4.10 \u00b5s  in 10 \u00d7  26818 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 664.43 \u00b5s \u00b1  13.16 \u00b5s   644.01 \u00b5s \u2026 682.35 \u00b5s  in 10 \u00d7    156 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 282.12 \u00b5s \u00b1  13.78 \u00b5s   268.11 \u00b5s \u2026 301.74 \u00b5s  in 10 \u00d7    370 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.622662064968608,
+      "metrics": {
+        "bench DTLS application-data crypto": 1.271e-05,
+        "bench RTP and RTCP codecs": 3.97e-06,
+        "bench SCTP reliable throughput": 23236090.822708514,
+        "bench SDP parse and marshal": 1.049e-05,
+        "bench SRTP protect and unprotect": 7.07e-06,
+        "bench STUN decode and encode": 1.81e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 15175991.107817713
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 1.271e-05,
+        "bench RTP and RTCP codecs": 3.97e-06,
+        "bench SCTP reliable throughput": 0.00070511,
+        "bench SDP parse and marshal": 1.049e-05,
+        "bench SRTP protect and unprotect": 7.07e-06,
+        "bench STUN decode and encode": 1.81e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00026989999999999995
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n  10.49 \u00b5s \u00b1   1.06 \u00b5s     9.47 \u00b5s \u2026  12.84 \u00b5s  in 10 \u00d7  10277 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.81 \u00b5s \u00b1 135.07 ns     1.67 \u00b5s \u2026   2.08 \u00b5s  in 10 \u00d7  50228 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n  12.71 \u00b5s \u00b1   1.15 \u00b5s    11.56 \u00b5s \u2026  15.00 \u00b5s  in 10 \u00d7   8140 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   7.07 \u00b5s \u00b1 287.13 ns     6.81 \u00b5s \u2026   7.52 \u00b5s  in 10 \u00d7  13811 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.97 \u00b5s \u00b1 168.71 ns     3.82 \u00b5s \u2026   4.41 \u00b5s  in 10 \u00d7  25674 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 705.11 \u00b5s \u00b1  49.65 \u00b5s   650.27 \u00b5s \u2026 780.94 \u00b5s  in 10 \u00d7    143 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 269.90 \u00b5s \u00b1  22.54 \u00b5s   245.38 \u00b5s \u2026 309.48 \u00b5s  in 10 \u00d7    356 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.63798199093435,
+      "metrics": {
+        "bench DTLS application-data crypto": 1.168e-05,
+        "bench RTP and RTCP codecs": 3.3999999999999996e-06,
+        "bench SCTP reliable throughput": 26748951.037534084,
+        "bench SDP parse and marshal": 9.33e-06,
+        "bench SRTP protect and unprotect": 6.6799999999999996e-06,
+        "bench STUN decode and encode": 1.59e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 16430663.083156165
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 1.168e-05,
+        "bench RTP and RTCP codecs": 3.3999999999999996e-06,
+        "bench SCTP reliable throughput": 0.0006125099999999999,
+        "bench SDP parse and marshal": 9.33e-06,
+        "bench SRTP protect and unprotect": 6.6799999999999996e-06,
+        "bench STUN decode and encode": 1.59e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00024929
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.33 \u00b5s \u00b1 883.68 ns     8.28 \u00b5s \u2026  11.19 \u00b5s  in 10 \u00d7  11739 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.59 \u00b5s \u00b1  93.32 ns     1.50 \u00b5s \u2026   1.78 \u00b5s  in 10 \u00d7  65845 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n  11.68 \u00b5s \u00b1 400.42 ns    11.21 \u00b5s \u2026  12.38 \u00b5s  in 10 \u00d7   8876 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   6.68 \u00b5s \u00b1 340.64 ns     6.33 \u00b5s \u2026   7.42 \u00b5s  in 10 \u00d7  15608 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.40 \u00b5s \u00b1  83.33 ns     3.32 \u00b5s \u2026   3.58 \u00b5s  in 10 \u00d7  27435 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 612.51 \u00b5s \u00b1   8.87 \u00b5s   599.92 \u00b5s \u2026 628.83 \u00b5s  in 10 \u00d7    164 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 249.29 \u00b5s \u00b1  16.41 \u00b5s   229.56 \u00b5s \u2026 281.34 \u00b5s  in 10 \u00d7    396 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 11.235353622003458,
+      "metrics": {
+        "bench DTLS application-data crypto": 1.1609999999999999e-05,
+        "bench RTP and RTCP codecs": 3.7499999999999997e-06,
+        "bench SCTP reliable throughput": 25720161.378942247,
+        "bench SDP parse and marshal": 9.31e-06,
+        "bench SRTP protect and unprotect": 6.549999999999999e-06,
+        "bench STUN decode and encode": 1.58e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 15942705.900669469
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 1.1609999999999999e-05,
+        "bench RTP and RTCP codecs": 3.7499999999999997e-06,
+        "bench SCTP reliable throughput": 0.0006370099999999999,
+        "bench SDP parse and marshal": 9.31e-06,
+        "bench SRTP protect and unprotect": 6.549999999999999e-06,
+        "bench STUN decode and encode": 1.58e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00025692
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   9.31 \u00b5s \u00b1 951.82 ns     8.14 \u00b5s \u2026  10.72 \u00b5s  in 10 \u00d7  12721 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.58 \u00b5s \u00b1 223.47 ns     1.33 \u00b5s \u2026   1.99 \u00b5s  in 10 \u00d7  60095 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n  11.61 \u00b5s \u00b1 425.60 ns    11.05 \u00b5s \u2026  12.19 \u00b5s  in 10 \u00d7   7317 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   6.55 \u00b5s \u00b1 138.68 ns     6.30 \u00b5s \u2026   6.76 \u00b5s  in 10 \u00d7  15379 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.75 \u00b5s \u00b1 301.68 ns     3.48 \u00b5s \u2026   4.28 \u00b5s  in 10 \u00d7  29236 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 637.01 \u00b5s \u00b1  23.40 \u00b5s   619.11 \u00b5s \u2026 696.23 \u00b5s  in 10 \u00d7    153 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 256.92 \u00b5s \u00b1  14.99 \u00b5s   236.95 \u00b5s \u2026 280.15 \u00b5s  in 10 \u00d7    407 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    },
+    {
+      "elapsed_seconds": 10.982702926034108,
+      "metrics": {
+        "bench DTLS application-data crypto": 1.058e-05,
+        "bench RTP and RTCP codecs": 3.03e-06,
+        "bench SCTP reliable throughput": 31027952.42784638,
+        "bench SDP parse and marshal": 8.91e-06,
+        "bench SRTP protect and unprotect": 5.559999999999999e-06,
+        "bench STUN decode and encode": 1.51e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 18914800.27707227
+      },
+      "seconds_per_operation": {
+        "bench DTLS application-data crypto": 1.058e-05,
+        "bench RTP and RTCP codecs": 3.03e-06,
+        "bench SCTP reliable throughput": 0.0005280399999999999,
+        "bench SDP parse and marshal": 8.91e-06,
+        "bench SRTP protect and unprotect": 5.559999999999999e-06,
+        "bench STUN decode and encode": 1.51e-06,
+        "bench end-to-end PeerConnection DataChannel pipeline": 0.00021655
+      },
+      "stderr": "",
+      "stdout": "[moonbit-community/rtc] bench rtc_bench_test.mbt:20 (\"bench SDP parse and marshal\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   8.91 \u00b5s \u00b1 593.74 ns     8.28 \u00b5s \u2026   9.91 \u00b5s  in 10 \u00d7  11932 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:29 (\"bench STUN decode and encode\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   1.51 \u00b5s \u00b1  30.42 ns     1.48 \u00b5s \u2026   1.55 \u00b5s  in 10 \u00d7  67535 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:109 (\"bench DTLS application-data crypto\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n  10.58 \u00b5s \u00b1 191.82 ns    10.35 \u00b5s \u2026  10.88 \u00b5s  in 10 \u00d7   9319 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:126 (\"bench SRTP protect and unprotect\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   5.56 \u00b5s \u00b1 107.91 ns     5.40 \u00b5s \u2026   5.71 \u00b5s  in 10 \u00d7  17433 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:155 (\"bench RTP and RTCP codecs\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n   3.03 \u00b5s \u00b1  70.22 ns     2.93 \u00b5s \u2026   3.10 \u00b5s  in 10 \u00d7  33434 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:223 (\"bench SCTP reliable throughput\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 528.04 \u00b5s \u00b1  17.94 \u00b5s   507.19 \u00b5s \u2026 556.24 \u00b5s  in 10 \u00d7    185 runs\n[moonbit-community/rtc] bench rtc_bench_test.mbt:337 (\"bench end-to-end PeerConnection DataChannel pipeline\") ok\ntime (mean \u00b1 \u03c3)         range (min \u2026 max) \n 216.55 \u00b5s \u00b1   6.95 \u00b5s   207.48 \u00b5s \u2026 229.89 \u00b5s  in 10 \u00d7    481 runs\nTotal tests: 7, passed: 7, failed: 0.\n"
+    }
+  ],
+  "runner": {
+    "cpu_model": "11th Gen Intel(R) Core(TM) i9-11950H @ 2.60GHz",
+    "machine": "x86_64",
+    "runner_id": ""
+  },
+  "sample_count": 20,
+  "threshold": 0.2,
+  "warmups": 5
+}
