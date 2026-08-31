@@ -189,6 +189,9 @@ jobs:
   asan:
     runs-on: ubuntu-22.04
     timeout-minutes: 20
+    env:
+      MOONBIT_NEW_NATIVE: 0
+      MOONBIT_ALLOCATOR: system
     steps:
       - uses: actions/checkout@v5
 
