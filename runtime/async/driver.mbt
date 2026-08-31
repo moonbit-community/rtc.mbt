@@ -929,11 +929,9 @@ async fn Driver::flush_core(
             raise Cancelled
           _ => raise Io("failed to bind TCP host candidate")
         }
-        let actual_address = rtc_address(server.addr) catch {
-          error => {
-            server.close()
-            raise error
-          }
+        let actual_address = {
+          errdefer server.close()
+          rtc_address(server.addr)
         }
         if actual_address != local_address {
           server.close()
