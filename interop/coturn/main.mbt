@@ -41,7 +41,12 @@ async fn gather_relay(
     }
     peer.handle_datagram({
       now: @rtc_async.sample_clock().monotonic(),
-      context: { local_address, peer: server_address, ecn: None, protocol: Udp },
+      context: {
+        local_address,
+        peer: server_address,
+        ecn: None,
+        protocol: Udp,
+      },
       payload,
     })
     while peer.poll_event() is Some(event) {

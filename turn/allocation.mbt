@@ -177,7 +177,7 @@ fn pad_stream_channel_data(packet : Bytes) -> Bytes {
 ///|
 fn Allocation::queue_packet(self : Allocation, packet : Bytes) -> Unit {
   if self.transport == Udp {
-    self.outputs.push({ context: self.context(), payload: packet })
+    self.outputs.push({ context: self.context(), payload: packet, })
   } else {
     self.stream_outputs.push(pad_stream_channel_data(packet))
   }
@@ -459,7 +459,7 @@ fn Allocation::upsert_permission(
       return
     }
   }
-  self.permissions.push({ peer, expires_at })
+  self.permissions.push({ peer, expires_at, })
 }
 
 ///|
@@ -473,7 +473,7 @@ fn Allocation::upsert_channel(
   self.channels.retain(binding => {
     binding.peer != peer && binding.channel != channel
   })
-  self.channels.push({ peer, channel, expires_at })
+  self.channels.push({ peer, channel, expires_at, })
   self.upsert_permission(peer, now)
 }
 
@@ -495,7 +495,7 @@ fn Allocation::handle_success(
       let address = turn_stun(() => {
         attribute.to_xor_address(message.transaction_id())
       })
-      let relayed = { address, server: self.server, transport: self.transport }
+      let relayed = { address, server: self.server, transport: self.transport, }
       self.relayed_address = Some(relayed)
       self.schedule_lifetime(now, response_lifetime(message))
       self.set_state(Active)

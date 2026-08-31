@@ -107,7 +107,14 @@ pub fn IvfHeader::new(
     timebase_numerator == 0 {
     raise InvalidMedia("invalid IVF dimensions or timebase")
   }
-  { codec, width, height, timebase_denominator, timebase_numerator, num_frames }
+  {
+    codec,
+    width,
+    height,
+    timebase_denominator,
+    timebase_numerator,
+    num_frames,
+  }
 }
 
 ///|
@@ -148,7 +155,7 @@ pub(all) struct IvfFrame {
 
 ///|
 pub fn IvfFrame::new(data~ : Bytes, timestamp~ : UInt64) -> IvfFrame {
-  { data, timestamp }
+  { data, timestamp, }
 }
 
 ///|
@@ -274,7 +281,7 @@ pub fn IvfReader::new(data : Bytes) -> IvfReader raise MediaError {
     timebase_numerator=media_read_u32_le(data, 20),
     num_frames=media_read_u32_le(data, 24),
   )
-  { data, header, offset: header_size.to_int(), frame_index: 0 }
+  { data, header, offset: header_size.to_int(), frame_index: 0, }
 }
 
 ///|

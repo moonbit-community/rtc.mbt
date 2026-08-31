@@ -467,7 +467,7 @@ fn IceAgent::send_keepalive(
     let pair = self.pairs[pair_index]
     let request = self.binding_request(pair, transaction_id)
     let context = pair_context(pair)
-    self.outputs.push({ context, payload: request })
+    self.outputs.push({ context, payload: request, })
     let initial_timeout = if context.protocol == Udp {
       self.initial_rto.as_milliseconds()
     } else {
@@ -575,7 +575,7 @@ fn IceAgent::send_next_waiting_check(
   let pair = self.pairs[pair_index]
   let request = self.binding_request(pair, transaction_id)
   let context = pair_context(pair)
-  self.outputs.push({ context, payload: request })
+  self.outputs.push({ context, payload: request, })
   pair.state = PairInProgress
   let initial_timeout = if context.protocol == Udp {
     self.initial_rto.as_milliseconds()
@@ -671,7 +671,7 @@ pub fn IceAgent::handle_timeout(
           self.pairs[pair_index].state = PairFailed
           self.transactions.remove(transaction_id)
         } else {
-          self.outputs.push({ context, payload: request })
+          self.outputs.push({ context, payload: request, })
           let next_rto = if rto_milliseconds < 8000L {
             rto_milliseconds * 2L
           } else {
@@ -865,7 +865,7 @@ fn IceAgent::send_error_response(
       @utf8.encode(self.local_credentials.password()),
     )
   })
-  self.outputs.push({ context, payload })
+  self.outputs.push({ context, payload, })
 }
 
 ///|
@@ -956,7 +956,7 @@ fn IceAgent::handle_binding_request(
       @utf8.encode(self.local_credentials.password()),
     )
   })
-  self.outputs.push({ context: datagram.context, payload })
+  self.outputs.push({ context: datagram.context, payload, })
   let pair_index = match known_pair_index {
     Some(index) => index
     None => self.add_peer_reflexive_pair(datagram, priority)
@@ -1098,7 +1098,7 @@ pub fn IceAgent::send(self : IceAgent, payload : Bytes) -> Unit raise IceError {
   guard self.selected_pair_index is Some(index) else {
     raise InvalidState("ICE has no selected candidate pair")
   }
-  self.outputs.push({ context: pair_context(self.pairs[index]), payload })
+  self.outputs.push({ context: pair_context(self.pairs[index]), payload, })
 }
 
 ///|

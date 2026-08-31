@@ -48,7 +48,7 @@ test "SCTP DATA, SACK, and RE-CONFIG chunks survive bundled framing" {
       SackChunkValue(
         SackChunk::new(
           cumulative_tsn_ack=99U,
-          gap_ack_blocks=[{ start: 2, end: 3 }],
+          gap_ack_blocks=[{ start: 2, end: 3, }],
           duplicate_tsns=[98U],
         ),
       ),

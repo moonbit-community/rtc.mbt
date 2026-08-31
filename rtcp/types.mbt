@@ -149,7 +149,7 @@ pub fn ReceiverReportPacket::new(
   if profile_extensions.length() % 4 != 0 {
     raise InvalidPacket("RTCP profile extension must be 32-bit aligned")
   }
-  { sender_ssrc, reports: reports.copy(), profile_extensions }
+  { sender_ssrc, reports: reports.copy(), profile_extensions, }
 }
 
 ///|
@@ -179,7 +179,7 @@ pub fn SourceDescriptionItem::new(
   if value.length() > 255 {
     raise InvalidPacket("RTCP SDES item exceeds 255 bytes")
   }
-  { item_type, value }
+  { item_type, value, }
 }
 
 ///|
@@ -193,7 +193,7 @@ pub fn SourceDescriptionChunk::new(
   source~ : UInt,
   items? : Array[SourceDescriptionItem] = [],
 ) -> SourceDescriptionChunk {
-  { source, items: items.copy() }
+  { source, items: items.copy(), }
 }
 
 ///|
@@ -208,7 +208,7 @@ pub fn SourceDescriptionPacket::new(
   if chunks.length() > 31 {
     raise InvalidPacket("RTCP SDES packet contains more than 31 chunks")
   }
-  { chunks: chunks.copy() }
+  { chunks: chunks.copy(), }
 }
 
 ///|
@@ -230,7 +230,7 @@ pub fn GoodbyePacket::new(
       raise InvalidPacket("RTCP BYE reason exceeds 255 bytes")
     _ => ()
   }
-  { sources: sources.copy(), reason }
+  { sources: sources.copy(), reason, }
 }
 
 ///|
@@ -257,7 +257,7 @@ pub fn ApplicationDefinedPacket::new(
   if data.length() % 4 != 0 {
     raise InvalidPacket("RTCP APP data must be 32-bit aligned")
   }
-  { subtype, ssrc, name, data }
+  { subtype, ssrc, name, data, }
 }
 
 ///|
@@ -271,7 +271,7 @@ pub fn NackPair::new(
   packet_id~ : UInt16,
   lost_packets? : UInt16 = 0,
 ) -> NackPair {
-  { packet_id, lost_packets }
+  { packet_id, lost_packets, }
 }
 
 ///|
@@ -298,7 +298,7 @@ pub fn TransportLayerNackPacket::new(
   media_ssrc~ : UInt,
   nacks~ : Array[NackPair],
 ) -> TransportLayerNackPacket {
-  { sender_ssrc, media_ssrc, nacks: nacks.copy() }
+  { sender_ssrc, media_ssrc, nacks: nacks.copy(), }
 }
 
 ///|
@@ -368,7 +368,7 @@ pub fn PictureLossIndicationPacket::new(
   sender_ssrc~ : UInt,
   media_ssrc~ : UInt,
 ) -> PictureLossIndicationPacket {
-  { sender_ssrc, media_ssrc }
+  { sender_ssrc, media_ssrc, }
 }
 
 ///|
@@ -390,7 +390,7 @@ pub fn FullIntraRequestPacket::new(
   media_ssrc? : UInt = 0U,
   entries~ : Array[FullIntraRequestEntry],
 ) -> FullIntraRequestPacket {
-  { sender_ssrc, media_ssrc, entries: entries.copy() }
+  { sender_ssrc, media_ssrc, entries: entries.copy(), }
 }
 
 ///|
@@ -409,7 +409,7 @@ pub fn ReceiverEstimatedMaximumBitratePacket::new(
   if ssrcs.length() > 255 {
     raise InvalidPacket("RTCP REMB contains more than 255 SSRC values")
   }
-  { sender_ssrc, bitrate, ssrcs: ssrcs.copy() }
+  { sender_ssrc, bitrate, ssrcs: ssrcs.copy(), }
 }
 
 ///|
@@ -428,7 +428,7 @@ pub fn ExtendedReportBlock::new(
   if payload.length() % 4 != 0 {
     raise InvalidPacket("RTCP XR block payload must be 32-bit aligned")
   }
-  { block_type, type_specific, payload }
+  { block_type, type_specific, payload, }
 }
 
 ///|
@@ -442,5 +442,5 @@ pub fn ExtendedReportPacket::new(
   sender_ssrc~ : UInt,
   blocks? : Array[ExtendedReportBlock] = [],
 ) -> ExtendedReportPacket {
-  { sender_ssrc, blocks: blocks.copy() }
+  { sender_ssrc, blocks: blocks.copy(), }
 }

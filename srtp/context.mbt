@@ -142,7 +142,7 @@ fn build_session_material(
       )
     AeadAes128Gcm | AeadAes256Gcm => None
   }
-  { encryption_key, salt, authentication_key }
+  { encryption_key, salt, authentication_key, }
 }
 
 ///|
@@ -267,7 +267,7 @@ fn Context::send_rtp_state(self : Context, ssrc : UInt) -> RtpIndexState {
   match self.send_rtp_states.get(ssrc) {
     Some(state) => state
     None => {
-      let state = { initialized: false, highest_index: 0UL }
+      let state = { initialized: false, highest_index: 0UL, }
       self.send_rtp_states[ssrc] = state
       state
     }
@@ -290,7 +290,7 @@ fn Context::receive_rtp_state(
     Some(state) => state
     None => {
       let state = {
-        index: { initialized: false, highest_index: 0UL },
+        index: { initialized: false, highest_index: 0UL, },
         replay: new_replay_window(self.rtp_replay_window),
       }
       self.receive_rtp_states[ssrc] = state
@@ -688,7 +688,7 @@ fn Context::receive_rtcp_state(
   match self.receive_rtcp_states.get(ssrc) {
     Some(state) => state
     None => {
-      let state = { replay: new_replay_window(self.rtcp_replay_window) }
+      let state = { replay: new_replay_window(self.rtcp_replay_window), }
       self.receive_rtcp_states[ssrc] = state
       state
     }

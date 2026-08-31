@@ -62,7 +62,7 @@ pub fn DataChannelConfig::new(
       raise InvalidConfiguration("SCTP stream id 65535 is not negotiable")
     _ => ()
   }
-  { label, protocol, ordering, reliability, negotiated, id, priority }
+  { label, protocol, ordering, reliability, negotiated, id, priority, }
 }
 
 ///|
@@ -216,7 +216,7 @@ pub fn DcepOpen::new(
       "DCEP label and protocol must each fit in 65535 UTF-8 bytes",
     )
   }
-  { channel_type, priority, reliability_parameter, label, protocol }
+  { channel_type, priority, reliability_parameter, label, protocol, }
 }
 
 ///|

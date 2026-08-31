@@ -121,7 +121,7 @@ pub fn RtpHeaderExtensionParameters::new(
     uri.contains("\n") {
     raise InvalidSyntax("invalid RTP header extension parameters")
   }
-  { id, uri }
+  { id, uri, }
 }
 
 ///|
@@ -183,7 +183,7 @@ pub fn RtpStreamParameters::new(
       value.contains("\n") => raise InvalidSyntax("RTP stream RID is invalid")
     _ => ()
   }
-  { ssrc, rtx_ssrc, rid, paused, rid_direction }
+  { ssrc, rtx_ssrc, rid, paused, rid_direction, }
 }
 
 ///|

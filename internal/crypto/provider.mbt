@@ -101,7 +101,7 @@ pub fn AeadSealed::new(
   if tag.length() != 8 && tag.length() != 16 {
     raise InvalidLength(tag.length())
   }
-  { ciphertext, tag }
+  { ciphertext, tag, }
 }
 
 ///|

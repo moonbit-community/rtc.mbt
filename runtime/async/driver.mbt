@@ -305,7 +305,7 @@ pub fn Driver::create(
 
 ///|
 pub fn PeerHandle::clone(self : PeerHandle) -> PeerHandle {
-  { shared: self.shared }
+  { shared: self.shared, }
 }
 
 ///|
@@ -498,7 +498,7 @@ async fn bind_socket(
     socket.close()
     raise Io("UDP socket bound to an unexpected address")
   }
-  { local_address, socket }
+  { local_address, socket, }
 }
 
 ///|
@@ -730,7 +730,7 @@ async fn outgoing_stream_loop(
   } else {
     Plain(socket)
   }
-  let bound : BoundStream = { connection, stream }
+  let bound : BoundStream = { connection, stream, }
   if !runtime.promote_connection(bound) {
     stream.close()
     return
@@ -782,7 +782,7 @@ async fn accept_stream_loop(
       raise Io("accepted stream identifier space is exhausted")
     }
     let stream = Plain(socket)
-    let accepted : BoundStream = { connection, stream }
+    let accepted : BoundStream = { connection, stream, }
     if !runtime.add_accepted_stream(accepted) {
       stream.close()
       continue
@@ -937,7 +937,7 @@ async fn Driver::flush_core(
           server.close()
           raise Io("TCP listener bound to an unexpected address")
         }
-        let bound : BoundListener = { listener, local_address, server }
+        let bound : BoundListener = { listener, local_address, server, }
         runtime.listeners.push(bound)
         group.spawn_bg(no_wait=true, () => {
           accept_stream_loop(self.shared, runtime, bound, group)

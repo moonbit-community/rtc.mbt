@@ -77,8 +77,8 @@ test "RTCP NACK expands bitmasks and feedback packets round-trip" {
   assert_eq(Packet::unmarshal(pli.marshal()).as_picture_loss_indication(), pli)
 
   let fir = FullIntraRequestPacket::new(sender_ssrc=5U, entries=[
-    { ssrc: 6U, sequence_number: 7 },
-    { ssrc: 8U, sequence_number: 9 },
+    { ssrc: 6U, sequence_number: 7, },
+    { ssrc: 8U, sequence_number: 9, },
   ])
   assert_eq(Packet::unmarshal(fir.marshal()).as_full_intra_request(), fir)
 }

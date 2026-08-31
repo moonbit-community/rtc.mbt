@@ -63,7 +63,7 @@ pub fn DtlsFingerprint::new(
       raise InvalidSyntax("DTLS fingerprint contains a non-hex digit")
     }
   }
-  { algorithm: algorithm.to_lower(), value }
+  { algorithm: algorithm.to_lower(), value, }
 }
 
 ///|

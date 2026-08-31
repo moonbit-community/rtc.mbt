@@ -942,7 +942,7 @@ pub fn Packet::as_picture_loss_indication(
   if header.count != 1 || end != 12 {
     raise InvalidPacket("RTCP feedback packet is not a valid PLI")
   }
-  { sender_ssrc: rtcp_read_u32(data, 4), media_ssrc: rtcp_read_u32(data, 8) }
+  { sender_ssrc: rtcp_read_u32(data, 4), media_ssrc: rtcp_read_u32(data, 8), }
 }
 
 ///|
@@ -1133,5 +1133,5 @@ pub fn Packet::as_extended_report(
     )
     offset += 4 + payload_length
   }
-  { sender_ssrc: rtcp_read_u32(data, 4), blocks }
+  { sender_ssrc: rtcp_read_u32(data, 4), blocks, }
 }

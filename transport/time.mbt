@@ -87,7 +87,7 @@ pub struct ClockSample {
 
 ///|
 pub fn ClockSample::new(monotonic~ : Instant, wall~ : WallTime) -> ClockSample {
-  { monotonic, wall }
+  { monotonic, wall, }
 }
 
 ///|
@@ -130,7 +130,7 @@ pub struct ManualClock {
 
 ///|
 pub fn ManualClock::new(sample : ClockSample) -> ManualClock {
-  { monotonic: sample.monotonic, wall: sample.wall }
+  { monotonic: sample.monotonic, wall: sample.wall, }
 }
 
 ///|

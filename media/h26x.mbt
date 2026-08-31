@@ -147,7 +147,7 @@ pub fn H26xReader::new(
   if ranges.is_empty() {
     raise InvalidMedia("H26x stream contains no NAL units")
   }
-  { codec, data, ranges, index: 0 }
+  { codec, data, ranges, index: 0, }
 }
 
 ///|

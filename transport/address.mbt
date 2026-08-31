@@ -265,7 +265,7 @@ pub fn SocketAddress::new(
   address~ : IpAddress,
   port~ : UInt16,
 ) -> SocketAddress {
-  { address, port }
+  { address, port, }
 }
 
 ///|

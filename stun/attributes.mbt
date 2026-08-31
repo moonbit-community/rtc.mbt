@@ -16,7 +16,7 @@ pub fn ResponseError::new(
   if reason_length > 763 {
     raise InvalidMessage("STUN error reason exceeds 763 bytes")
   }
-  { code, reason }
+  { code, reason, }
 }
 
 ///|

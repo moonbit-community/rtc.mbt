@@ -648,7 +648,7 @@ fn Association::gap_ack_blocks(self : Association) -> Array[GapAckBlock] {
       end = offsets[index]
       index += 1
     }
-    gaps.push({ start: start.to_uint16(), end: end.to_uint16() })
+    gaps.push({ start: start.to_uint16(), end: end.to_uint16(), })
   }
   gaps
 }

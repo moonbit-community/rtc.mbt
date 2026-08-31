@@ -49,7 +49,7 @@ pub fn Message::new(
   unordered? : Bool = false,
   payload~ : Bytes,
 ) -> Message {
-  { stream, protocol_id, unordered, payload }
+  { stream, protocol_id, unordered, payload, }
 }
 
 ///|
@@ -325,7 +325,7 @@ pub fn ForwardTsnStream::new(
   stream~ : StreamId,
   sequence~ : UInt16,
 ) -> ForwardTsnStream {
-  { stream, sequence }
+  { stream, sequence, }
 }
 
 ///|
@@ -349,7 +349,7 @@ pub fn ForwardTsn::new(
   new_cumulative_tsn~ : UInt,
   streams? : Array[ForwardTsnStream] = [],
 ) -> ForwardTsn {
-  { new_cumulative_tsn, streams: streams.copy() }
+  { new_cumulative_tsn, streams: streams.copy(), }
 }
 
 ///|
@@ -399,7 +399,7 @@ pub fn Packet::new(
   if source_port == 0 || destination_port == 0 {
     raise InvalidPacket("SCTP ports must be nonzero")
   }
-  { source_port, destination_port, verification_tag, chunks: chunks.copy() }
+  { source_port, destination_port, verification_tag, chunks: chunks.copy(), }
 }
 
 ///|

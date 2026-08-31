@@ -134,7 +134,7 @@ pub fn DcepMessage::decode(data : Bytes) -> DcepMessage raise DataChannelError {
       ) catch {
         _ => raise ProtocolViolation("DCEP protocol is not valid UTF-8")
       }
-      Open({ channel_type, priority, reliability_parameter, label, protocol })
+      Open({ channel_type, priority, reliability_parameter, label, protocol, })
     }
     _ =>
       raise ProtocolViolation(

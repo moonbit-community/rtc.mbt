@@ -12,7 +12,7 @@ pub fn SdpField::new(kind~ : Byte, value~ : String) -> SdpField raise SdpError {
   if value.contains("\r") || value.contains("\n") {
     raise InvalidSyntax("SDP field value contains a line break")
   }
-  { kind, value }
+  { kind, value, }
 }
 
 ///|
@@ -53,7 +53,7 @@ pub fn SdpAttribute::new(
       raise InvalidSyntax("SDP attribute value contains a line break")
     _ => ()
   }
-  { key, value }
+  { key, value, }
 }
 
 ///|

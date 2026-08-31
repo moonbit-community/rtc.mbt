@@ -253,7 +253,7 @@ fn Endpoint::encode_handshake(
       offset = end
     }
   }
-  { canonical, datagrams }
+  { canonical, datagrams, }
 }
 
 ///|
