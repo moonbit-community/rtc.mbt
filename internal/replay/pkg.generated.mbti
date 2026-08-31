@@ -33,4 +33,3 @@ pub fn ReplayWindow::new(width? : Int) -> Self raise ReplayWindowError
 // Type aliases
 
 // Traits
-

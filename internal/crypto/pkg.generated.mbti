@@ -100,4 +100,3 @@ pub(all) enum SignatureAlgorithm {
 // Type aliases
 
 // Traits
-

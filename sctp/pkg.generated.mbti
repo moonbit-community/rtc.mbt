@@ -273,4 +273,3 @@ pub fn StreamId::value(Self) -> UInt16
 // Type aliases
 
 // Traits
-

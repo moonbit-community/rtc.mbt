@@ -89,4 +89,3 @@ pub fn Resolver::unregister(Self, String) -> Unit raise MdnsError
 // Type aliases
 
 // Traits
-
