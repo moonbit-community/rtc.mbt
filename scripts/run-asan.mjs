@@ -4,29 +4,21 @@
  * Run every native rtc.mbt test under AddressSanitizer.
  *
  * The runner temporarily injects ASan flags into every repository package that
- * contains tests and every package that declares native C stubs. It constructs
- * an isolated view of the installed MoonBit toolchain and replaces only that
- * view's mimalloc object with an empty object so ASan can observe allocations.
- * All modified repository files are restored in a finally block, including on
- * test failure or interruption.
+ * contains tests and every package that declares native C stubs. It selects the
+ * system allocator so ASan can observe allocations. All modified repository
+ * files are restored in a finally block, including on test failure or
+ * interruption.
  */
 
 import {
   accessSync,
-  chmodSync,
   constants as fsConstants,
-  copyFileSync,
-  mkdirSync,
-  mkdtempSync,
   readFileSync,
   readdirSync,
-  realpathSync,
-  rmSync,
   statSync,
-  symlinkSync,
   writeFileSync,
 } from "node:fs";
-import { constants as osConstants, tmpdir } from "node:os";
+import { constants as osConstants } from "node:os";
 import {
   delimiter,
   dirname,
@@ -79,19 +71,6 @@ function findExecutable(name) {
     }
   }
   return null;
-}
-
-function findMoonHome() {
-  const moon = findExecutable("moon");
-  if (moon === null) {
-    throw new RunnerError("moon is not on PATH");
-  }
-  const home = dirname(dirname(realpathSync(moon)));
-  const runtime = join(home, "lib", "libmoonbitrun.o");
-  if (!isFile(runtime)) {
-    throw new RunnerError(`MoonBit runtime object not found: ${runtime}`);
-  }
-  return home;
 }
 
 function findOptionsClose(text) {
@@ -214,57 +193,6 @@ function selectPackages(root) {
   return selected;
 }
 
-function copyWithMode(source, destination) {
-  copyFileSync(source, destination);
-  chmodSync(destination, statSync(source).mode);
-}
-
-function linkTo(source, destination) {
-  const type = statSync(source).isDirectory() ? "dir" : "file";
-  symlinkSync(source, destination, type);
-}
-
-function isolatedToolchain(temporary) {
-  const original = findMoonHome();
-  const isolated = join(temporary, "moon");
-  mkdirSync(isolated);
-  for (const entry of readdirSync(original, { withFileTypes: true })) {
-    const source = join(original, entry.name);
-    const destination = join(isolated, entry.name);
-    if (entry.name !== "bin" && entry.name !== "lib") {
-      linkTo(source, destination);
-      continue;
-    }
-    mkdirSync(destination);
-    for (const child of readdirSync(source, { withFileTypes: true })) {
-      const childSource = join(source, child.name);
-      const childDestination = join(destination, child.name);
-      if (entry.name === "bin" && child.name === "moon") {
-        copyWithMode(childSource, childDestination);
-      } else if (
-        entry.name === "lib" &&
-        child.name === "libmoonbitrun.o"
-      ) {
-        copyWithMode(childSource, childDestination);
-      } else {
-        linkTo(childSource, childDestination);
-      }
-    }
-  }
-  const moon = join(isolated, "bin", "moon");
-  const runtime = join(isolated, "lib", "libmoonbitrun.o");
-  if (!isFile(moon) || !isFile(runtime)) {
-    throw new RunnerError(
-      "failed to construct the isolated MoonBit toolchain",
-    );
-  }
-  return { moon, runtime };
-}
-
-function commandDetail(result) {
-  return result.stderr.trim() || result.stdout.trim();
-}
-
 function runCommand(
   command,
   arguments_,
@@ -316,36 +244,12 @@ function runCommand(
   });
 }
 
-async function runChecked(command, arguments_) {
-  const result = await runCommand(command, arguments_);
-  if (result.status !== 0) {
-    const detail = commandDetail(result);
-    throw new RunnerError(
-      `command failed (${result.status ?? result.signal}): ` +
-        [command, ...arguments_].join(" ") +
-        (detail ? `\n${detail}` : ""),
-    );
-  }
-}
-
-async function disableMimalloc(compiler, runtime, temporary) {
-  const source = join(temporary, "empty.c");
-  const replacement = join(temporary, "libmoonbitrun.o");
-  writeFileSync(source, "");
-  await runChecked(compiler, ["-c", source, "-o", replacement]);
-  copyWithMode(replacement, runtime);
-}
-
 function printHelp() {
-  console.log(`usage: run-asan.mjs [--repo-root REPO_ROOT] [--no-disable-mimalloc]
-                    [--package PACKAGE]
+  console.log(`usage: run-asan.mjs [--repo-root REPO_ROOT] [--package PACKAGE]
 
 options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
-  --no-disable-mimalloc
-                        Keep MoonBit's allocator; useful only for runner
-                        diagnostics.
   --package PACKAGE     Limit moon test to one package while diagnosing a
                         sanitizer failure.`);
 }
@@ -368,7 +272,6 @@ function optionValue(arguments_, index, name) {
 function parseArguments(arguments_) {
   const parsed = {
     repoRoot: resolve(SCRIPT_DIRECTORY, ".."),
-    noDisableMimalloc: false,
     package: null,
     help: false,
   };
@@ -388,10 +291,6 @@ function parseArguments(arguments_) {
     if (packageOption !== null) {
       parsed.package = packageOption.value;
       index += packageOption.consumed;
-      continue;
-    }
-    if (argument === "--no-disable-mimalloc") {
-      parsed.noDisableMimalloc = true;
       continue;
     }
     throw new RunnerError(`unrecognized argument: ${argument}`);
@@ -443,7 +342,6 @@ async function main(arguments_) {
       "the initial rtc.mbt ASan runner supports Linux only",
     );
   }
-  const compiler = findExecutable("cc") ?? "gcc";
   const packages = selectPackages(root);
   if (packages.length === 0) {
     throw new RunnerError("no test or native-stub packages found");
@@ -458,6 +356,7 @@ async function main(arguments_) {
   const environment = {
     ...process.env,
     MOONBIT_NEW_NATIVE: "0",
+    MOONBIT_ALLOCATOR: "system",
     ASAN_OPTIONS:
       "detect_leaks=1:fast_unwind_on_malloc=0:halt_on_error=1",
   };
@@ -479,33 +378,16 @@ async function main(arguments_) {
       );
     }
 
-    const temporary = mkdtempSync(join(tmpdir(), "rtc-mbt-asan-"));
-    try {
-      let moon = findExecutable("moon") ?? "moon";
-      if (!parsed.noDisableMimalloc) {
-        const isolated = isolatedToolchain(temporary);
-        moon = isolated.moon;
-        await disableMimalloc(
-          compiler,
-          isolated.runtime,
-          temporary,
-        );
-        console.log(
-          `mimalloc disabled in isolated toolchain: ${isolated.runtime}`,
-        );
-      }
-      const command = ["test"];
-      if (parsed.package !== null) {
-        command.push(parsed.package);
-      }
-      command.push("--target", "native", "--no-parallelize", "-v");
-      return await runTests(moon, command, {
-        cwd: root,
-        env: environment,
-      });
-    } finally {
-      rmSync(temporary, { recursive: true, force: true });
+    const moon = findExecutable("moon") ?? "moon";
+    const command = ["test"];
+    if (parsed.package !== null) {
+      command.push(parsed.package);
     }
+    command.push("--target", "native", "--no-parallelize", "-v");
+    return await runTests(moon, command, {
+      cwd: root,
+      env: environment,
+    });
   } finally {
     for (const [packagePath, original] of snapshots) {
       writeFileSync(packagePath, original, "utf8");
