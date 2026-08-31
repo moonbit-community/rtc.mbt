@@ -150,4 +150,3 @@ pub(all) enum VideoRotation {
 // Type aliases
 
 // Traits
-

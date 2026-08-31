@@ -175,4 +175,3 @@ pub fn Transport::with_manager(manager~ : Manager, association_config~ : @sctp.A
 // Type aliases
 
 // Traits
-

@@ -130,4 +130,3 @@ pub fn WallTime::from_unix_nanoseconds(Int64) -> Self
 // Type aliases
 
 // Traits
-

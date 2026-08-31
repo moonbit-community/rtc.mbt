@@ -230,4 +230,3 @@ pub fn SignalingStateMachine::state(Self) -> SignalingState
 pub using @ice {type IceCredentials}
 
 // Traits
-
