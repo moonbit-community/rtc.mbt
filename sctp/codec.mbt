@@ -300,7 +300,7 @@ fn decode_sack(flags : Byte, value : Bytes) -> SackChunk raise SctpError {
     if start == 0 || end < start {
       raise InvalidPacket("invalid SCTP gap acknowledgement block")
     }
-    gap_ack_blocks.push({ start, end })
+    gap_ack_blocks.push({ start, end, })
   }
   let duplicate_tsns : Array[UInt] = []
   for index = 0; index < duplicate_count; index = index + 1 {
@@ -682,5 +682,5 @@ pub fn Packet::decode(raw : Bytes) -> Packet raise SctpError {
       "SCTP INIT must be unbundled with a zero verification tag",
     )
   }
-  { source_port, destination_port, verification_tag, chunks }
+  { source_port, destination_port, verification_tag, chunks, }
 }

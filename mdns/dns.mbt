@@ -230,7 +230,7 @@ fn parse_query(data : Bytes) -> Array[DnsQuestion] raise MdnsError {
     let resource_class = read_u16_at(data, offset + 2)
     offset += 4
     if (resource_class & 0x7fff) == DNS_CLASS_IN {
-      questions.push({ name, resource_type })
+      questions.push({ name, resource_type, })
     }
   }
   offset = skip_resource_records(data, offset, resource_count)
@@ -381,7 +381,7 @@ fn parse_response(data : Bytes) -> Array[DnsAnswer] raise MdnsError {
             raise InvalidPacket("invalid AAAA length \{length}")
           InvalidAddress(message) => raise InvalidPacket(message)
         }
-        answers.push({ name, address, ttl_seconds })
+        answers.push({ name, address, ttl_seconds, })
       }
     }
     offset += data_length

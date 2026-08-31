@@ -64,7 +64,7 @@ pub fn Fingerprint::new(
       "fingerprint length \{value.length()} does not match its digest",
     )
   }
-  { algorithm, value }
+  { algorithm, value, }
 }
 
 ///|
@@ -250,7 +250,7 @@ pub fn RecordHeader::new(
   if sequence_number > 0x0000ffffffffffffUL {
     raise InvalidRecord("DTLS record sequence number exceeds 48 bits")
   }
-  { content_type, version, epoch, sequence_number, content_length }
+  { content_type, version, epoch, sequence_number, content_length, }
 }
 
 ///|
@@ -375,7 +375,7 @@ pub fn HandshakeFragment::new(
     total_length.to_uint64() {
     raise InvalidHandshake("invalid DTLS handshake fragment bounds")
   }
-  { handshake_type, total_length, message_sequence, fragment_offset, body }
+  { handshake_type, total_length, message_sequence, fragment_offset, body, }
 }
 
 ///|

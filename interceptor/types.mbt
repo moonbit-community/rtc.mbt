@@ -24,7 +24,7 @@ pub(all) struct Context {
 
 ///|
 pub fn Context::new(direction~ : Direction, stream_id? : String) -> Context {
-  { direction, stream_id }
+  { direction, stream_id, }
 }
 
 ///|
@@ -51,7 +51,7 @@ pub fn Stage::new(
   if name.is_empty() {
     raise InvalidConfiguration("interceptor stage name is empty")
   }
-  { name, handler }
+  { name, handler, }
 }
 
 ///|
@@ -66,7 +66,7 @@ pub struct Pipeline {
 
 ///|
 pub fn Pipeline::new() -> Pipeline {
-  { stages: [] }
+  { stages: [], }
 }
 
 ///|

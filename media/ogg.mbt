@@ -38,7 +38,7 @@ pub(all) struct UserComment {
 
 ///|
 pub fn UserComment::new(key~ : String, value~ : String) -> UserComment {
-  { key, value }
+  { key, value, }
 }
 
 ///|
@@ -62,7 +62,7 @@ pub fn OpusTags::new(
   vendor~ : String,
   comments? : Array[UserComment] = [],
 ) -> OpusTags {
-  { vendor, comments: comments.copy() }
+  { vendor, comments: comments.copy(), }
 }
 
 ///|
@@ -304,7 +304,7 @@ fn ogg_parse_page_at(
     checksum,
     segments: data[table_start:body_start].to_owned(),
   }
-  ({ header, payload: data[body_start:page_end].to_owned() }, page_end)
+  ({ header, payload: data[body_start:page_end].to_owned(), }, page_end)
 }
 
 ///|
@@ -367,7 +367,7 @@ pub fn OggWriter::new(
   channels~ : Byte,
   pre_skip? : UInt16 = OGG_DEFAULT_PRE_SKIP,
   serial? : UInt = 0x72746301U,
-  tags? : OpusTags = { vendor: "rtc.mbt", comments: [] },
+  tags? : OpusTags = { vendor: "rtc.mbt", comments: [], },
 ) -> OggWriter raise MediaError {
   if sample_rate == 0 || channels == 0 || channels > 2 {
     raise InvalidMedia("Ogg Opus mapping family zero supports mono or stereo")
@@ -557,7 +557,7 @@ fn parse_opus_tags(payload : Bytes) -> OpusTags raise MediaError {
     }
     offset += length
   }
-  { vendor, comments }
+  { vendor, comments, }
 }
 
 ///|

@@ -15,7 +15,7 @@ priv struct Hub {
 
 ///|
 fn Hub::new() -> Hub {
-  { subscribers: [], next_id: 1U }
+  { subscribers: [], next_id: 1U, }
 }
 
 ///|

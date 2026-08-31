@@ -119,7 +119,7 @@ pub fn IceServer::new(
       "ICE server username and credential must appear together",
     )
   }
-  { urls: urls.copy(), username, credential }
+  { urls: urls.copy(), username, credential, }
 }
 
 ///|

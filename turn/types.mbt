@@ -72,7 +72,7 @@ pub fn TurnCredentials::new(
   if username.is_empty() || password.is_empty() {
     raise InvalidConfiguration("TURN username and password must be nonempty")
   }
-  { username, password }
+  { username, password, }
 }
 
 ///|

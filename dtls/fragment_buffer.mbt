@@ -83,7 +83,7 @@ struct FragmentBuffer {
 
 ///|
 fn FragmentBuffer::new(expected_sequence? : UInt16 = 0) -> FragmentBuffer {
-  { assemblies: Map([]), completed: Map([]), expected_sequence }
+  { assemblies: Map([]), completed: Map([]), expected_sequence, }
 }
 
 ///|

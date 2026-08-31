@@ -26,7 +26,7 @@ pub fn ReplayWindow::new(
   if width < 1 || width > 64 {
     raise InvalidWidth(width)
   }
-  { width, initialized: false, max_sequence: 0UL, bitmap: 0UL }
+  { width, initialized: false, max_sequence: 0UL, bitmap: 0UL, }
 }
 
 ///|

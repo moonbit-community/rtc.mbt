@@ -109,7 +109,7 @@ pub fn MediaTrack::new(
   kind~ : MediaKind,
   codec~ : CodecCapability,
 ) -> MediaTrack {
-  { id, stream_id, kind, codec }
+  { id, stream_id, kind, codec, }
 }
 
 ///|
@@ -231,7 +231,7 @@ pub fn RtpParameters::new(
       None => ()
     }
   }
-  { codec, encodings: encodings.copy() }
+  { codec, encodings: encodings.copy(), }
 }
 
 ///|
@@ -255,7 +255,7 @@ pub struct RtpSender {
 
 ///|
 pub fn RtpSender::new(kind~ : MediaKind) -> RtpSender {
-  { kind, track: None, parameters: None }
+  { kind, track: None, parameters: None, }
 }
 
 ///|
@@ -302,7 +302,7 @@ pub struct RtpReceiver {
 
 ///|
 pub fn RtpReceiver::new(kind~ : MediaKind) -> RtpReceiver {
-  { kind, track: None, parameters: None }
+  { kind, track: None, parameters: None, }
 }
 
 ///|

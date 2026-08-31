@@ -274,7 +274,7 @@ fn Attribute::from_wire(
   if padding.length() != padding_length(value.length()) {
     raise InvalidMessage("attribute padding has invalid length")
   }
-  { attribute_type, value, padding }
+  { attribute_type, value, padding, }
 }
 
 ///|
@@ -439,7 +439,7 @@ pub fn Message::new(
   transaction_id~ : TransactionId,
   attributes? : Array[Attribute] = [],
 ) -> Message {
-  { class, stun_method, transaction_id, attributes: attributes.copy() }
+  { class, stun_method, transaction_id, attributes: attributes.copy(), }
 }
 
 ///|

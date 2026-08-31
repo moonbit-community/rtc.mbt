@@ -109,7 +109,7 @@ pub fn SrflxGatherer::start(
   self.rto_milliseconds = 500L
   self.retransmissions = 0
   self.deadline = Some(srflx_after(now, self.rto_milliseconds))
-  self.outputs.push({ context: self.context(), payload: request })
+  self.outputs.push({ context: self.context(), payload: request, })
   self.set_state(SrflxGathering)
 }
 
@@ -148,7 +148,7 @@ pub fn SrflxGatherer::handle_timeout(
   guard self.request is Some(request) else {
     raise InvalidState("srflx request is missing")
   }
-  self.outputs.push({ context: self.context(), payload: request })
+  self.outputs.push({ context: self.context(), payload: request, })
   self.retransmissions += 1
   self.rto_milliseconds = if self.rto_milliseconds < 8000L {
     self.rto_milliseconds * 2L

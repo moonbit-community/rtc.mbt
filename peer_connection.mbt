@@ -253,7 +253,7 @@ fn parse_literal_turn_server(url : String) -> ParsedTurnServer? raise RtcError {
   guard parse_literal_ice_server(url, scheme, default_port~) is Some(address) else {
     return None
   }
-  Some({ address, transport })
+  Some({ address, transport, })
 }
 
 ///|
@@ -3603,7 +3603,7 @@ fn PeerConnection::ensure_tcp_listeners(
       continue
     }
     let listener = self.next_stream_listener()
-    self.active_listeners.push({ listener, local_address })
+    self.active_listeners.push({ listener, local_address, })
     self.io_actions.push(ListenTcp(listener~, local_address~))
   }
 }
@@ -4185,7 +4185,7 @@ fn PeerConnection::handle_ice_stream_bytes(
     self.bytes_received += payload.length().to_uint64()
     self.packets_received += 1UL
     rtc_ice(() => {
-      agent.handle_datagram({ now, context: stream.logical_context, payload })
+      agent.handle_datagram({ now, context: stream.logical_context, payload, })
     })
     self.drive(now)
   }

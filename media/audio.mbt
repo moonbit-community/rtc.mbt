@@ -25,7 +25,7 @@ pub fn AudioBuffer::new(
       "audio sample count is not divisible by the channel count",
     )
   }
-  { samples: samples.copy(), channels, layout }
+  { samples: samples.copy(), channels, layout, }
 }
 
 ///|
@@ -117,7 +117,7 @@ pub fn AudioBuffer::with_layout(
         }
       }
   }
-  { samples: converted, channels: self.channels, layout }
+  { samples: converted, channels: self.channels, layout, }
 }
 
 ///|

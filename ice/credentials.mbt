@@ -34,7 +34,7 @@ pub fn IceCredentials::new(
       raise InvalidCredentials
     }
   }
-  { username_fragment, password }
+  { username_fragment, password, }
 }
 
 ///|

@@ -74,7 +74,12 @@ async test "blocked output admits control while leaving app ingress queued" {
   )
   let control : @rtc.InboundDatagram = {
     now,
-    context: { local_address: address, peer: address, ecn: None, protocol: Udp },
+    context: {
+      local_address: address,
+      peer: address,
+      ecn: None,
+      protocol: Udp,
+    },
     payload: b"\x16",
   }
   put_network_input(driver.shared, Inbound(control))

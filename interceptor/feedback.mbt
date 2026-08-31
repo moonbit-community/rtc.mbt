@@ -96,7 +96,7 @@ pub fn NackGenerator::observe(
           for offset = 0; offset < missing_count; offset = offset + 1 {
             let candidate = first + offset.to_uint16()
             if self.missing_index(candidate) is None {
-              self.missing.push({ sequence: candidate, attempts: 0 })
+              self.missing.push({ sequence: candidate, attempts: 0, })
             }
           }
           while self.missing.length() > self.max_tracked {
@@ -175,7 +175,7 @@ pub struct SenderReportGenerator {
 
 ///|
 pub fn SenderReportGenerator::new(sender_ssrc : UInt) -> SenderReportGenerator {
-  { sender_ssrc, packet_count: 0, octet_count: 0, last_rtp_timestamp: 0 }
+  { sender_ssrc, packet_count: 0, octet_count: 0, last_rtp_timestamp: 0, }
 }
 
 ///|
@@ -531,7 +531,7 @@ pub fn TwccRecorder::observe_with_extension_id(
       }
     }
   }
-  self.observations.push({ sequence, arrival_us })
+  self.observations.push({ sequence, arrival_us, })
   if self.observations.length() > self.max_packets {
     ignore(self.observations.remove(0))
     self.base_sequence = if self.observations.is_empty() {

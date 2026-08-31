@@ -37,7 +37,7 @@ pub fn SessionDescription::new(
   sdp_type~ : SdpType,
   sdp~ : String,
 ) -> SessionDescription {
-  { sdp_type, sdp }
+  { sdp_type, sdp, }
 }
 
 ///|

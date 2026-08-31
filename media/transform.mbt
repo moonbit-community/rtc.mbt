@@ -25,7 +25,7 @@ pub fn EncodedFrameContext::new(
   timestamp~ : UInt,
   marker~ : Bool,
 ) -> EncodedFrameContext {
-  { direction, track_id, codec, ssrc, sequence_number, timestamp, marker }
+  { direction, track_id, codec, ssrc, sequence_number, timestamp, marker, }
 }
 
 ///|
@@ -42,7 +42,7 @@ pub fn EncodedTransform::new(
   if name.is_empty() || name.contains("\r") || name.contains("\n") {
     raise InvalidMedia("encoded transform name is invalid")
   }
-  { name, handler }
+  { name, handler, }
 }
 
 ///|
@@ -57,7 +57,7 @@ pub struct EncodedTransformPipeline {
 
 ///|
 pub fn EncodedTransformPipeline::new() -> EncodedTransformPipeline {
-  { stages: [] }
+  { stages: [], }
 }
 
 ///|

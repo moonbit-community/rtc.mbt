@@ -73,7 +73,7 @@ fn negotiated_outbound_media(
     peer.local_track_payload_type("moonbit-video") is Some(video_payload_type) else {
     fail("external media answer omitted negotiated RTP transport parameters")
   }
-  { audio_ssrc, audio_payload_type, video_ssrc, video_payload_type }
+  { audio_ssrc, audio_payload_type, video_ssrc, video_payload_type, }
 }
 
 ///|

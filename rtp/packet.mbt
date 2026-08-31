@@ -112,7 +112,7 @@ fn decode_one_byte_extensions(
     if offset + length > body.length() {
       raise InvalidExtension("truncated one-byte RTP header extension")
     }
-    extensions.push({ id, payload: body[offset:offset + length].to_owned() })
+    extensions.push({ id, payload: body[offset:offset + length].to_owned(), })
     offset += length
   }
   extensions
@@ -138,7 +138,7 @@ fn decode_two_byte_extensions(
     if offset + length > body.length() {
       raise InvalidExtension("truncated two-byte RTP extension payload")
     }
-    extensions.push({ id, payload: body[offset:offset + length].to_owned() })
+    extensions.push({ id, payload: body[offset:offset + length].to_owned(), })
     offset += length
   }
   extensions

@@ -12,7 +12,7 @@ pub fn AudioLevelExtension::new(
   if level > 127 {
     raise InvalidExtension("RTP audio level exceeds 127")
   }
-  { level, voice }
+  { level, voice, }
 }
 
 ///|
@@ -42,7 +42,7 @@ pub fn AudioLevelExtension::unmarshal(
   if payload.length() != 1 {
     raise InvalidExtension("RTP audio level extension must be one byte")
   }
-  { level: payload[0] & 0x7f, voice: (payload[0] & 0x80) != 0 }
+  { level: payload[0] & 0x7f, voice: (payload[0] & 0x80) != 0, }
 }
 
 ///|
@@ -93,7 +93,7 @@ pub(all) struct AbsSendTimeExtension {
 pub fn AbsSendTimeExtension::new(
   send_time_ntp : UInt64,
 ) -> AbsSendTimeExtension {
-  { timestamp: (send_time_ntp >> 14) & 0xffffffUL }
+  { timestamp: (send_time_ntp >> 14) & 0xffffffUL, }
 }
 
 ///|
@@ -169,7 +169,7 @@ pub fn PlayoutDelayExtension::new(
   if min_delay > max_delay {
     raise InvalidExtension("minimum playout delay exceeds maximum")
   }
-  { min_delay, max_delay }
+  { min_delay, max_delay, }
 }
 
 ///|
@@ -238,7 +238,7 @@ pub fn VideoOrientationExtension::new(
   flip? : Bool = false,
   rotation? : VideoRotation = Degree0,
 ) -> VideoOrientationExtension {
-  { direction, flip, rotation }
+  { direction, flip, rotation, }
 }
 
 ///|
@@ -298,5 +298,5 @@ pub fn VideoOrientationExtension::unmarshal(
     2 => Degree180
     _ => Degree270
   }
-  { direction, flip: (payload[0] & 0x04) != 0, rotation }
+  { direction, flip: (payload[0] & 0x04) != 0, rotation, }
 }

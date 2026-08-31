@@ -204,7 +204,14 @@ fn ClientHelloMessage::decode_body(
   let extensions = HelloExtensions::decode(
     hs_read_bytes(reader, reader.remaining(), "ClientHello extensions"),
   )
-  { random, session_id, cookie, cipher_suites, compression_methods, extensions }
+  {
+    random,
+    session_id,
+    cookie,
+    cipher_suites,
+    compression_methods,
+    extensions,
+  }
 }
 
 ///|
@@ -294,7 +301,7 @@ fn ServerHelloMessage::decode_body(
   let extensions = HelloExtensions::decode(
     hs_read_bytes(reader, reader.remaining(), "ServerHello extensions"),
   )
-  { random, session_id, cipher_suite, compression_method, extensions }
+  { random, session_id, cipher_suite, compression_method, extensions, }
 }
 
 ///|
@@ -519,7 +526,7 @@ fn CertificateRequestMessage::decode_body(
   if reader.remaining() != 0 {
     raise InvalidHandshake("trailing CertificateRequest bytes")
   }
-  { certificate_types, signature_algorithms }
+  { certificate_types, signature_algorithms, }
 }
 
 ///|
@@ -555,7 +562,7 @@ fn ClientKeyExchangeMessage::decode_body(
   if body.length() >= 2 {
     let identity_length = ((body[0].to_uint() << 8) | body[1].to_uint()).reinterpret_as_int()
     if identity_length + 2 == body.length() {
-      return { public_key: b"", identity_hint: Some(body[2:].to_owned()) }
+      return { public_key: b"", identity_hint: Some(body[2:].to_owned()), }
     }
   }
   let reader = @codec.Reader::new(body)
@@ -563,7 +570,7 @@ fn ClientKeyExchangeMessage::decode_body(
   if reader.remaining() != 0 {
     raise InvalidHandshake("trailing ClientKeyExchange bytes")
   }
-  { public_key, identity_hint: None }
+  { public_key, identity_hint: None, }
 }
 
 ///|
@@ -594,7 +601,7 @@ fn CertificateVerifyMessage::decode_body(
   if reader.remaining() != 0 {
     raise InvalidHandshake("trailing CertificateVerify bytes")
   }
-  { signature_algorithm, signature }
+  { signature_algorithm, signature, }
 }
 
 ///|
@@ -619,7 +626,7 @@ fn FinishedMessage::decode_body(
   if body.length() != 12 {
     raise InvalidHandshake("Finished verify_data must contain 12 bytes")
   }
-  { verify_data: body }
+  { verify_data: body, }
 }
 
 ///|

@@ -31,7 +31,7 @@ pub fn CertificateIdentity::generate(
     )
   })
   let certificate_der = crypto_operation(() => certificate.to_der(provider))
-  { provider, private_key, certificate, certificate_der, key_type }
+  { provider, private_key, certificate, certificate_der, key_type, }
 }
 
 ///|

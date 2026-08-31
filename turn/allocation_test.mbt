@@ -12,7 +12,7 @@ fn turn_inbound(
   now : @transport.Instant,
   payload : Bytes,
 ) -> @transport.InboundDatagram {
-  { now, context: outbound.context, payload }
+  { now, context: outbound.context, payload, }
 }
 
 ///|

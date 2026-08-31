@@ -12,7 +12,7 @@ pub struct Reader {
 
 ///|
 pub fn Reader::new(data : Bytes) -> Reader {
-  { data, offset: 0 }
+  { data, offset: 0, }
 }
 
 ///|
@@ -117,7 +117,7 @@ pub fn Writer::new(capacity? : Int = 0) -> Writer raise CodecError {
   if capacity < 0 {
     raise InvalidLength(capacity)
   }
-  { bytes: Array::new(capacity~) }
+  { bytes: Array::new(capacity~), }
 }
 
 ///|

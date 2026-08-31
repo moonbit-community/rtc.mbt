@@ -22,7 +22,7 @@ pub fn HeaderExtension::new(
   if payload.length() > 255 {
     raise InvalidExtension("RTP extension payload exceeds 255 bytes")
   }
-  { id, payload }
+  { id, payload, }
 }
 
 ///|

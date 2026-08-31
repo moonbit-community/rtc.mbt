@@ -33,7 +33,7 @@ pub struct TransactionAgent {
 
 ///|
 pub fn TransactionAgent::new() -> TransactionAgent {
-  { transactions: Map([]), events: Queue([]), closed: false }
+  { transactions: Map([]), events: Queue([]), closed: false, }
 }
 
 ///|
@@ -71,7 +71,7 @@ pub fn TransactionAgent::process(
   }
   let transaction_id = message.transaction_id
   self.transactions.remove(transaction_id)
-  self.events.push({ transaction_id, event: Received(message) })
+  self.events.push({ transaction_id, event: Received(message), })
 }
 
 ///|
@@ -86,7 +86,7 @@ pub fn TransactionAgent::stop(
     raise TransactionNotFound
   }
   self.transactions.remove(transaction_id)
-  self.events.push({ transaction_id, event: Stopped })
+  self.events.push({ transaction_id, event: Stopped, })
 }
 
 ///|
@@ -105,7 +105,7 @@ pub fn TransactionAgent::collect(
   })
   for transaction_id in expired {
     self.transactions.remove(transaction_id)
-    self.events.push({ transaction_id, event: TimedOut })
+    self.events.push({ transaction_id, event: TimedOut, })
   }
 }
 
@@ -136,7 +136,7 @@ pub fn TransactionAgent::close(self : TransactionAgent) -> Unit raise StunError 
     raise AgentClosed
   }
   for transaction_id in self.transactions.keys() {
-    self.events.push({ transaction_id, event: Closed })
+    self.events.push({ transaction_id, event: Closed, })
   }
   self.transactions.clear()
   self.closed = true
