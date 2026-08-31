@@ -1301,8 +1301,15 @@ pub fn Endpoint::handle_datagram(
   now : @transport.Instant,
   datagram : Bytes,
 ) -> Unit raise DtlsError {
-  self.handle_datagram_impl(now, datagram) catch {
-    error => {
+  let result : Result[Unit, DtlsError] = try {
+    self.handle_datagram_impl(now, datagram)
+    Ok(())
+  } catch {
+    error => Err(error)
+  }
+  match result {
+    Ok(_) => ()
+    Err(error) => {
       self.fail(error)
       raise error
     }
