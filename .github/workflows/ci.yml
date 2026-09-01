@@ -18,32 +18,41 @@ jobs:
     timeout-minutes: 15
     container:
       image: ubuntu:22.04@sha256:0d779ea97881505f5ef0039336ee85edba27519bdba968c284c86ee066a973c8
+      volumes:
+        - /etc/ssl/certs/ca-certificates.crt:/opt/bootstrap-ca.pem
     defaults:
       run:
         shell: bash
     steps:
-      - name: Bootstrap certificate trust
-        run: |
-          apt-get update -o APT::Update::Error-Mode=any
-          DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends \
-            ca-certificates
-
       - name: Install dependencies from the pinned Ubuntu snapshot
         run: |
           printf '%s\n' \
-            "deb [snapshot=${UBUNTU_SNAPSHOT}] http://archive.ubuntu.com/ubuntu jammy main" \
-            "deb [snapshot=${UBUNTU_SNAPSHOT}] http://archive.ubuntu.com/ubuntu jammy-updates main" \
-            "deb [snapshot=${UBUNTU_SNAPSHOT}] http://security.ubuntu.com/ubuntu jammy-security main" \
-            > /etc/apt/sources.list
-          apt-get update -o APT::Update::Error-Mode=any
-          DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends \
-            build-essential \
-            ca-certificates \
-            curl \
-            git \
-            "libssl3=${OPENSSL_PACKAGE_VERSION}" \
-            "libssl-dev=${OPENSSL_PACKAGE_VERSION}" \
-            "openssl=${OPENSSL_PACKAGE_VERSION}"
+            "deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/${UBUNTU_SNAPSHOT} jammy main" \
+            "deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/${UBUNTU_SNAPSHOT} jammy-updates main" \
+            "deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/${UBUNTU_SNAPSHOT} jammy-security main" \
+            > /etc/apt/rtc-snapshot.list
+
+          apt_options=(
+            -o Dir::Etc::sourcelist=/etc/apt/rtc-snapshot.list
+            -o Dir::Etc::sourceparts=-
+            -o Acquire::https::CAInfo=/opt/bootstrap-ca.pem
+          )
+
+          apt-get "${apt_options[@]}" update \
+            -o APT::Update::Error-Mode=any
+
+          DEBIAN_FRONTEND=noninteractive \
+            apt-get "${apt_options[@]}" install \
+              --yes \
+              --allow-downgrades \
+              --no-install-recommends \
+              build-essential \
+              ca-certificates \
+              curl \
+              git \
+              "libssl3=${OPENSSL_PACKAGE_VERSION}" \
+              "libssl-dev=${OPENSSL_PACKAGE_VERSION}" \
+              "openssl=${OPENSSL_PACKAGE_VERSION}"
 
       - uses: actions/checkout@v5
 
