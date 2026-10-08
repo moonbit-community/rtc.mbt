@@ -157,7 +157,7 @@ fn generate_mdns_name(provider : @crypto.Provider) -> String raise RtcError {
 
 ///|
 fn parse_ice_server_port(value : String) -> UInt16 raise RtcError {
-  let parsed : UInt64 = @strconv.from_str(value) catch {
+  let parsed : UInt64 = @string.from_str(value) catch {
     _ => raise InvalidConfiguration("invalid ICE server port")
   }
   if parsed == 0UL || parsed > 65535UL {

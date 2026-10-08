@@ -1,5 +1,8 @@
 ///|
-fn swap_datagram(datagram : OutboundDatagram, now : Instant) -> InboundDatagram {
+fn swap_datagram(
+  datagram : @rtc.OutboundDatagram,
+  now : @rtc.Instant,
+) -> @rtc.InboundDatagram {
   {
     now,
     context: {
@@ -13,7 +16,9 @@ fn swap_datagram(datagram : OutboundDatagram, now : Instant) -> InboundDatagram 
 }
 
 ///|
-fn[T] test_stun(operation : () -> T raise @stun.StunError) -> T raise RtcError {
+fn[T] test_stun(
+  operation : () -> T raise @stun.StunError,
+) -> T raise @rtc.RtcError {
   operation() catch {
     error => raise Stun(error)
   }
@@ -21,10 +26,10 @@ fn[T] test_stun(operation : () -> T raise @stun.StunError) -> T raise RtcError {
 
 ///|
 fn gather_test_relay(
-  peer : PeerConnection,
-  relayed_address : SocketAddress,
-  now : Instant,
-) -> Unit raise RtcError {
+  peer : @rtc.PeerConnection,
+  relayed_address : @rtc.SocketAddress,
+  now : @rtc.Instant,
+) -> Unit raise @rtc.RtcError {
   ignore(peer.create_offer(now))
   guard peer.poll_datagram() is Some(initial_datagram) else {
     raise InvalidState("test TURN server did not receive Allocate")
@@ -86,24 +91,24 @@ fn gather_test_stream_relay(
   url : String,
   expected_tls : Bool,
   expected_server_port : UInt16,
-) -> Unit raise RtcError {
-  let host_address = SocketAddress::new(
-    address=IpAddress::loopback_v4(),
+) -> Unit raise @rtc.RtcError {
+  let host_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::loopback_v4(),
     port=52000,
   )
-  let server_address = SocketAddress::new(
-    address=IpAddress::v4(192, 0, 2, 200),
+  let server_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::v4(192, 0, 2, 200),
     port=expected_server_port,
   )
-  let relayed_address = SocketAddress::new(
-    address=IpAddress::v4(198, 51, 100, 200),
+  let relayed_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::v4(198, 51, 100, 200),
     port=55000,
   )
-  let sample = ClockSample::new(
-    monotonic=Instant::from_milliseconds(0) catch {
+  let sample = @rtc.ClockSample::new(
+    monotonic=@rtc.Instant::from_milliseconds(0) catch {
       _ => raise InvalidState("invalid TURN stream test time")
     },
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
   let host_candidate = @ice.IceCandidate::host(
     foundation="turn-stream-host",
@@ -111,10 +116,10 @@ fn gather_test_stream_relay(
   ) catch {
     error => raise Ice(error)
   }
-  let peer = PeerConnection::new(
-    Configuration::new(
+  let peer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(
       ice_servers=[
-        IceServer::new(
+        @rtc.IceServer::new(
           urls=[url],
           username="relay-user",
           credential="relay-pass",
@@ -149,8 +154,8 @@ fn gather_test_stream_relay(
     }
     _ => raise InvalidState("TURN stream used the wrong connect action")
   }
-  let connected_context : TransportContext = {
-    local_address: SocketAddress::new(
+  let connected_context : @rtc.TransportContext = {
+    local_address: @rtc.SocketAddress::new(
       address=host_address.address(),
       port=53000,
     ),
@@ -234,15 +239,15 @@ test "PeerConnection gathers TURN relay over TCP and TLS stream legs" {
 
 ///|
 fn serve_test_turn_datagram(
-  source : PeerConnection,
-  destination : PeerConnection,
-  datagram : OutboundDatagram,
-  source_relay : SocketAddress,
-  destination_relay : SocketAddress,
-  destination_local : SocketAddress,
-  server : SocketAddress,
-  now : Instant,
-) -> Unit raise RtcError {
+  source : @rtc.PeerConnection,
+  destination : @rtc.PeerConnection,
+  datagram : @rtc.OutboundDatagram,
+  source_relay : @rtc.SocketAddress,
+  destination_relay : @rtc.SocketAddress,
+  destination_local : @rtc.SocketAddress,
+  server : @rtc.SocketAddress,
+  now : @rtc.Instant,
+) -> Unit raise @rtc.RtcError {
   if datagram.context.peer != server {
     raise InvalidState("relay-only peer emitted a direct datagram")
   }
@@ -314,15 +319,15 @@ fn serve_test_turn_datagram(
 
 ///|
 fn pump_relayed_peers(
-  offerer : PeerConnection,
-  answerer : PeerConnection,
-  offerer_relay : SocketAddress,
-  answerer_relay : SocketAddress,
-  offerer_local : SocketAddress,
-  answerer_local : SocketAddress,
-  server : SocketAddress,
-  now : Instant,
-) -> Bool raise RtcError {
+  offerer : @rtc.PeerConnection,
+  answerer : @rtc.PeerConnection,
+  offerer_relay : @rtc.SocketAddress,
+  answerer_relay : @rtc.SocketAddress,
+  offerer_local : @rtc.SocketAddress,
+  answerer_local : @rtc.SocketAddress,
+  server : @rtc.SocketAddress,
+  now : @rtc.Instant,
+) -> Bool raise @rtc.RtcError {
   for round = 0; round < 32768; round = round + 1 {
     let mut progressed = false
     match offerer.poll_datagram() {
@@ -354,10 +359,10 @@ fn pump_relayed_peers(
 
 ///|
 fn pump_peers(
-  offerer : PeerConnection,
-  answerer : PeerConnection,
-  now : Instant,
-) -> Bool raise RtcError {
+  offerer : @rtc.PeerConnection,
+  answerer : @rtc.PeerConnection,
+  now : @rtc.Instant,
+) -> Bool raise @rtc.RtcError {
   for round = 0; round < 16384; round = round + 1 {
     let mut progressed = false
     match offerer.poll_datagram() {
@@ -383,20 +388,20 @@ fn pump_peers(
 
 ///|
 struct TcpTestNetwork {
-  mut listener : ListenerId?
-  mut client_connection : ConnectionId?
-  server_connection : ConnectionId
-  client_address : SocketAddress
-  server_address : SocketAddress
+  mut listener : @rtc.ListenerId?
+  mut client_connection : @rtc.ConnectionId?
+  server_connection : @rtc.ConnectionId
+  client_address : @rtc.SocketAddress
+  server_address : @rtc.SocketAddress
 }
 
 ///|
 fn deliver_stream_chunks(
-  destination : PeerConnection,
-  connection : ConnectionId,
+  destination : @rtc.PeerConnection,
+  connection : @rtc.ConnectionId,
   bytes : Bytes,
-  now : Instant,
-) -> Unit raise RtcError {
+  now : @rtc.Instant,
+) -> Unit raise @rtc.RtcError {
   let split = if bytes.length() > 1 { bytes.length() / 2 } else { 1 }
   destination.handle_io_event(
     StreamBytes(now~, connection~, bytes=bytes[0:split].to_owned()),
@@ -410,11 +415,11 @@ fn deliver_stream_chunks(
 
 ///|
 fn pump_tcp_peers(
-  client : PeerConnection,
-  server : PeerConnection,
+  client : @rtc.PeerConnection,
+  server : @rtc.PeerConnection,
   network : TcpTestNetwork,
-  now : Instant,
-) -> Bool raise RtcError {
+  now : @rtc.Instant,
+) -> Bool raise @rtc.RtcError {
   for round = 0; round < 32768; round = round + 1 {
     let mut progressed = false
     match server.poll_io_action() {
@@ -449,13 +454,13 @@ fn pump_tcp_peers(
           raise InvalidState("ICE TCP connect preceded the passive listener")
         }
         network.client_connection = Some(connection)
-        let client_context : TransportContext = {
+        let client_context : @rtc.TransportContext = {
           local_address: network.client_address,
           peer: network.server_address,
           ecn: None,
           protocol: Tcp,
         }
-        let server_context : TransportContext = {
+        let server_context : @rtc.TransportContext = {
           local_address: network.server_address,
           peer: network.client_address,
           ecn: None,
@@ -495,7 +500,10 @@ fn pump_tcp_peers(
 }
 
 ///|
-fn saw_channel_open(peer : PeerConnection, stream : @sctp.StreamId) -> Bool {
+fn saw_channel_open(
+  peer : @rtc.PeerConnection,
+  stream : @sctp.StreamId,
+) -> Bool {
   let mut found = false
   while peer.poll_event() is Some(event) {
     match event {
@@ -507,7 +515,10 @@ fn saw_channel_open(peer : PeerConnection, stream : @sctp.StreamId) -> Bool {
 }
 
 ///|
-fn saw_channel_closed(peer : PeerConnection, stream : @sctp.StreamId) -> Bool {
+fn saw_channel_closed(
+  peer : @rtc.PeerConnection,
+  stream : @sctp.StreamId,
+) -> Bool {
   let mut found = false
   while peer.poll_event() is Some(event) {
     match event {
@@ -520,7 +531,7 @@ fn saw_channel_closed(peer : PeerConnection, stream : @sctp.StreamId) -> Bool {
 
 ///|
 fn saw_buffered_amount_low(
-  peer : PeerConnection,
+  peer : @rtc.PeerConnection,
   stream : @sctp.StreamId,
 ) -> Bool {
   let mut found = false
@@ -535,8 +546,8 @@ fn saw_buffered_amount_low(
 
 ///|
 fn without_sdp_candidates(
-  description : SessionDescription,
-) -> SessionDescription {
+  description : @rtc.SessionDescription,
+) -> @rtc.SessionDescription {
   let sdp = description
     .sdp()
     .split("\r\n")
@@ -544,17 +555,17 @@ fn without_sdp_candidates(
     .map(line => line.to_owned())
     .to_array()
     .join("\r\n")
-  SessionDescription::new(sdp_type=description.sdp_type(), sdp~)
+  @rtc.SessionDescription::new(sdp_type=description.sdp_type(), sdp~)
 }
 
 ///|
 test "two PeerConnections negotiate host ICE, DTLS, SCTP, and DataChannel" {
-  let offerer_address = SocketAddress::new(
-    address=IpAddress::loopback_v4(),
+  let offerer_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::loopback_v4(),
     port=50000,
   )
-  let answerer_address = SocketAddress::new(
-    address=IpAddress::loopback_v4(),
+  let answerer_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::loopback_v4(),
     port=50001,
   )
   let offerer_candidate = @ice.IceCandidate::host(
@@ -565,20 +576,20 @@ test "two PeerConnections negotiate host ICE, DTLS, SCTP, and DataChannel" {
     foundation="answerer",
     answerer_address,
   )
-  let sample = ClockSample::new(
-    monotonic=Instant::from_milliseconds(0),
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+  let sample = @rtc.ClockSample::new(
+    monotonic=@rtc.Instant::from_milliseconds(0),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
-  let offerer = PeerConnection::new(
-    Configuration::new(host_candidates=[offerer_candidate]),
+  let offerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(host_candidates=[offerer_candidate]),
     sample,
   )
-  let answerer = PeerConnection::new(
-    Configuration::new(host_candidates=[answerer_candidate]),
+  let answerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(host_candidates=[answerer_candidate]),
     sample,
   )
   let channel = offerer.create_data_channel(
-    DataChannelConfig::new(label="chat", protocol="moonbit"),
+    @rtc.DataChannelConfig::new(label="chat", protocol="moonbit"),
     sample.monotonic(),
   )
   assert_eq(channel.id(), StreamId(1))
@@ -679,11 +690,11 @@ test "two PeerConnections negotiate host ICE, DTLS, SCTP, and DataChannel" {
 
 ///|
 test "PeerConnection settings drive PSK DTLS and the answering role" {
-  let sample = ClockSample::new(
-    monotonic=Instant::from_milliseconds(0),
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+  let sample = @rtc.ClockSample::new(
+    monotonic=@rtc.Instant::from_milliseconds(0),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
-  let settings = Settings::new(
+  let settings = @rtc.Settings::new(
     dtls_psk=b"peer-connection-shared-secret",
     dtls_psk_identity=b"rtc.mbt",
     answering_dtls_role=Server,
@@ -691,24 +702,30 @@ test "PeerConnection settings drive PSK DTLS and the answering role" {
     sctp_send_buffer_size=131072UL,
     sctp_receive_buffer_size=131072U,
   )
-  let offerer = PeerConnection::new(
-    Configuration::new(
+  let offerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(
       host_candidates=[
         @ice.IceCandidate::host(
           foundation="psk-offerer",
-          SocketAddress::new(address=IpAddress::loopback_v4(), port=50500),
+          @rtc.SocketAddress::new(
+            address=@rtc.IpAddress::loopback_v4(),
+            port=50500,
+          ),
         ),
       ],
       settings~,
     ),
     sample,
   )
-  let answerer = PeerConnection::new(
-    Configuration::new(
+  let answerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(
       host_candidates=[
         @ice.IceCandidate::host(
           foundation="psk-answerer",
-          SocketAddress::new(address=IpAddress::loopback_v4(), port=50501),
+          @rtc.SocketAddress::new(
+            address=@rtc.IpAddress::loopback_v4(),
+            port=50501,
+          ),
         ),
       ],
       settings~,
@@ -716,7 +733,7 @@ test "PeerConnection settings drive PSK DTLS and the answering role" {
     sample,
   )
   let channel = offerer.create_data_channel(
-    DataChannelConfig::new(label="psk-settings"),
+    @rtc.DataChannelConfig::new(label="psk-settings"),
     sample.monotonic(),
   )
   let offer = offerer.create_offer(sample.monotonic())
@@ -750,38 +767,44 @@ test "PeerConnection settings drive PSK DTLS and the answering role" {
 
 ///|
 test "PeerConnection settings drive ICE disconnected and failed states" {
-  let start = Instant::from_milliseconds(0)
-  let sample = ClockSample::new(
+  let start = @rtc.Instant::from_milliseconds(0)
+  let sample = @rtc.ClockSample::new(
     monotonic=start,
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
-  let offerer = PeerConnection::new(
-    Configuration::new(
+  let offerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(
       host_candidates=[
         @ice.IceCandidate::host(
           foundation="liveness-offerer",
-          SocketAddress::new(address=IpAddress::loopback_v4(), port=50600),
+          @rtc.SocketAddress::new(
+            address=@rtc.IpAddress::loopback_v4(),
+            port=50600,
+          ),
         ),
       ],
-      settings=Settings::new(
-        ice_disconnected_timeout=Duration::milliseconds(10),
-        ice_failed_timeout=Duration::milliseconds(20),
-        ice_keepalive_interval=Duration::milliseconds(5),
+      settings=@rtc.Settings::new(
+        ice_disconnected_timeout=@rtc.Duration::milliseconds(10),
+        ice_failed_timeout=@rtc.Duration::milliseconds(20),
+        ice_keepalive_interval=@rtc.Duration::milliseconds(5),
       ),
     ),
     sample,
   )
-  let answerer = PeerConnection::new(
-    Configuration::new(host_candidates=[
+  let answerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(host_candidates=[
       @ice.IceCandidate::host(
         foundation="liveness-answerer",
-        SocketAddress::new(address=IpAddress::loopback_v4(), port=50601),
+        @rtc.SocketAddress::new(
+          address=@rtc.IpAddress::loopback_v4(),
+          port=50601,
+        ),
       ),
     ]),
     sample,
   )
   let channel = offerer.create_data_channel(
-    DataChannelConfig::new(label="liveness"),
+    @rtc.DataChannelConfig::new(label="liveness"),
     start,
   )
   let offer = offerer.create_offer(start)
@@ -793,28 +816,28 @@ test "PeerConnection settings drive ICE disconnected and failed states" {
   assert_true(pump_peers(offerer, answerer, start))
   assert_eq(offerer.connection_state(), Connected)
   assert_true(saw_channel_open(offerer, channel.id()))
-  assert_eq(offerer.poll_timeout(), Some(Instant::from_milliseconds(5)))
+  assert_eq(offerer.poll_timeout(), Some(@rtc.Instant::from_milliseconds(5)))
 
-  offerer.handle_timeout(Instant::from_milliseconds(10))
+  offerer.handle_timeout(@rtc.Instant::from_milliseconds(10))
   assert_eq(offerer.connection_state(), Disconnected)
-  offerer.handle_timeout(Instant::from_milliseconds(29))
+  offerer.handle_timeout(@rtc.Instant::from_milliseconds(29))
   assert_eq(offerer.connection_state(), Disconnected)
-  offerer.handle_timeout(Instant::from_milliseconds(30))
+  offerer.handle_timeout(@rtc.Instant::from_milliseconds(30))
   assert_eq(offerer.connection_state(), Failed)
 }
 
 ///|
 test "PeerConnection carries DataChannel over active/passive ICE TCP" {
-  let advertised_client_address = SocketAddress::new(
-    address=IpAddress::loopback_v4(),
+  let advertised_client_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::loopback_v4(),
     port=0,
   )
-  let connected_client_address = SocketAddress::new(
-    address=IpAddress::loopback_v4(),
+  let connected_client_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::loopback_v4(),
     port=51000,
   )
-  let server_address = SocketAddress::new(
-    address=IpAddress::loopback_v4(),
+  let server_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::loopback_v4(),
     port=51001,
   )
   let client_candidate = @ice.IceCandidate::tcp_host(
@@ -827,20 +850,20 @@ test "PeerConnection carries DataChannel over active/passive ICE TCP" {
     server_address,
     tcp_type=Passive,
   )
-  let sample = ClockSample::new(
-    monotonic=Instant::from_milliseconds(0),
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+  let sample = @rtc.ClockSample::new(
+    monotonic=@rtc.Instant::from_milliseconds(0),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
-  let client = PeerConnection::new(
-    Configuration::new(host_candidates=[client_candidate]),
+  let client = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(host_candidates=[client_candidate]),
     sample,
   )
-  let server = PeerConnection::new(
-    Configuration::new(host_candidates=[server_candidate]),
+  let server = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(host_candidates=[server_candidate]),
     sample,
   )
   let channel = client.create_data_channel(
-    DataChannelConfig::new(label="ice-tcp"),
+    @rtc.DataChannelConfig::new(label="ice-tcp"),
     sample.monotonic(),
   )
   let offer = client.create_offer(sample.monotonic())
@@ -911,17 +934,17 @@ test "PeerConnection carries DataChannel over active/passive ICE TCP" {
 
 ///|
 test "two PeerConnections negotiate and carry encrypted RTP and RTCP" {
-  let offerer_address = SocketAddress::new(
-    address=IpAddress::loopback_v4(),
+  let offerer_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::loopback_v4(),
     port=50500,
   )
-  let answerer_address = SocketAddress::new(
-    address=IpAddress::loopback_v4(),
+  let answerer_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::loopback_v4(),
     port=50501,
   )
-  let sample = ClockSample::new(
-    monotonic=Instant::from_milliseconds(0),
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+  let sample = @rtc.ClockSample::new(
+    monotonic=@rtc.Instant::from_milliseconds(0),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
   let encoded_transforms = @media.EncodedTransformPipeline::new()
   encoded_transforms.add(
@@ -933,8 +956,8 @@ test "two PeerConnections negotiate and carry encrypted RTP and RTCP" {
       Bytes::from_array(transformed)
     }),
   )
-  let offerer = PeerConnection::new(
-    Configuration::new(
+  let offerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(
       host_candidates=[
         @ice.IceCandidate::host(foundation="offerer-media", offerer_address),
       ],
@@ -942,8 +965,8 @@ test "two PeerConnections negotiate and carry encrypted RTP and RTCP" {
     ),
     sample,
   )
-  let answerer = PeerConnection::new(
-    Configuration::new(
+  let answerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(
       host_candidates=[
         @ice.IceCandidate::host(foundation="answerer-media", answerer_address),
       ],
@@ -958,7 +981,7 @@ test "two PeerConnections negotiate and carry encrypted RTP and RTCP" {
     fmtp="minptime=10;useinbandfec=1",
     rtcp_feedback=["transport-cc"],
   )
-  let track = MediaTrack::new(
+  let track = @rtc.MediaTrack::new(
     id="audio-track",
     stream_id="media-stream",
     kind=Audio,
@@ -970,7 +993,7 @@ test "two PeerConnections negotiate and carry encrypted RTP and RTCP" {
     clock_rate=90000U,
     rtcp_feedback=["nack", "nack pli", "transport-cc"],
   )
-  let video_track = MediaTrack::new(
+  let video_track = @rtc.MediaTrack::new(
     id="video-track",
     stream_id="media-stream",
     kind=Video,
@@ -1262,7 +1285,7 @@ test "two PeerConnections negotiate and carry encrypted RTP and RTCP" {
     Some(Rtp(track_id="video-track", packet=recovered_video_packet)),
   )
 
-  let report_time = Instant::from_milliseconds(1000)
+  let report_time = @rtc.Instant::from_milliseconds(1000)
   offerer.handle_timeout(report_time)
   answerer.handle_timeout(report_time)
   assert_true(pump_peers(offerer, answerer, report_time))
@@ -1341,7 +1364,7 @@ test "two PeerConnections negotiate and carry encrypted RTP and RTCP" {
     }),
   )
 
-  let replacement_track = MediaTrack::new(
+  let replacement_track = @rtc.MediaTrack::new(
     id="replacement-video-track",
     stream_id="replacement-media-stream",
     kind=Video,
@@ -1410,12 +1433,12 @@ test "two PeerConnections negotiate and carry encrypted RTP and RTCP" {
 
 ///|
 test "PeerConnection accepts a remote candidate trickled after signaling" {
-  let offerer_address = SocketAddress::new(
-    address=IpAddress::loopback_v4(),
+  let offerer_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::loopback_v4(),
     port=51000,
   )
-  let answerer_address = SocketAddress::new(
-    address=IpAddress::loopback_v4(),
+  let answerer_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::loopback_v4(),
     port=51001,
   )
   let offerer_candidate = @ice.IceCandidate::host(
@@ -1426,21 +1449,21 @@ test "PeerConnection accepts a remote candidate trickled after signaling" {
     foundation="answerer-trickle",
     answerer_address,
   )
-  let sample = ClockSample::new(
-    monotonic=Instant::from_milliseconds(0),
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+  let sample = @rtc.ClockSample::new(
+    monotonic=@rtc.Instant::from_milliseconds(0),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
-  let offerer = PeerConnection::new(
-    Configuration::new(host_candidates=[offerer_candidate]),
+  let offerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(host_candidates=[offerer_candidate]),
     sample,
   )
-  let answerer = PeerConnection::new(
-    Configuration::new(host_candidates=[answerer_candidate]),
+  let answerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(host_candidates=[answerer_candidate]),
     sample,
   )
   ignore(
     offerer.create_data_channel(
-      DataChannelConfig::new(label="trickle"),
+      @rtc.DataChannelConfig::new(label="trickle"),
       sample.monotonic(),
     ),
   )
@@ -1460,24 +1483,30 @@ test "PeerConnection accepts a remote candidate trickled after signaling" {
 
 ///|
 test "provisional answers commit with a final answer" {
-  let sample = ClockSample::new(
-    monotonic=Instant::from_milliseconds(0),
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+  let sample = @rtc.ClockSample::new(
+    monotonic=@rtc.Instant::from_milliseconds(0),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
-  let offerer = PeerConnection::new(
-    Configuration::new(host_candidates=[
+  let offerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(host_candidates=[
       @ice.IceCandidate::host(
         foundation="pranswer-offerer",
-        SocketAddress::new(address=IpAddress::loopback_v4(), port=51500),
+        @rtc.SocketAddress::new(
+          address=@rtc.IpAddress::loopback_v4(),
+          port=51500,
+        ),
       ),
     ]),
     sample,
   )
-  let answerer = PeerConnection::new(
-    Configuration::new(host_candidates=[
+  let answerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(host_candidates=[
       @ice.IceCandidate::host(
         foundation="pranswer-answerer",
-        SocketAddress::new(address=IpAddress::loopback_v4(), port=51501),
+        @rtc.SocketAddress::new(
+          address=@rtc.IpAddress::loopback_v4(),
+          port=51501,
+        ),
       ),
     ]),
     sample,
@@ -1500,19 +1529,19 @@ test "provisional answers commit with a final answer" {
 
 ///|
 test "remote rollback removes tracks and transceivers created by its offer" {
-  let sample = ClockSample::new(
-    monotonic=Instant::from_milliseconds(0),
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+  let sample = @rtc.ClockSample::new(
+    monotonic=@rtc.Instant::from_milliseconds(0),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
-  let offerer = PeerConnection::new(Configuration::new(), sample)
-  let answerer = PeerConnection::new(Configuration::new(), sample)
+  let offerer = @rtc.PeerConnection::new(@rtc.Configuration::new(), sample)
+  let answerer = @rtc.PeerConnection::new(@rtc.Configuration::new(), sample)
   let codec = @media.CodecCapability::new(
     mime_type="video/vp8",
     clock_rate=90000U,
   )
   ignore(
     offerer.add_track(
-      MediaTrack::new(
+      @rtc.MediaTrack::new(
         id="rollback-track",
         stream_id="rollback-stream",
         kind=Video,
@@ -1544,24 +1573,30 @@ test "remote rollback removes tracks and transceivers created by its offer" {
 
 ///|
 test "polite perfect negotiation resolves offer glare" {
-  let sample = ClockSample::new(
-    monotonic=Instant::from_milliseconds(0),
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+  let sample = @rtc.ClockSample::new(
+    monotonic=@rtc.Instant::from_milliseconds(0),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
-  let left = PeerConnection::new(
-    Configuration::new(host_candidates=[
+  let left = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(host_candidates=[
       @ice.IceCandidate::host(
         foundation="glare-left",
-        SocketAddress::new(address=IpAddress::loopback_v4(), port=51600),
+        @rtc.SocketAddress::new(
+          address=@rtc.IpAddress::loopback_v4(),
+          port=51600,
+        ),
       ),
     ]),
     sample,
   )
-  let right = PeerConnection::new(
-    Configuration::new(host_candidates=[
+  let right = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(host_candidates=[
       @ice.IceCandidate::host(
         foundation="glare-right",
-        SocketAddress::new(address=IpAddress::loopback_v4(), port=51601),
+        @rtc.SocketAddress::new(
+          address=@rtc.IpAddress::loopback_v4(),
+          port=51601,
+        ),
       ),
     ]),
     sample,
@@ -1588,12 +1623,12 @@ test "polite perfect negotiation resolves offer glare" {
 
 ///|
 test "QueryAndGather hides host addresses and resolves them through mDNS" {
-  let offerer_address = SocketAddress::new(
-    address=IpAddress::loopback_v4(),
+  let offerer_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::loopback_v4(),
     port=52000,
   )
-  let answerer_address = SocketAddress::new(
-    address=IpAddress::loopback_v4(),
+  let answerer_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::loopback_v4(),
     port=52001,
   )
   let offerer_candidate = @ice.IceCandidate::host(
@@ -1604,24 +1639,24 @@ test "QueryAndGather hides host addresses and resolves them through mDNS" {
     foundation="answerer-mdns",
     answerer_address,
   )
-  let sample = ClockSample::new(
-    monotonic=Instant::from_milliseconds(0),
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+  let sample = @rtc.ClockSample::new(
+    monotonic=@rtc.Instant::from_milliseconds(0),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
-  let offerer = PeerConnection::new(
-    Configuration::new(mdns_mode=QueryAndGather, host_candidates=[
+  let offerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(mdns_mode=QueryAndGather, host_candidates=[
       offerer_candidate,
     ]),
     sample,
   )
-  let answerer = PeerConnection::new(
-    Configuration::new(mdns_mode=QueryAndGather, host_candidates=[
+  let answerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(mdns_mode=QueryAndGather, host_candidates=[
       answerer_candidate,
     ]),
     sample,
   )
   let channel = offerer.create_data_channel(
-    DataChannelConfig::new(label="private-host"),
+    @rtc.DataChannelConfig::new(label="private-host"),
     sample.monotonic(),
   )
   let offer = offerer.create_offer(sample.monotonic())
@@ -1648,29 +1683,29 @@ test "QueryAndGather hides host addresses and resolves them through mDNS" {
 
 ///|
 test "PeerConnection gathers and trickles a server-reflexive candidate" {
-  let local_address = SocketAddress::new(
-    address=IpAddress::parse("192.0.2.10"),
+  let local_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::parse("192.0.2.10"),
     port=53000,
   )
-  let server_address = SocketAddress::new(
-    address=IpAddress::parse("192.0.2.200"),
+  let server_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::parse("192.0.2.200"),
     port=3478,
   )
-  let mapped_address = SocketAddress::new(
-    address=IpAddress::parse("198.51.100.10"),
+  let mapped_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::parse("198.51.100.10"),
     port=62000,
   )
   let local_candidate = @ice.IceCandidate::host(
     foundation="host-srflx",
     local_address,
   )
-  let sample = ClockSample::new(
-    monotonic=Instant::from_milliseconds(0),
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+  let sample = @rtc.ClockSample::new(
+    monotonic=@rtc.Instant::from_milliseconds(0),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
-  let peer = PeerConnection::new(
-    Configuration::new(
-      ice_servers=[IceServer::new(urls=["stun:192.0.2.200:3478"])],
+  let peer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(
+      ice_servers=[@rtc.IceServer::new(urls=["stun:192.0.2.200:3478"])],
       host_candidates=[local_candidate],
     ),
     sample,
@@ -1698,7 +1733,7 @@ test "PeerConnection gathers and trickles a server-reflexive candidate" {
     context: binding_datagram.context,
     payload: response,
   })
-  let mut discovered_srflx : IceCandidate? = None
+  let mut discovered_srflx : @rtc.IceCandidate? = None
   let mut gathering_complete = false
   while peer.poll_event() is Some(event) {
     match event {
@@ -1721,30 +1756,30 @@ test "PeerConnection gathers and trickles a server-reflexive candidate" {
 
 ///|
 test "relay policy gathers a TURN candidate without exposing the host" {
-  let local_address = SocketAddress::new(
-    address=IpAddress::parse("192.0.2.60"),
+  let local_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::parse("192.0.2.60"),
     port=54000,
   )
-  let server_address = SocketAddress::new(
-    address=IpAddress::parse("192.0.2.210"),
+  let server_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::parse("192.0.2.210"),
     port=3478,
   )
-  let relayed_address = SocketAddress::new(
-    address=IpAddress::parse("198.51.100.60"),
+  let relayed_address = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::parse("198.51.100.60"),
     port=56000,
   )
   let host_candidate = @ice.IceCandidate::host(
     foundation="relay-base",
     local_address,
   )
-  let sample = ClockSample::new(
-    monotonic=Instant::from_milliseconds(0),
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+  let sample = @rtc.ClockSample::new(
+    monotonic=@rtc.Instant::from_milliseconds(0),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
-  let peer = PeerConnection::new(
-    Configuration::new(
+  let peer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(
       ice_servers=[
-        IceServer::new(
+        @rtc.IceServer::new(
           urls=["turn:192.0.2.210:3478?transport=udp"],
           username="turn-user",
           credential="turn-pass",
@@ -1805,7 +1840,7 @@ test "relay policy gathers a TURN candidate without exposing the host" {
     context: authenticated_allocate_datagram.context,
     payload: success,
   })
-  let mut relay_candidate : IceCandidate? = None
+  let mut relay_candidate : @rtc.IceCandidate? = None
   while peer.poll_event() is Some(event) {
     match event {
       IceCandidateDiscovered(candidate) if candidate.candidate_type() == Relay =>
@@ -1830,37 +1865,37 @@ test "relay policy gathers a TURN candidate without exposing the host" {
 
 ///|
 test "two relay-only PeerConnections carry a DataChannel through TURN" {
-  let offerer_local = SocketAddress::new(
-    address=IpAddress::parse("192.0.2.70"),
+  let offerer_local = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::parse("192.0.2.70"),
     port=57000,
   )
-  let answerer_local = SocketAddress::new(
-    address=IpAddress::parse("192.0.2.71"),
+  let answerer_local = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::parse("192.0.2.71"),
     port=57001,
   )
-  let server = SocketAddress::new(
-    address=IpAddress::parse("192.0.2.220"),
+  let server = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::parse("192.0.2.220"),
     port=3478,
   )
-  let offerer_relay = SocketAddress::new(
-    address=IpAddress::parse("198.51.100.70"),
+  let offerer_relay = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::parse("198.51.100.70"),
     port=58000,
   )
-  let answerer_relay = SocketAddress::new(
-    address=IpAddress::parse("198.51.100.71"),
+  let answerer_relay = @rtc.SocketAddress::new(
+    address=@rtc.IpAddress::parse("198.51.100.71"),
     port=58001,
   )
-  let sample = ClockSample::new(
-    monotonic=Instant::from_milliseconds(0),
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+  let sample = @rtc.ClockSample::new(
+    monotonic=@rtc.Instant::from_milliseconds(0),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
-  let server_config = IceServer::new(
+  let server_config = @rtc.IceServer::new(
     urls=["turn:192.0.2.220:3478?transport=udp"],
     username="relay-user",
     credential="relay-pass",
   )
-  let offerer = PeerConnection::new(
-    Configuration::new(
+  let offerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(
       ice_servers=[server_config],
       ice_transport_policy=Relay,
       host_candidates=[
@@ -1869,8 +1904,8 @@ test "two relay-only PeerConnections carry a DataChannel through TURN" {
     ),
     sample,
   )
-  let answerer = PeerConnection::new(
-    Configuration::new(
+  let answerer = @rtc.PeerConnection::new(
+    @rtc.Configuration::new(
       ice_servers=[server_config],
       ice_transport_policy=Relay,
       host_candidates=[
@@ -1885,7 +1920,7 @@ test "two relay-only PeerConnections carry a DataChannel through TURN" {
   gather_test_relay(offerer, offerer_relay, sample.monotonic())
   gather_test_relay(answerer, answerer_relay, sample.monotonic())
   let channel = offerer.create_data_channel(
-    DataChannelConfig::new(label="relayed"),
+    @rtc.DataChannelConfig::new(label="relayed"),
     sample.monotonic(),
   )
   let offer = offerer.create_offer(sample.monotonic())

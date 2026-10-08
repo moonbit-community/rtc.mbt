@@ -1,5 +1,5 @@
 ///|
-fn command_message(command : DataChannelCommand) -> @sctp.Message {
+fn command_message(command : @datachannel.DataChannelCommand) -> @sctp.Message {
   match command {
     SendSctp(message, _) => message
     ResetSctpStream(_) => abort("expected an SCTP send command")
@@ -7,7 +7,10 @@ fn command_message(command : DataChannelCommand) -> @sctp.Message {
 }
 
 ///|
-fn expect_open_event(manager : Manager, stream : @sctp.StreamId) -> Bool {
+fn expect_open_event(
+  manager : @datachannel.Manager,
+  stream : @sctp.StreamId,
+) -> Bool {
   match manager.poll_event() {
     Some(Opened(channel)) => channel.id() == stream && channel.state() == Open
     _ => false
@@ -16,9 +19,11 @@ fn expect_open_event(manager : Manager, stream : @sctp.StreamId) -> Bool {
 
 ///|
 test "DCEP managers allocate parity, open, exchange text, and close both streams" {
-  let client = Manager::new(role=DtlsClient)
-  let server = Manager::new(role=DtlsServer)
-  let created = client.create_channel(DataChannelConfig::new(label="chat"))
+  let client = @datachannel.Manager::new(role=DtlsClient)
+  let server = @datachannel.Manager::new(role=DtlsServer)
+  let created = client.create_channel(
+    @datachannel.DataChannelConfig::new(label="chat"),
+  )
   assert_eq(created.id().value(), 0)
   assert_eq(created.state(), Connecting)
   client.handle_sctp_event(StateChanged(Established))
@@ -71,9 +76,13 @@ test "DCEP managers allocate parity, open, exchange text, and close both streams
 
 ///|
 test "negotiated channels open without DCEP and may use either parity" {
-  let manager = Manager::new(role=DtlsClient)
+  let manager = @datachannel.Manager::new(role=DtlsClient)
   let channel = manager.create_channel(
-    DataChannelConfig::new(label="negotiated", negotiated=true, id=StreamId(7)),
+    @datachannel.DataChannelConfig::new(
+      label="negotiated",
+      negotiated=true,
+      id=StreamId(7),
+    ),
   )
   assert_eq(channel.state(), Connecting)
   manager.handle_sctp_event(StateChanged(Established))
@@ -83,12 +92,16 @@ test "negotiated channels open without DCEP and may use either parity" {
 
 ///|
 test "pending in-band channels follow a late DTLS role decision" {
-  let manager = Manager::new(role=DtlsServer)
+  let manager = @datachannel.Manager::new(role=DtlsServer)
   let automatic = manager.create_channel(
-    DataChannelConfig::new(label="late-role"),
+    @datachannel.DataChannelConfig::new(label="late-role"),
   )
   let negotiated = manager.create_channel(
-    DataChannelConfig::new(label="fixed", negotiated=true, id=StreamId(7)),
+    @datachannel.DataChannelConfig::new(
+      label="fixed",
+      negotiated=true,
+      id=StreamId(7),
+    ),
   )
   assert_eq(automatic.id(), StreamId(1))
   assert_eq(manager.set_role(DtlsClient), [(StreamId(1), StreamId(0))])
@@ -103,13 +116,16 @@ test "pending in-band channels follow a late DTLS role decision" {
 
 ///|
 test "DCEP rejects peer parity collisions and data before open" {
-  let manager = Manager::new(role=DtlsClient)
+  let manager = @datachannel.Manager::new(role=DtlsClient)
   manager.handle_sctp_event(StateChanged(Established))
   let invalid_open = @sctp.Message::new(
     stream=StreamId(2),
     protocol_id=50U,
-    payload=DcepMessage::Open(
-      DcepOpen::new(channel_type=ReliableChannel, label="wrong parity"),
+    payload=@datachannel.DcepMessage::Open(
+      @datachannel.DcepOpen::new(
+        channel_type=ReliableChannel,
+        label="wrong parity",
+      ),
     ).encode(),
   )
   try manager.handle_sctp_event(MessageReceived(invalid_open)) catch {
@@ -118,7 +134,9 @@ test "DCEP rejects peer parity collisions and data before open" {
   } noraise {
     _ => fail("peer-parity violation was accepted")
   }
-  let pending = manager.create_channel(DataChannelConfig::new(label="pending"))
+  let pending = manager.create_channel(
+    @datachannel.DataChannelConfig::new(label="pending"),
+  )
   try
     manager.handle_sctp_event(
       MessageReceived(

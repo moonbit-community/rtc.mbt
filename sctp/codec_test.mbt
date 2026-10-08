@@ -12,7 +12,7 @@ fn upstream_init_packet() -> Bytes {
 ///|
 test "pinned rtc-sctp INIT fixture validates CRC32C and round-trips" {
   let wire = upstream_init_packet()
-  let packet = Packet::decode(wire)
+  let packet = @sctp.Packet::decode(wire)
   assert_eq(packet.source_port(), 5000)
   assert_eq(packet.destination_port(), 5000)
   assert_eq(packet.verification_tag(), 0U)
@@ -31,13 +31,13 @@ test "pinned rtc-sctp INIT fixture validates CRC32C and round-trips" {
 
 ///|
 test "SCTP DATA, SACK, and RE-CONFIG chunks survive bundled framing" {
-  let packet = Packet::new(
+  let packet = @sctp.Packet::new(
     source_port=5000,
     destination_port=5000,
     verification_tag=0x10203040U,
     chunks=[
       DataChunkValue(
-        DataChunk::new(
+        @sctp.DataChunk::new(
           tsn=100U,
           stream=StreamId(7),
           stream_sequence=9,
@@ -46,7 +46,7 @@ test "SCTP DATA, SACK, and RE-CONFIG chunks survive bundled framing" {
         ),
       ),
       SackChunkValue(
-        SackChunk::new(
+        @sctp.SackChunk::new(
           cumulative_tsn_ack=99U,
           gap_ack_blocks=[{ start: 2, end: 3, }],
           duplicate_tsns=[98U],
@@ -62,16 +62,16 @@ test "SCTP DATA, SACK, and RE-CONFIG chunks survive bundled framing" {
         ReconfigResponse(request_sequence=88U, result=1U),
       ]),
       ForwardTsnChunk(
-        ForwardTsn::new(new_cumulative_tsn=105U, streams=[
-          ForwardTsnStream::new(stream=StreamId(7), sequence=9),
-          ForwardTsnStream::new(stream=StreamId(8), sequence=4),
+        @sctp.ForwardTsn::new(new_cumulative_tsn=105U, streams=[
+          @sctp.ForwardTsnStream::new(stream=StreamId(7), sequence=9),
+          @sctp.ForwardTsnStream::new(stream=StreamId(8), sequence=4),
         ]),
       ),
     ],
   )
   let wire = packet.encode()
-  assert_eq(Packet::decode(wire), packet)
-  guard Packet::decode(wire).chunks()[0] is DataChunkValue(data) else {
+  assert_eq(@sctp.Packet::decode(wire), packet)
+  guard @sctp.Packet::decode(wire).chunks()[0] is DataChunkValue(data) else {
     fail("missing DATA chunk")
   }
   assert_true(data.is_beginning())
@@ -84,20 +84,20 @@ test "SCTP DATA, SACK, and RE-CONFIG chunks survive bundled framing" {
 test "SCTP decoder rejects checksum, chunk bounds, and nonzero padding" {
   let corrupted = upstream_init_packet().to_array()
   corrupted[20] = corrupted[20] ^ 1
-  try Packet::decode(Bytes::from_array(corrupted)) catch {
+  try @sctp.Packet::decode(Bytes::from_array(corrupted)) catch {
     ChecksumMismatch => ()
     _ => fail("unexpected SCTP checksum error")
   } noraise {
     _ => fail("corrupt SCTP packet was accepted")
   }
   let truncated = upstream_init_packet()[0:upstream_init_packet().length() - 1].to_owned()
-  try Packet::decode(truncated) catch {
+  try @sctp.Packet::decode(truncated) catch {
     ChecksumMismatch | InvalidPacket(_) => ()
     _ => fail("unexpected truncated SCTP error")
   } noraise {
     _ => fail("truncated SCTP packet was accepted")
   }
-  let padded = Packet::new(
+  let padded = @sctp.Packet::new(
       source_port=5000,
       destination_port=5000,
       verification_tag=1U,
@@ -106,7 +106,7 @@ test "SCTP decoder rejects checksum, chunk bounds, and nonzero padding" {
     .encode()
     .to_array()
   padded[padded.length() - 1] = 1
-  try Packet::decode(Bytes::from_array(padded)) catch {
+  try @sctp.Packet::decode(Bytes::from_array(padded)) catch {
     ChecksumMismatch | InvalidPacket(_) => ()
     _ => fail("unexpected SCTP padding error")
   } noraise {
@@ -117,7 +117,7 @@ test "SCTP decoder rejects checksum, chunk bounds, and nonzero padding" {
 ///|
 test "SCTP common-header checksum byte order matches the upstream fixture" {
   let wire = b"\x13\x88\x13\x88\x00\x00\x00\x00\x06\xa9\x00\xe1"
-  let packet = Packet::decode(wire)
+  let packet = @sctp.Packet::decode(wire)
   assert_true(packet.chunks().is_empty())
   assert_eq(packet.encode(), wire)
 }

@@ -1,6 +1,9 @@
 ///|
 test "audio buffer converts layouts and slices complete frames" {
-  let interleaved = AudioBuffer::new(samples=[1, 10, 2, 20, 3, 30], channels=2)
+  let interleaved = @media.AudioBuffer::new(
+    samples=[1, 10, 2, 20, 3, 30],
+    channels=2,
+  )
   assert_eq(interleaved.frames(), 3)
   assert_eq(interleaved.sample(0, 1), 2)
   assert_eq(interleaved.sample(1, 1), 20)
@@ -16,7 +19,7 @@ test "audio buffer converts layouts and slices complete frames" {
 ///|
 test "audio buffer reads and writes signed PCM in both byte orders" {
   let little = b"\x00\x80\xff\xff\x00\x00\xff\x7f"
-  let buffer = AudioBuffer::from_pcm_s16(little, channels=2)
+  let buffer = @media.AudioBuffer::from_pcm_s16(little, channels=2)
   assert_eq(buffer.samples(), [
     Int16::from_int(-32768),
     Int16::from_int(-1),
@@ -26,7 +29,7 @@ test "audio buffer reads and writes signed PCM in both byte orders" {
   assert_eq(buffer.to_pcm_s16(), little)
   let big = b"\x80\x00\xff\xff\x00\x00\x7f\xff"
   assert_eq(
-    AudioBuffer::from_pcm_s16(big, channels=2, little_endian=false).to_pcm_s16(
+    @media.AudioBuffer::from_pcm_s16(big, channels=2, little_endian=false).to_pcm_s16(
       little_endian=false,
     ),
     big,
@@ -36,13 +39,13 @@ test "audio buffer reads and writes signed PCM in both byte orders" {
 ///|
 test "audio buffer rejects partial samples and channel frames" {
   let mut rejected_partial_sample = false
-  ignore(AudioBuffer::from_pcm_s16(b"\x00", channels=1)) catch {
+  ignore(@media.AudioBuffer::from_pcm_s16(b"\x00", channels=1)) catch {
     InvalidMedia(_) => rejected_partial_sample = true
     _ => fail("unexpected audio buffer error")
   }
   assert_true(rejected_partial_sample)
   let mut rejected_partial_frame = false
-  ignore(AudioBuffer::new(samples=[1, 2, 3], channels=2)) catch {
+  ignore(@media.AudioBuffer::new(samples=[1, 2, 3], channels=2)) catch {
     InvalidMedia(_) => rejected_partial_frame = true
     _ => fail("unexpected audio buffer error")
   }

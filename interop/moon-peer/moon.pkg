@@ -6,7 +6,6 @@ import {
   "moonbit-community/rtc/rtp",
   "moonbit-community/rtc/runtime/async" @rtc_async,
   "moonbit-community/rtc/sdp",
-  "moonbit-community/rtc/sctp",
   "moonbitlang/core/env",
   "moonbitlang/core/string",
   "moonbitlang/async" @async_runtime,

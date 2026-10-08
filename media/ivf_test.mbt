@@ -1,13 +1,13 @@
 ///|
 test "IVF writer and reader round-trip VP9 frames" {
-  let header = IvfHeader::new(
+  let header = @media.IvfHeader::new(
     codec=Vp9,
     width=640,
     height=360,
     timebase_denominator=30U,
     timebase_numerator=1U,
   )
-  let writer = IvfWriter::new(header)
+  let writer = @media.IvfWriter::new(header)
   writer.write_frame(b"keyframe", 7UL)
   writer.write_frame(b"delta", 8UL)
   writer.close()
@@ -17,7 +17,7 @@ test "IVF writer and reader round-trip VP9 frames" {
   assert_eq(wire[8:12], b"VP90")
   assert_eq(wire[24:28], b"\x02\x00\x00\x00")
 
-  let reader = IvfReader::new(wire)
+  let reader = @media.IvfReader::new(wire)
   assert_eq(reader.header().codec(), Vp9)
   assert_eq(reader.header().width(), 640)
   assert_eq(reader.header().height(), 360)
@@ -40,15 +40,15 @@ test "IVF reader rejects bad signatures and truncated frames" {
     b"\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
   ]
   for wire in malformed {
-    ignore(IvfReader::new(wire)) catch {
+    ignore(@media.IvfReader::new(wire)) catch {
       InvalidMedia(_) => continue
       _ => fail("unexpected IVF error")
     }
     fail("malformed IVF header was accepted")
   }
 
-  let writer = IvfWriter::new(
-    IvfHeader::new(
+  let writer = @media.IvfWriter::new(
+    @media.IvfHeader::new(
       codec=Vp8,
       width=1,
       height=1,
@@ -58,7 +58,7 @@ test "IVF reader rejects bad signatures and truncated frames" {
   )
   writer.write_frame(b"abc", 0UL)
   let truncated = writer.bytes()[0:writer.bytes().length() - 1].to_owned()
-  let reader = IvfReader::new(truncated)
+  let reader = @media.IvfReader::new(truncated)
   ignore(reader.next_frame()) catch {
     InvalidMedia(_) => return
     _ => fail("unexpected IVF frame error")

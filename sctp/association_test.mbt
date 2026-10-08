@@ -1,15 +1,15 @@
 ///|
-fn association_pair() -> (Association, Association) raise SctpError {
-  let active = Association::new(
-    AssociationConfig::new(
+fn association_pair() -> (@sctp.Association, @sctp.Association) raise @sctp.SctpError {
+  let active = @sctp.Association::new(
+    @sctp.AssociationConfig::new(
       role=Active,
       initial_tag=0x11111111U,
       initial_tsn=100U,
       max_payload_size=8,
     ),
   )
-  let passive = Association::new(
-    AssociationConfig::new(
+  let passive = @sctp.Association::new(
+    @sctp.AssociationConfig::new(
       role=Passive,
       initial_tag=0x22222222U,
       initial_tsn=500U,
@@ -21,10 +21,10 @@ fn association_pair() -> (Association, Association) raise SctpError {
 
 ///|
 fn pump_association_setup(
-  active : Association,
-  passive : Association,
+  active : @sctp.Association,
+  passive : @sctp.Association,
   now : @transport.Instant,
-) -> Bool raise SctpError {
+) -> Bool raise @sctp.SctpError {
   for step = 0; step < 20; step = step + 1 {
     match active.poll_datagram() {
       Some(packet) => passive.handle_datagram(now, packet)
@@ -42,7 +42,7 @@ fn pump_association_setup(
 }
 
 ///|
-fn drain_packets(association : Association) -> Array[Bytes] {
+fn drain_packets(association : @sctp.Association) -> Array[Bytes] {
   let packets : Array[Bytes] = []
   while association.poll_datagram() is Some(packet) {
     packets.push(packet)
@@ -51,8 +51,8 @@ fn drain_packets(association : Association) -> Array[Bytes] {
 }
 
 ///|
-fn received_message(association : Association) -> Message? {
-  let mut message : Message? = None
+fn received_message(association : @sctp.Association) -> @sctp.Message? {
+  let mut message : @sctp.Message? = None
   for index = 0; index < 32; index = index + 1 {
     match association.poll_event() {
       Some(MessageReceived(received)) => message = Some(received)
@@ -65,8 +65,8 @@ fn received_message(association : Association) -> Message? {
 
 ///|
 fn saw_stream_event(
-  association : Association,
-  expected : AssociationEvent,
+  association : @sctp.Association,
+  expected : @sctp.AssociationEvent,
 ) -> Bool {
   let mut found = false
   for index = 0; index < 32; index = index + 1 {
@@ -126,16 +126,16 @@ test "SCTP INIT/COOKIE association survives a dropped INIT-ACK" {
 
 ///|
 test "SCTP simultaneous active open completes the cookie handshake" {
-  let first = Association::new(
-    AssociationConfig::new(
+  let first = @sctp.Association::new(
+    @sctp.AssociationConfig::new(
       role=Active,
       initial_tag=0x11111111U,
       initial_tsn=100U,
       max_payload_size=8,
     ),
   )
-  let second = Association::new(
-    AssociationConfig::new(
+  let second = @sctp.Association::new(
+    @sctp.AssociationConfig::new(
       role=Active,
       initial_tag=0x22222222U,
       initial_tsn=500U,
@@ -147,7 +147,7 @@ test "SCTP simultaneous active open completes the cookie handshake" {
   second.start(now)
   assert_true(pump_association_setup(first, second, now))
   first.send(
-    Message::new(
+    @sctp.Message::new(
       stream=StreamId(1),
       protocol_id=53U,
       payload=b"simultaneous open",
@@ -160,7 +160,7 @@ test "SCTP simultaneous active open completes the cookie handshake" {
   assert_eq(
     received_message(second),
     Some(
-      Message::new(
+      @sctp.Message::new(
         stream=StreamId(1),
         protocol_id=53U,
         payload=b"simultaneous open",
@@ -177,7 +177,10 @@ test "reliable ordered SCTP reassembles out-of-order fragments and SACKs them" {
   passive.start(now)
   assert_true(pump_association_setup(active, passive, now))
   let payload = b"abcdefghijklmnopqrstuvwxyz"
-  active.send(Message::new(stream=StreamId(3), protocol_id=53U, payload~), now~)
+  active.send(
+    @sctp.Message::new(stream=StreamId(3), protocol_id=53U, payload~),
+    now~,
+  )
   assert_eq(active.buffered_amount(StreamId(3)), 26UL)
   let fragments = drain_packets(active)
   assert_eq(fragments.length(), 4)
@@ -189,7 +192,7 @@ test "reliable ordered SCTP reassembles out-of-order fragments and SACKs them" {
   }
   assert_eq(
     received_message(passive),
-    Some(Message::new(stream=StreamId(3), protocol_id=53U, payload~)),
+    Some(@sctp.Message::new(stream=StreamId(3), protocol_id=53U, payload~)),
   )
   let sacks = drain_packets(passive)
   assert_eq(sacks.length(), 4)
@@ -206,16 +209,16 @@ test "reliable ordered SCTP reassembles out-of-order fragments and SACKs them" {
 
 ///|
 test "SCTP TSN wraparound preserves reassembly and acknowledgements" {
-  let active = Association::new(
-    AssociationConfig::new(
+  let active = @sctp.Association::new(
+    @sctp.AssociationConfig::new(
       role=Active,
       initial_tag=0x11111111U,
       initial_tsn=0xfffffffeU,
       max_payload_size=8,
     ),
   )
-  let passive = Association::new(
-    AssociationConfig::new(
+  let passive = @sctp.Association::new(
+    @sctp.AssociationConfig::new(
       role=Passive,
       initial_tag=0x22222222U,
       initial_tsn=500U,
@@ -227,12 +230,15 @@ test "SCTP TSN wraparound preserves reassembly and acknowledgements" {
   passive.start(now)
   assert_true(pump_association_setup(active, passive, now))
   let payload = b"abcdefghijklmnopqrstuvwxyz"
-  active.send(Message::new(stream=StreamId(4), protocol_id=53U, payload~), now~)
+  active.send(
+    @sctp.Message::new(stream=StreamId(4), protocol_id=53U, payload~),
+    now~,
+  )
   let fragments = drain_packets(active)
   assert_eq(fragments.length(), 4)
   let tsns : Array[UInt] = []
   for fragment in fragments {
-    guard Packet::decode(fragment).chunks() is [DataChunkValue(chunk)] else {
+    guard @sctp.Packet::decode(fragment).chunks() is [DataChunkValue(chunk)] else {
       fail("wrapped SCTP send emitted a non-DATA packet")
     }
     tsns.push(chunk.tsn())
@@ -246,7 +252,7 @@ test "SCTP TSN wraparound preserves reassembly and acknowledgements" {
   }
   assert_eq(
     received_message(passive),
-    Some(Message::new(stream=StreamId(4), protocol_id=53U, payload~)),
+    Some(@sctp.Message::new(stream=StreamId(4), protocol_id=53U, payload~)),
   )
   for sack in drain_packets(passive) {
     active.handle_datagram(@transport.Instant::from_milliseconds(2), sack)
@@ -263,7 +269,12 @@ test "reliable unordered SCTP preserves the unordered flag across fragments" {
   assert_true(pump_association_setup(active, passive, now))
   let payload = b"unordered fragmented payload"
   active.send(
-    Message::new(stream=StreamId(7), protocol_id=53U, unordered=true, payload~),
+    @sctp.Message::new(
+      stream=StreamId(7),
+      protocol_id=53U,
+      unordered=true,
+      payload~,
+    ),
     now~,
   )
   let fragments = drain_packets(active)
@@ -277,7 +288,7 @@ test "reliable unordered SCTP preserves the unordered flag across fragments" {
   assert_eq(
     received_message(passive),
     Some(
-      Message::new(
+      @sctp.Message::new(
         stream=StreamId(7),
         protocol_id=53U,
         unordered=true,
@@ -296,7 +307,7 @@ test "SCTP buffered amount low event fires on the configured crossing" {
   assert_true(pump_association_setup(active, passive, now))
   active.set_buffered_amount_low_threshold(StreamId(9), 10UL)
   active.send(
-    Message::new(
+    @sctp.Message::new(
       stream=StreamId(9),
       protocol_id=53U,
       payload=b"abcdefghijklmnopqrstuvwxyz",
@@ -334,14 +345,18 @@ test "PR-SCTP retransmit-count abandons a message and unblocks ordered data" {
   passive.start(start)
   assert_true(pump_association_setup(active, passive, start))
   active.send(
-    Message::new(stream=StreamId(11), protocol_id=53U, payload=b"dropped"),
+    @sctp.Message::new(stream=StreamId(11), protocol_id=53U, payload=b"dropped"),
     reliability=RetransmitCount(1),
     now=start,
   )
   let dropped = drain_packets(active)
   assert_eq(dropped.length(), 1)
   active.send(
-    Message::new(stream=StreamId(11), protocol_id=53U, payload=b"survives"),
+    @sctp.Message::new(
+      stream=StreamId(11),
+      protocol_id=53U,
+      payload=b"survives",
+    ),
     now=start,
   )
   for packet in drain_packets(active) {
@@ -357,12 +372,13 @@ test "PR-SCTP retransmit-count abandons a message and unblocks ordered data" {
   guard active.poll_datagram() is Some(forward_packet) else {
     fail("missing SCTP FORWARD-TSN after retransmission budget")
   }
-  guard Packet::decode(forward_packet).chunks() is [ForwardTsnChunk(forward)] else {
+  guard @sctp.Packet::decode(forward_packet).chunks()
+    is [ForwardTsnChunk(forward)] else {
     fail("partial reliability did not emit FORWARD-TSN")
   }
   assert_eq(forward.new_cumulative_tsn(), 101U)
   assert_eq(forward.streams(), [
-    ForwardTsnStream::new(stream=StreamId(11), sequence=0),
+    @sctp.ForwardTsnStream::new(stream=StreamId(11), sequence=0),
   ])
   passive.handle_datagram(
     @transport.Instant::from_milliseconds(3000),
@@ -371,7 +387,11 @@ test "PR-SCTP retransmit-count abandons a message and unblocks ordered data" {
   assert_eq(
     received_message(passive),
     Some(
-      Message::new(stream=StreamId(11), protocol_id=53U, payload=b"survives"),
+      @sctp.Message::new(
+        stream=StreamId(11),
+        protocol_id=53U,
+        payload=b"survives",
+      ),
     ),
   )
   for sack in drain_packets(passive) {
@@ -388,7 +408,7 @@ test "PR-SCTP timed reliability expires before the retransmission timer" {
   passive.start(start)
   assert_true(pump_association_setup(active, passive, start))
   active.send(
-    Message::new(stream=StreamId(13), protocol_id=53U, payload=b"expires"),
+    @sctp.Message::new(stream=StreamId(13), protocol_id=53U, payload=b"expires"),
     reliability=Timed(250U),
     now=start,
   )
@@ -403,7 +423,8 @@ test "PR-SCTP timed reliability expires before the retransmission timer" {
   guard active.poll_datagram() is Some(forward_packet) else {
     fail("timed PR-SCTP message did not emit FORWARD-TSN")
   }
-  guard Packet::decode(forward_packet).chunks() is [ForwardTsnChunk(forward)] else {
+  guard @sctp.Packet::decode(forward_packet).chunks()
+    is [ForwardTsnChunk(forward)] else {
     fail("timed reliability emitted a non-FORWARD-TSN packet")
   }
   assert_eq(forward.new_cumulative_tsn(), 100U)
@@ -415,7 +436,11 @@ test "PR-SCTP timed reliability expires before the retransmission timer" {
     active.handle_datagram(@transport.Instant::from_milliseconds(251), sack)
   }
   active.send(
-    Message::new(stream=StreamId(13), protocol_id=53U, payload=b"after expiry"),
+    @sctp.Message::new(
+      stream=StreamId(13),
+      protocol_id=53U,
+      payload=b"after expiry",
+    ),
     now=@transport.Instant::from_milliseconds(252),
   )
   for packet in drain_packets(active) {
@@ -424,7 +449,7 @@ test "PR-SCTP timed reliability expires before the retransmission timer" {
   assert_eq(
     received_message(passive),
     Some(
-      Message::new(
+      @sctp.Message::new(
         stream=StreamId(13),
         protocol_id=53U,
         payload=b"after expiry",
@@ -441,7 +466,11 @@ test "SCTP DATA retransmission and RFC 6525 stream reset are deterministic" {
   passive.start(now)
   assert_true(pump_association_setup(active, passive, now))
   active.send(
-    Message::new(stream=StreamId(5), protocol_id=51U, payload=b"before reset"),
+    @sctp.Message::new(
+      stream=StreamId(5),
+      protocol_id=51U,
+      payload=b"before reset",
+    ),
     now~,
   )
   let original_packets = drain_packets(active)
@@ -478,7 +507,11 @@ test "SCTP DATA retransmission and RFC 6525 stream reset are deterministic" {
   )
   assert_true(saw_stream_event(active, StreamResetAcknowledged(StreamId(5))))
   active.send(
-    Message::new(stream=StreamId(5), protocol_id=51U, payload=b"after reset"),
+    @sctp.Message::new(
+      stream=StreamId(5),
+      protocol_id=51U,
+      payload=b"after reset",
+    ),
     now=@transport.Instant::from_milliseconds(1005),
   )
   for packet in drain_packets(active) {
@@ -487,7 +520,11 @@ test "SCTP DATA retransmission and RFC 6525 stream reset are deterministic" {
   assert_eq(
     received_message(passive),
     Some(
-      Message::new(stream=StreamId(5), protocol_id=51U, payload=b"after reset"),
+      @sctp.Message::new(
+        stream=StreamId(5),
+        protocol_id=51U,
+        payload=b"after reset",
+      ),
     ),
   )
 }

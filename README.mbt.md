@@ -51,9 +51,9 @@ The clock mapping is explicit and deterministic:
 ```moonbit check
 ///|
 test "inject a deterministic clock sample" {
-  let monotonic = Instant::from_milliseconds(42L)
-  let wall = WallTime::from_unix_nanoseconds(1700000000000000000L)
-  let sample = ClockSample::new(monotonic~, wall~)
+  let monotonic = @rtc.Instant::from_milliseconds(42L)
+  let wall = @rtc.WallTime::from_unix_nanoseconds(1700000000000000000L)
+  let sample = @rtc.ClockSample::new(monotonic~, wall~)
   assert_eq(sample.monotonic().as_milliseconds(), 42L)
   assert_eq(sample.wall().as_unix_nanoseconds(), 1700000000000000000L)
 }

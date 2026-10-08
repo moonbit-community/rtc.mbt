@@ -19,12 +19,14 @@ fn interceptor_test_rtp(
 
 ///|
 test "interceptor pipeline composes duplication and filtering stages" {
-  let pipeline = Pipeline::new()
+  let pipeline = @interceptor.Pipeline::new()
   pipeline.add(
-    Stage::new(name="duplicate", handler=(_context, packet) => [packet, packet]),
+    @interceptor.Stage::new(name="duplicate", handler=(_context, packet) => {
+      [packet, packet]
+    }),
   )
   pipeline.add(
-    Stage::new(name="rtp-only", handler=(_context, packet) => {
+    @interceptor.Stage::new(name="rtp-only", handler=(_context, packet) => {
       match packet {
         Rtp(_) => [packet]
         Rtcp(_) => []
@@ -33,7 +35,7 @@ test "interceptor pipeline composes duplication and filtering stages" {
   )
   let packet = interceptor_test_rtp(1, 2U, 3U, 96, b"data")
   let output = pipeline.process(
-    Context::new(direction=Inbound, stream_id="video"),
+    @interceptor.Context::new(direction=Inbound, stream_id="video"),
     Rtp(packet),
   )
   assert_eq(output, [Rtp(packet), Rtp(packet)])
@@ -42,7 +44,7 @@ test "interceptor pipeline composes duplication and filtering stages" {
 
 ///|
 test "NACK generator tracks gaps, late arrivals, and retry bounds" {
-  let generator = NackGenerator::new(
+  let generator = @interceptor.NackGenerator::new(
     sender_ssrc=1U,
     media_ssrc=2U,
     max_retries=2,
@@ -65,7 +67,7 @@ test "NACK generator tracks gaps, late arrivals, and retry bounds" {
 
 ///|
 test "sender and receiver report generators follow RFC3550 counters" {
-  let sender = SenderReportGenerator::new(9U)
+  let sender = @interceptor.SenderReportGenerator::new(9U)
   sender.observe(interceptor_test_rtp(1, 10U, 9U, 111, b"abc"))
   sender.observe(interceptor_test_rtp(2, 20U, 9U, 111, b"defgh"))
   let sender_report = sender.report(0x0102030405060708UL)
@@ -73,7 +75,7 @@ test "sender and receiver report generators follow RFC3550 counters" {
   assert_eq(sender_report.octet_count, 8U)
   assert_eq(sender_report.rtp_timestamp, 20U)
 
-  let receiver = ReceiverReportGenerator::new(
+  let receiver = @interceptor.ReceiverReportGenerator::new(
     sender_ssrc=10U,
     media_ssrc=9U,
     clock_rate=90000U,
@@ -97,7 +99,7 @@ test "sender and receiver report generators follow RFC3550 counters" {
 
 ///|
 test "TWCC recorder emits received deltas and loss statuses" {
-  let recorder = TwccRecorder::new(
+  let recorder = @interceptor.TwccRecorder::new(
     sender_ssrc=1U,
     media_ssrc=2U,
     extension_id=3,
@@ -132,7 +134,7 @@ test "TWCC recorder emits received deltas and loss statuses" {
 
 ///|
 test "TWCC recorder shares one transport sequence across extension ids" {
-  let recorder = TwccRecorder::new(
+  let recorder = @interceptor.TwccRecorder::new(
     sender_ssrc=1U,
     media_ssrc=0U,
     extension_id=3,
@@ -165,7 +167,7 @@ test "TWCC recorder shares one transport sequence across extension ids" {
 
 ///|
 test "RTX sender and receiver restore original RTP packets once" {
-  let sender = RtxSender::new(
+  let sender = @interceptor.RtxSender::new(
     media_ssrc=100U,
     rtx_ssrc=200U,
     rtx_payload_type=97,
@@ -186,7 +188,7 @@ test "RTX sender and receiver restore original RTP packets once" {
   assert_eq(rtx.payload_type(), 97)
   assert_eq(rtx.payload()[0:2], b"\x00\x2a")
 
-  let receiver = RtxReceiver::new(
+  let receiver = @interceptor.RtxReceiver::new(
     media_ssrc=100U,
     media_payload_type=96,
     rtx_ssrc=200U,

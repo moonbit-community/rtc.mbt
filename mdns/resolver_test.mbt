@@ -9,7 +9,7 @@ fn mdns_response() -> Bytes {
 
 ///|
 test "QueryOnly resolver emits A and AAAA questions to the mDNS multicast endpoint" {
-  let resolver = Resolver::new()
+  let resolver = @mdns.Resolver::new()
   let now = @transport.Instant::from_milliseconds(0)
   let query_id = resolver.query("HOST.local.", now)
   assert_eq(query_id, QueryId(1UL))
@@ -38,7 +38,7 @@ test "QueryOnly resolver emits A and AAAA questions to the mDNS multicast endpoi
 
 ///|
 test "mDNS responses resolve IPv4 and IPv6 and populate the TTL cache" {
-  let resolver = Resolver::new()
+  let resolver = @mdns.Resolver::new()
   let query_id = resolver.query(
     "host.local",
     @transport.Instant::from_milliseconds(0),
@@ -80,7 +80,7 @@ test "mDNS responses resolve IPv4 and IPv6 and populate the TTL cache" {
 
 ///|
 test "mDNS retry and timeout scheduling is deterministic" {
-  let resolver = Resolver::new(
+  let resolver = @mdns.Resolver::new(
     retry_interval=@transport.Duration::milliseconds(1000L),
     query_timeout=@transport.Duration::milliseconds(2500L),
   )
@@ -108,7 +108,7 @@ test "mDNS retry and timeout scheduling is deterministic" {
 
 ///|
 test "mDNS parser rejects forward compression pointers and invalid names" {
-  let resolver = Resolver::new()
+  let resolver = @mdns.Resolver::new()
   ignore(
     resolver.query("valid.local", @transport.Instant::from_milliseconds(0)),
   )
@@ -134,13 +134,13 @@ test "mDNS parser rejects forward compression pointers and invalid names" {
 test "QueryAndGather registers names, answers queries, and detects conflicts" {
   let address_v4 = @transport.IpAddress::parse("192.0.2.40")
   let address_v6 = @transport.IpAddress::parse("2001:db8::40")
-  let responder = Resolver::new(mode=QueryAndGather)
+  let responder = @mdns.Resolver::new(mode=QueryAndGather)
   responder.register("Peer-40.local.", [address_v4, address_v6])
   assert_eq(
     responder.registered("peer-40.local"),
     Some([address_v4, address_v6]),
   )
-  let querier = Resolver::new()
+  let querier = @mdns.Resolver::new()
   let query_id = querier.query(
     "peer-40.local",
     @transport.Instant::from_milliseconds(0),
@@ -158,7 +158,7 @@ test "QueryAndGather registers names, answers queries, and detects conflicts" {
   assert_eq(event_id, query_id)
   assert_eq(resolution.addresses(), [address_v4, address_v6])
 
-  let conflicting = Resolver::new(mode=QueryAndGather)
+  let conflicting = @mdns.Resolver::new(mode=QueryAndGather)
   conflicting.register("peer-40.local", [
     @transport.IpAddress::parse("198.51.100.40"),
   ])
@@ -166,7 +166,7 @@ test "QueryAndGather registers names, answers queries, and detects conflicts" {
     fail("conflicting registration did not answer")
   }
   let conflict_time = @transport.Instant::from_milliseconds(6)
-  let conflict : Result[Unit, MdnsError] = try {
+  let conflict : Result[Unit, @mdns.MdnsError] = try {
     responder.handle_response(conflict_time, conflict_response)
     Ok(())
   } catch {
@@ -179,9 +179,9 @@ test "QueryAndGather registers names, answers queries, and detects conflicts" {
 
 ///|
 test "QueryOnly resolver rejects local registration and response generation" {
-  let resolver = Resolver::new()
+  let resolver = @mdns.Resolver::new()
   let address = @transport.IpAddress::parse("192.0.2.1")
-  let registration : Result[Unit, MdnsError] = try {
+  let registration : Result[Unit, @mdns.MdnsError] = try {
     resolver.register("private.local", [address])
     Ok(())
   } catch {

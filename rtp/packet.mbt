@@ -246,7 +246,7 @@ pub fn Packet::marshal(self : Packet) -> Bytes raise RtpError {
   if total_length > 0xffff {
     raise PayloadTooLarge(self.payload.length())
   }
-  let output : Array[Byte] = Array::new(capacity=total_length)
+  let output : Array[Byte] = Array(capacity=total_length)
   output.push(
     (0x80 |
     (if self.extensions.is_empty() { 0 } else { 0x10 }) |

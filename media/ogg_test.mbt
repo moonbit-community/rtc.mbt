@@ -1,10 +1,10 @@
 ///|
 test "Ogg Opus writer and reader round-trip headers, tags, and packets" {
-  let tags = OpusTags::new(vendor="moonbit-community/rtc", comments=[
-    UserComment::new(key="TITLE", value="Sans-I/O"),
-    UserComment::new(key="ENCODER", value="rtc.mbt"),
+  let tags = @media.OpusTags::new(vendor="moonbit-community/rtc", comments=[
+    @media.UserComment::new(key="TITLE", value="Sans-I/O"),
+    @media.UserComment::new(key="ENCODER", value="rtc.mbt"),
   ])
-  let writer = OggWriter::new(
+  let writer = @media.OggWriter::new(
     sample_rate=48000U,
     channels=2,
     pre_skip=312,
@@ -18,7 +18,7 @@ test "Ogg Opus writer and reader round-trip headers, tags, and packets" {
   let wire = writer.bytes()
   assert_eq(wire[0:4], b"OggS")
 
-  let reader = OggReader::new(wire)
+  let reader = @media.OggReader::new(wire)
   assert_eq(reader.header().version(), 1)
   assert_eq(reader.header().channels(), 2)
   assert_eq(reader.header().pre_skip(), 312)
@@ -38,23 +38,23 @@ test "Ogg Opus writer and reader round-trip headers, tags, and packets" {
 ///|
 test "Ogg lacing handles exact 255-byte packet boundaries" {
   let payload = Bytes::from_array(Array::make(510, 0x55))
-  let writer = OggWriter::new(sample_rate=48000U, channels=1)
+  let writer = @media.OggWriter::new(sample_rate=48000U, channels=1)
   writer.write_opus_packet(payload, 480UL)
   writer.close()
-  let reader = OggReader::new(writer.bytes())
+  let reader = @media.OggReader::new(writer.bytes())
   assert_eq(reader.next_packet().unwrap().data(), payload)
   assert_eq(reader.next_packet(), None)
 }
 
 ///|
 test "Ogg reader detects CRC corruption" {
-  let writer = OggWriter::new(sample_rate=48000U, channels=1)
+  let writer = @media.OggWriter::new(sample_rate=48000U, channels=1)
   writer.write_opus_packet(b"encoded opus", 960UL)
   writer.close()
   let original = writer.bytes()
   let corrupted = original.to_array()
   corrupted[corrupted.length() - 30] = corrupted[corrupted.length() - 30] ^ 0x01
-  let reader = OggReader::new(Bytes::from_array(corrupted))
+  let reader = @media.OggReader::new(Bytes::from_array(corrupted))
   ignore(reader.next_packet()) catch {
     InvalidMedia(_) => return
     _ => fail("unexpected Ogg checksum error")
@@ -64,11 +64,15 @@ test "Ogg reader detects CRC corruption" {
 
 ///|
 test "Ogg RTP writer derives monotonic granule positions" {
-  let writer = OggWriter::new(sample_rate=48000U, channels=1, pre_skip=100)
+  let writer = @media.OggWriter::new(
+    sample_rate=48000U,
+    channels=1,
+    pre_skip=100,
+  )
   writer.write_rtp(sample_test_packet(1, 1000U, true, b"one"))
   writer.write_rtp(sample_test_packet(2, 1960U, true, b"two"))
   writer.close()
-  let reader = OggReader::new(writer.bytes())
+  let reader = @media.OggReader::new(writer.bytes())
   assert_eq(reader.next_packet().unwrap().granule_position(), 100UL)
   assert_eq(reader.next_packet().unwrap().granule_position(), 1060UL)
 }

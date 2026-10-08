@@ -21,12 +21,12 @@ fn srtp_packet(sequence_number : UInt16) -> @rtp.Packet raise @rtp.RtpError {
 
 ///|
 test "AES-CM SRTP matches the pinned cipher vector with an RTP v2 header" {
-  let sender = Context::new(
+  let sender = @srtp.Context::new(
     profile=Aes128CmHmacSha1_80,
     master_key=srtp_test_key(),
     master_salt=srtp_test_salt(),
   )
-  let receiver = Context::new(
+  let receiver = @srtp.Context::new(
     profile=Aes128CmHmacSha1_80,
     master_key=srtp_test_key(),
     master_salt=srtp_test_salt(),
@@ -41,7 +41,7 @@ test "AES-CM SRTP matches the pinned cipher vector with an RTP v2 header" {
 
 ///|
 test "all negotiated SRTP profiles protect RTP and reject tampering and replay" {
-  let profiles : Array[ProtectionProfile] = [
+  let profiles : Array[@srtp.ProtectionProfile] = [
     Aes128CmHmacSha1_80,
     Aes128CmHmacSha1_32,
     AeadAes128Gcm,
@@ -50,8 +50,12 @@ test "all negotiated SRTP profiles protect RTP and reject tampering and replay" 
   for profile in profiles {
     let key = Bytes::make(profile.key_length(), 0x11)
     let salt = Bytes::make(profile.salt_length(), 0x22)
-    let sender = Context::new(profile~, master_key=key, master_salt=salt)
-    let receiver = Context::new(profile~, master_key=key, master_salt=salt)
+    let sender = @srtp.Context::new(profile~, master_key=key, master_salt=salt)
+    let receiver = @srtp.Context::new(
+      profile~,
+      master_key=key,
+      master_salt=salt,
+    )
     let packet = @rtp.Packet::new(
       marker=true,
       payload_type=96,
@@ -70,7 +74,7 @@ test "all negotiated SRTP profiles protect RTP and reject tampering and replay" 
     }
     let corrupted = encrypted.to_array()
     corrupted[corrupted.length() - 1] = corrupted[corrupted.length() - 1] ^ 0x01
-    let fresh_receiver = Context::new(
+    let fresh_receiver = @srtp.Context::new(
       profile~,
       master_key=key,
       master_salt=salt,
@@ -85,12 +89,12 @@ test "all negotiated SRTP profiles protect RTP and reject tampering and replay" 
 
 ///|
 test "SRTP rollover counter advances across sequence wraparound" {
-  let sender = Context::new(
+  let sender = @srtp.Context::new(
     profile=Aes128CmHmacSha1_80,
     master_key=srtp_test_key(),
     master_salt=srtp_test_salt(),
   )
-  let receiver = Context::new(
+  let receiver = @srtp.Context::new(
     profile=Aes128CmHmacSha1_80,
     master_key=srtp_test_key(),
     master_salt=srtp_test_salt(),
@@ -104,7 +108,7 @@ test "SRTP rollover counter advances across sequence wraparound" {
 
 ///|
 test "AES-CM and AEAD SRTCP protect compound RTCP and reject replay" {
-  let profiles : Array[ProtectionProfile] = [
+  let profiles : Array[@srtp.ProtectionProfile] = [
     Aes128CmHmacSha1_80,
     AeadAes128Gcm,
     AeadAes256Gcm,
@@ -112,8 +116,12 @@ test "AES-CM and AEAD SRTCP protect compound RTCP and reject replay" {
   for profile in profiles {
     let key = Bytes::make(profile.key_length(), 0x31)
     let salt = Bytes::make(profile.salt_length(), 0x42)
-    let sender = Context::new(profile~, master_key=key, master_salt=salt)
-    let receiver = Context::new(profile~, master_key=key, master_salt=salt)
+    let sender = @srtp.Context::new(profile~, master_key=key, master_salt=salt)
+    let receiver = @srtp.Context::new(
+      profile~,
+      master_key=key,
+      master_salt=salt,
+    )
     let report = @rtcp.SenderReportPacket::new(
       sender_ssrc=0x11223344U,
       ntp_timestamp=0x0102030405060708UL,
@@ -139,7 +147,7 @@ test "AES-CM and AEAD SRTCP protect compound RTCP and reject replay" {
 
 ///|
 test "SRTP and SRTCP reject short untrusted packets without panicking" {
-  let context = Context::new(
+  let context = @srtp.Context::new(
     profile=AeadAes128Gcm,
     master_key=Bytes::make(16, 0),
     master_salt=Bytes::make(12, 0),

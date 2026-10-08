@@ -20,7 +20,7 @@ test "SampleBuilder reorders fragmented video and computes duration" {
   let frame = b"abcdefghijklmnopqrstuvwxyz"
   let payloads = @rtp.packetize_payload(Vp8, frame, 10)
   assert_true(payloads.length() > 1)
-  let builder = SampleBuilder::new(
+  let builder = @media.SampleBuilder::new(
     max_late=10,
     codec=Vp8,
     sample_rate=90000U,
@@ -56,7 +56,11 @@ test "SampleBuilder reorders fragmented video and computes duration" {
 
 ///|
 test "SampleBuilder reports packet loss before the next valid sample" {
-  let builder = SampleBuilder::new(max_late=1, codec=Vp8, sample_rate=90000U)
+  let builder = @media.SampleBuilder::new(
+    max_late=1,
+    codec=Vp8,
+    sample_rate=90000U,
+  )
   builder.push(sample_test_packet(10, 100U, false, b"\x00tail"))
   builder.push(sample_test_packet(11, 200U, true, b"\x10frame"))
   builder.push(sample_test_packet(12, 300U, true, b"\x10next"))
@@ -67,7 +71,11 @@ test "SampleBuilder reports packet loss before the next valid sample" {
 
 ///|
 test "SampleBuilder handles sequence rollover and flushes the last sample" {
-  let builder = SampleBuilder::new(max_late=4, codec=G711, sample_rate=8000U)
+  let builder = @media.SampleBuilder::new(
+    max_late=4,
+    codec=G711,
+    sample_rate=8000U,
+  )
   builder.push(sample_test_packet(65535, 0U, true, b"first"))
   builder.push(sample_test_packet(0, 160U, true, b"second"))
   let first = builder.pop().unwrap()

@@ -10,10 +10,6 @@ import {
   "moonbit-community/rtc/ice",
 } for "test"
 
-import {
-  "moonbit-community/rtc/sctp",
-} for "wbtest"
-
 options(
   "native-stub": [ "clock.c" ],
   targets: {

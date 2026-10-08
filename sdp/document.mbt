@@ -85,7 +85,7 @@ fn SdpAttribute::marshal(self : SdpAttribute) -> String {
 
 ///|
 fn decimal_uint(value : StringView, context : String) -> UInt raise SdpError {
-  @strconv.from_str(value) catch {
+  @string.from_str(value) catch {
     _ => raise InvalidSyntax("invalid decimal \{context}")
   }
 }
@@ -95,7 +95,7 @@ fn decimal_uint64(
   value : StringView,
   context : String,
 ) -> UInt64 raise SdpError {
-  @strconv.from_str(value) catch {
+  @string.from_str(value) catch {
     _ => raise InvalidSyntax("invalid decimal \{context}")
   }
 }

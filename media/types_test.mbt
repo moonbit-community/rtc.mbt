@@ -1,15 +1,17 @@
 ///|
 test "RTP transceiver exposes shared sender and receiver state" {
-  let codec = CodecCapability::new(mime_type="video/vp8", clock_rate=90000U, rtcp_feedback=[
-    "nack", "transport-cc",
-  ])
-  let track = MediaTrack::new(
+  let codec = @media.CodecCapability::new(
+    mime_type="video/vp8",
+    clock_rate=90000U,
+    rtcp_feedback=["nack", "transport-cc"],
+  )
+  let track = @media.MediaTrack::new(
     id="video",
     stream_id="stream",
     kind=Video,
     codec~,
   )
-  let encoding = RtpEncodingParameters::new(
+  let encoding = @media.RtpEncodingParameters::new(
     ssrc=10U,
     payload_type=96,
     rtx_ssrc=20U,
@@ -18,8 +20,8 @@ test "RTP transceiver exposes shared sender and receiver state" {
     max_bitrate=2000000UL,
     scalability_mode="L1T3",
   )
-  let parameters = RtpParameters::new(codec~, encodings=[encoding])
-  let transceiver = RtpTransceiver::new(kind=Video)
+  let parameters = @media.RtpParameters::new(codec~, encodings=[encoding])
+  let transceiver = @media.RtpTransceiver::new(kind=Video)
   transceiver.sender().replace_track(Some(track))
   transceiver.sender().set_parameters(Some(parameters))
   transceiver.receiver().set_track(Some(track))
@@ -41,15 +43,22 @@ test "RTP transceiver exposes shared sender and receiver state" {
 
 ///|
 test "RTP encoding parameters reject duplicate stream identities" {
-  let codec = CodecCapability::new(mime_type="video/vp9", clock_rate=90000U)
-  let first = RtpEncodingParameters::new(ssrc=10U, payload_type=98, rid="layer")
-  let second = RtpEncodingParameters::new(
+  let codec = @media.CodecCapability::new(
+    mime_type="video/vp9",
+    clock_rate=90000U,
+  )
+  let first = @media.RtpEncodingParameters::new(
+    ssrc=10U,
+    payload_type=98,
+    rid="layer",
+  )
+  let second = @media.RtpEncodingParameters::new(
     ssrc=11U,
     payload_type=98,
     rid="layer",
   )
   let mut rejected = false
-  ignore(RtpParameters::new(codec~, encodings=[first, second])) catch {
+  ignore(@media.RtpParameters::new(codec~, encodings=[first, second])) catch {
     InvalidMedia(_) => rejected = true
     _ => fail("unexpected RTP parameter error")
   }

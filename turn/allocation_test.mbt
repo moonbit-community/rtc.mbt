@@ -32,7 +32,7 @@ fn authenticated_success(
 ///|
 test "TURN long-term credential key uses RFC MD5 derivation" {
   assert_eq(
-    long_term_key("user", "realm", "pass"),
+    @turn.long_term_key("user", "realm", "pass"),
     b"\x84\x93\xfb\xc5\x3b\xa5\x82\xfb\x4c\x04\x4c\x45\x6b\xdc\x40\xeb",
   )
 }
@@ -46,8 +46,8 @@ test "TURN allocation authenticates, creates permission/channel, and carries dat
     address=@transport.IpAddress::parse("198.51.100.50"),
     port=55000,
   )
-  let credentials = TurnCredentials::new(username="user", password="pass")
-  let allocation = Allocation::new(local_address~, server~, credentials~)
+  let credentials = @turn.TurnCredentials::new(username="user", password="pass")
+  let allocation = @turn.Allocation::new(local_address~, server~, credentials~)
   let start = @transport.Instant::from_milliseconds(0)
   allocation.start(start)
   guard allocation.poll_datagram() is Some(initial_datagram) else {
@@ -82,7 +82,7 @@ test "TURN allocation authenticates, creates permission/channel, and carries dat
     fail("TURN allocation did not retry with long-term credentials")
   }
   let authenticated = @stun.Message::decode(authenticated_datagram.payload)
-  let key = long_term_key("user", "realm", "pass")
+  let key = @turn.long_term_key("user", "realm", "pass")
   authenticated.verify_integrity(key)
   authenticated.verify_fingerprint()
   assert_eq(authenticated.first_attribute(Username).unwrap().as_text(), "user")
@@ -202,11 +202,11 @@ test "TURN allocation authenticates, creates permission/channel, and carries dat
 
 ///|
 fn feed_turn_stream(
-  allocation : Allocation,
+  allocation : @turn.Allocation,
   now : @transport.Instant,
   frame : Bytes,
   chunk_size : Int,
-) -> Unit raise TurnError {
+) -> Unit raise @turn.TurnError {
   let mut offset = 0
   while offset < frame.length() {
     let end = if offset + chunk_size < frame.length() {
@@ -221,14 +221,17 @@ fn feed_turn_stream(
 
 ///|
 test "TURN TCP and TLS server legs frame arbitrary stream fragments" {
-  let transports : Array[TurnTransport] = [Tcp, Tls]
+  let transports : Array[@turn.TurnTransport] = [Tcp, Tls]
   for transport in transports {
     let local_address = turn_endpoint(10, 5000)
     let server = turn_endpoint(20, 5349)
     let peer = turn_endpoint(30, 6000)
     let relayed = turn_endpoint(40, 55000)
-    let credentials = TurnCredentials::new(username="user", password="pass")
-    let allocation = Allocation::new(
+    let credentials = @turn.TurnCredentials::new(
+      username="user",
+      password="pass",
+    )
+    let allocation = @turn.Allocation::new(
       local_address~,
       server~,
       credentials~,
@@ -263,7 +266,7 @@ test "TURN TCP and TLS server legs frame arbitrary stream fragments" {
       fail("TURN stream allocation omitted authenticated retry")
     }
     let authenticated = @stun.Message::decode(authenticated_frame)
-    let key = long_term_key("user", "realm", "pass")
+    let key = @turn.long_term_key("user", "realm", "pass")
     authenticated.verify_integrity(key)
     let success = authenticated_success(
       authenticated,
@@ -339,8 +342,8 @@ test "TURN TCP and TLS server legs frame arbitrary stream fragments" {
 test "TURN stream parser accepts coalesced frames and rejects invalid prefixes" {
   let local_address = turn_endpoint(10, 5000)
   let server = turn_endpoint(20, 3478)
-  let credentials = TurnCredentials::new(username="user", password="pass")
-  let allocation = Allocation::new(
+  let credentials = @turn.TurnCredentials::new(username="user", password="pass")
+  let allocation = @turn.Allocation::new(
     local_address~,
     server~,
     credentials~,
@@ -354,7 +357,7 @@ test "TURN stream parser accepts coalesced frames and rejects invalid prefixes" 
       b"\x80\x00\x00\x00",
     )
   catch {
-    TurnError::InvalidPacket(_) => ()
+    @turn.TurnError::InvalidPacket(_) => ()
     _ => fail("unexpected TURN stream framing error")
   } noraise {
     _ => fail("TURN stream parser accepted a reserved frame prefix")
