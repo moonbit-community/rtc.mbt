@@ -21,7 +21,7 @@ test "H26x writer and reader round-trip fragmented H264" {
     b"\x00\x00\x00\x01\x68\xce\x06\xe2" +
     b"\x00\x00\x00\x01\x65abcdefghijklmnop"
   let payloads = @rtp.packetize_payload(H264, access_unit, 14)
-  let writer = H26xWriter::new(Avc)
+  let writer = @media.H26xWriter::new(Avc)
   for index = 0; index < payloads.length(); index = index + 1 {
     writer.write_rtp(
       h26x_test_packet(
@@ -34,7 +34,7 @@ test "H26x writer and reader round-trip fragmented H264" {
   }
   assert_eq(writer.bytes(), access_unit)
 
-  let reader = H26xReader::new(codec=Avc, data=writer.bytes())
+  let reader = @media.H26xReader::new(codec=Avc, data=writer.bytes())
   assert_eq(reader.next_nal().unwrap().unit_type(), 7)
   assert_eq(reader.next_nal().unwrap().unit_type(), 8)
   assert_eq(reader.next_nal().unwrap().unit_type(), 5)
@@ -49,10 +49,10 @@ test "H26x writer and reader round-trip H265 aggregation and FU" {
     b"\x00\x00\x00\x01\x42\x01sps" +
     b"\x00\x00\x00\x01\x26\x01abcdefghijklmnop"
   let payloads = @rtp.packetize_payload(H265, access_unit, 16)
-  let writer = H26xWriter::new(Hevc)
+  let writer = @media.H26xWriter::new(Hevc)
   writer.write_payloads(payloads)
   assert_eq(writer.bytes(), access_unit)
-  let reader = H26xReader::new(codec=Hevc, data=writer.bytes())
+  let reader = @media.H26xReader::new(codec=Hevc, data=writer.bytes())
   let vps = reader.next_nal().unwrap()
   assert_eq(vps.unit_type(), 32)
   assert_eq(vps.layer_id(), 0)
@@ -63,7 +63,7 @@ test "H26x writer and reader round-trip H265 aggregation and FU" {
 
 ///|
 test "H26x writer discards incomplete timestamp groups on close" {
-  let writer = H26xWriter::new(Avc)
+  let writer = @media.H26xWriter::new(Avc)
   writer.write_rtp(h26x_test_packet(1, 1U, false, b"\x7c\x85fragment"))
   writer.close()
   writer.close()

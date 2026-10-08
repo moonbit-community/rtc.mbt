@@ -10,25 +10,25 @@ fn test_endpoint(last_octet : Byte, port : UInt16) -> @transport.SocketAddress {
 fn test_credentials(
   username_fragment : String,
   password : String,
-) -> IceCredentials raise IceError {
-  IceCredentials::new(username_fragment~, password~)
+) -> @ice.IceCredentials raise @ice.IceError {
+  @ice.IceCredentials::new(username_fragment~, password~)
 }
 
 ///|
 fn test_agent(
-  local_credentials : IceCredentials,
-  remote_credentials : IceCredentials,
+  local_credentials : @ice.IceCredentials,
+  remote_credentials : @ice.IceCredentials,
   local_address : @transport.SocketAddress,
   remote_address : @transport.SocketAddress,
-  role : IceRole,
+  role : @ice.IceRole,
   tie_breaker : UInt64,
-) -> IceAgent raise IceError {
-  let agent = IceAgent::new(local_credentials~, role~, tie_breaker~)
+) -> @ice.IceAgent raise @ice.IceError {
+  let agent = @ice.IceAgent::new(local_credentials~, role~, tie_breaker~)
   agent.add_local_candidate(
-    IceCandidate::host(foundation="local", local_address),
+    @ice.IceCandidate::host(foundation="local", local_address),
   )
   agent.add_remote_candidate(
-    IceCandidate::host(foundation="remote", remote_address),
+    @ice.IceCandidate::host(foundation="remote", remote_address),
   )
   agent.set_remote_credentials(remote_credentials)
   agent
@@ -52,7 +52,7 @@ fn as_inbound(
 }
 
 ///|
-fn application_event(agent : IceAgent) -> Bytes? {
+fn application_event(agent : @ice.IceAgent) -> Bytes? {
   let mut received : Bytes? = None
   for index = 0; index < 8; index = index + 1 {
     match agent.poll_event() {
@@ -72,8 +72,8 @@ test "STUN binding gathering produces a server-reflexive candidate" {
     address=@transport.IpAddress::parse("198.51.100.25"),
     port=62000,
   )
-  let gatherer = SrflxGatherer::new(
-    local_candidate=IceCandidate::host(foundation="host", local_address),
+  let gatherer = @ice.SrflxGatherer::new(
+    local_candidate=@ice.IceCandidate::host(foundation="host", local_address),
     server~,
   )
   let now = @transport.Instant::from_milliseconds(0)
@@ -236,13 +236,13 @@ test "controlling agent nominates an authenticated response-source prflx pair" {
 test "trickled remote candidate starts a checklist after ICE has started" {
   let local_credentials = test_credentials("local1", "abcdefghijklmnopqrstuv")
   let remote_credentials = test_credentials("remote1", "zyxwvutsrqponmlkjihgfe")
-  let agent = IceAgent::new(
+  let agent = @ice.IceAgent::new(
     local_credentials~,
     role=Controlling,
     tie_breaker=42UL,
   )
   agent.add_local_candidate(
-    IceCandidate::host(foundation="local", test_endpoint(21, 6100)),
+    @ice.IceCandidate::host(foundation="local", test_endpoint(21, 6100)),
   )
   agent.set_remote_credentials(remote_credentials)
   agent.start(@transport.Instant::from_milliseconds(0))
@@ -251,7 +251,7 @@ test "trickled remote candidate starts a checklist after ICE has started" {
   assert_eq(agent.poll_timeout(), None)
   let trickle_time = @transport.Instant::from_milliseconds(25)
   agent.add_remote_candidate(
-    IceCandidate::host(foundation="remote", test_endpoint(22, 6200)),
+    @ice.IceCandidate::host(foundation="remote", test_endpoint(22, 6200)),
     now=trickle_time,
   )
   assert_true(agent.poll_datagram() is Some(_))
@@ -277,12 +277,12 @@ test "authenticated unknown check creates and nominates a prflx candidate" {
     Controlling,
     100UL,
   )
-  let b = IceAgent::new(
+  let b = @ice.IceAgent::new(
     local_credentials=b_credentials,
     role=Controlled,
     tie_breaker=200UL,
   )
-  b.add_local_candidate(IceCandidate::host(foundation="b", b_address))
+  b.add_local_candidate(@ice.IceCandidate::host(foundation="b", b_address))
   b.set_remote_credentials(a_credentials)
   a.start(now)
   b.start(now)
@@ -406,7 +406,7 @@ test "selected ICE pairs keep alive, disconnect, recover, and fail on deadlines"
   let b_address = test_endpoint(62, 10200)
   let a_credentials = test_credentials("alivea", "abcdefghijklmnopqrstuv")
   let b_credentials = test_credentials("aliveb", "zyxwvutsrqponmlkjihgfe")
-  let a = IceAgent::new(
+  let a = @ice.IceAgent::new(
     local_credentials=a_credentials,
     role=Controlling,
     tie_breaker=301UL,
@@ -414,8 +414,12 @@ test "selected ICE pairs keep alive, disconnect, recover, and fail on deadlines"
     failed_timeout=@transport.Duration::milliseconds(20),
     keepalive_interval=@transport.Duration::milliseconds(5),
   )
-  a.add_local_candidate(IceCandidate::host(foundation="alive-a", a_address))
-  a.add_remote_candidate(IceCandidate::host(foundation="alive-b", b_address))
+  a.add_local_candidate(
+    @ice.IceCandidate::host(foundation="alive-a", a_address),
+  )
+  a.add_remote_candidate(
+    @ice.IceCandidate::host(foundation="alive-b", b_address),
+  )
   a.set_remote_credentials(b_credentials)
   let b = test_agent(
     b_credentials,
@@ -492,36 +496,44 @@ test "ICE TCP active/passive agents nominate one stream without retransmission" 
   let server_credentials = test_credentials(
     "tcpserver", "zyxwvutsrqponmlkjihgfe",
   )
-  let client = IceAgent::new(
+  let client = @ice.IceAgent::new(
     local_credentials=client_credentials,
     role=Controlling,
     tie_breaker=600UL,
   )
   client.add_local_candidate(
-    IceCandidate::tcp_host(foundation="tcp-active", client_ip, tcp_type=Active),
+    @ice.IceCandidate::tcp_host(
+      foundation="tcp-active",
+      client_ip,
+      tcp_type=Active,
+    ),
   )
   client.add_remote_candidate(
-    IceCandidate::tcp_host(
+    @ice.IceCandidate::tcp_host(
       foundation="tcp-passive",
       server_address,
       tcp_type=Passive,
     ),
   )
   client.set_remote_credentials(server_credentials)
-  let server = IceAgent::new(
+  let server = @ice.IceAgent::new(
     local_credentials=server_credentials,
     role=Controlled,
     tie_breaker=700UL,
   )
   server.add_local_candidate(
-    IceCandidate::tcp_host(
+    @ice.IceCandidate::tcp_host(
       foundation="tcp-passive",
       server_address,
       tcp_type=Passive,
     ),
   )
   server.add_remote_candidate(
-    IceCandidate::tcp_host(foundation="tcp-active", client_ip, tcp_type=Active),
+    @ice.IceCandidate::tcp_host(
+      foundation="tcp-active",
+      client_ip,
+      tcp_type=Active,
+    ),
   )
   server.set_remote_credentials(client_credentials)
   client.start(now)

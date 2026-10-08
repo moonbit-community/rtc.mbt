@@ -1,15 +1,15 @@
 ///|
-fn test_fingerprint() -> DtlsFingerprint raise SdpError {
-  DtlsFingerprint::new(
+fn test_fingerprint() -> @sdp.DtlsFingerprint raise @sdp.SdpError {
+  @sdp.DtlsFingerprint::new(
     algorithm="sha-256",
     value="00:01:02:03:04:05:06:07:08:09:0A:0B:0C:0D:0E:0F:10:11:12:13:14:15:16:17:18:19:1A:1B:1C:1D:1E:1F",
   )
 }
 
 ///|
-fn test_ice() -> IceCredentials {
+fn test_ice() -> @sdp.IceCredentials {
   try
-    IceCredentials::new(
+    @sdp.IceCredentials::new(
       username_fragment="ufrag123",
       password="abcdefghijklmnopqrstuvwx",
     )
@@ -22,7 +22,7 @@ fn test_ice() -> IceCredentials {
 
 ///|
 test "data-channel JSEP SDP generates, parses, and normalizes to CRLF" {
-  let document = SdpDocument::new_datachannel(
+  let document = @sdp.SdpDocument::new_datachannel(
     session_id=123456789UL,
     session_version=7UL,
     mid="data",
@@ -36,7 +36,7 @@ test "data-channel JSEP SDP generates, parses, and normalizes to CRLF" {
   )
   let wire = document.marshal()
   assert_true(wire.has_suffix("\r\n"))
-  let parsed = SdpDocument::parse(wire)
+  let parsed = @sdp.SdpDocument::parse(wire)
   assert_eq(parsed.marshal(), wire)
   let parameters = parsed.datachannel_parameters()
   assert_eq(parameters.mid(), "data")
@@ -50,7 +50,7 @@ test "data-channel JSEP SDP generates, parses, and normalizes to CRLF" {
   assert_eq(parameters.candidates(), [
     "0 1 UDP 2122252543 192.0.2.1 5000 typ host generation 0",
   ])
-  let offer = SessionDescription::from_document(sdp_type=Offer, parsed)
+  let offer = @sdp.SessionDescription::from_document(sdp_type=Offer, parsed)
   assert_eq(offer.datachannel_parameters(), parameters)
 }
 
@@ -71,12 +71,12 @@ test "session-level transport attributes are inherited by application media" {
     "a=mid:0\n" +
     "a=sctp-port:5000\n" +
     "a=x-unknown:preserve-this-too"
-  let document = SdpDocument::parse(sdp)
+  let document = @sdp.SdpDocument::parse(sdp)
   let parameters = document.datachannel_parameters()
   assert_eq(parameters.setup(), Passive)
   assert_eq(parameters.max_message_size(), 65536UL)
   assert_eq(document.marshal(), sdp.replace_all(old="\n", new="\r\n") + "\r\n")
-  let answer = SessionDescription::from_document(sdp_type=Answer, document)
+  let answer = @sdp.SessionDescription::from_document(sdp_type=Answer, document)
   assert_eq(answer.datachannel_parameters().setup(), Passive)
 }
 
@@ -87,13 +87,13 @@ test "SDP rejects malformed framing and invalid JSEP singleton attributes" {
     "s=-\r\n" +
     "t=0 0\r\n" +
     "\r\n"
-  try SdpDocument::parse(malformed) catch {
+  try @sdp.SdpDocument::parse(malformed) catch {
     InvalidSyntax(_) => ()
     _ => fail("unexpected SDP error")
   } noraise {
     _ => fail("empty SDP line was accepted")
   }
-  let duplicate_mid = SdpDocument::new_datachannel(
+  let duplicate_mid = @sdp.SdpDocument::new_datachannel(
     session_id=1UL,
     session_version=1UL,
     mid="0",
@@ -102,7 +102,7 @@ test "SDP rejects malformed framing and invalid JSEP singleton attributes" {
     setup=ActPass,
   )
   let media = duplicate_mid.media_descriptions()[0]
-  media.add_attribute(SdpAttribute::new(key="mid", value="1"))
+  media.add_attribute(@sdp.SdpAttribute::new(key="mid", value="1"))
   try duplicate_mid.datachannel_parameters() catch {
     InvalidSyntax(_) => ()
     _ => fail("unexpected SDP error")
@@ -113,14 +113,14 @@ test "SDP rejects malformed framing and invalid JSEP singleton attributes" {
 
 ///|
 test "fingerprints and ICE credentials enforce WebRTC bounds" {
-  try DtlsFingerprint::new(algorithm="md5", value="00") catch {
+  try @sdp.DtlsFingerprint::new(algorithm="md5", value="00") catch {
     UnsupportedAttribute(_) => ()
     _ => fail("unexpected SDP error")
   } noraise {
     _ => fail("unsupported fingerprint algorithm was accepted")
   }
   try
-    IceCredentials::new(
+    @sdp.IceCredentials::new(
       username_fragment="abc",
       password="abcdefghijklmnopqrstuv",
     )

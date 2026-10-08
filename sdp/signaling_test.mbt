@@ -1,10 +1,10 @@
 ///|
 fn description_for_test(
-  sdp_type : SdpType,
-  setup : DtlsSetup,
+  sdp_type : @sdp.SdpType,
+  setup : @sdp.DtlsSetup,
   version : UInt64,
-) -> SessionDescription raise SdpError {
-  let document = SdpDocument::new_datachannel(
+) -> @sdp.SessionDescription raise @sdp.SdpError {
+  let document = @sdp.SdpDocument::new_datachannel(
     session_id=42UL,
     session_version=version,
     mid="data",
@@ -12,12 +12,12 @@ fn description_for_test(
     fingerprint=test_fingerprint(),
     setup~,
   )
-  SessionDescription::from_document(sdp_type~, document)
+  @sdp.SessionDescription::from_document(sdp_type~, document)
 }
 
 ///|
 test "local offer, remote provisional answer, and final answer commit atomically" {
-  let signaling = SignalingStateMachine::new()
+  let signaling = @sdp.SignalingStateMachine::new()
   let offer = description_for_test(Offer, ActPass, 1UL)
   let provisional = description_for_test(Pranswer, Passive, 1UL)
   let answer = description_for_test(Answer, Passive, 1UL)
@@ -37,7 +37,7 @@ test "local offer, remote provisional answer, and final answer commit atomically
 
 ///|
 test "remote offer and local answer commit, while rollback discards pending state" {
-  let signaling = SignalingStateMachine::new()
+  let signaling = @sdp.SignalingStateMachine::new()
   let offer = description_for_test(Offer, ActPass, 1UL)
   let answer = description_for_test(Answer, Active, 1UL)
   signaling.set_remote_description(offer)
@@ -49,7 +49,7 @@ test "remote offer and local answer commit, while rollback discards pending stat
   let next_offer = description_for_test(Offer, ActPass, 2UL)
   signaling.set_local_description(next_offer)
   signaling.set_local_description(
-    SessionDescription::new(sdp_type=Rollback, sdp=""),
+    @sdp.SessionDescription::new(sdp_type=Rollback, sdp=""),
   )
   assert_eq(signaling.state(), Stable)
   assert_eq(signaling.pending_local_description(), None)
@@ -58,7 +58,7 @@ test "remote offer and local answer commit, while rollback discards pending stat
 
 ///|
 test "invalid signaling transitions fail and close is idempotent" {
-  let signaling = SignalingStateMachine::new()
+  let signaling = @sdp.SignalingStateMachine::new()
   let answer = description_for_test(Answer, Passive, 1UL)
   try signaling.set_remote_description(answer) catch {
     InvalidState(_) => ()

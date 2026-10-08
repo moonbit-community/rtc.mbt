@@ -15,7 +15,7 @@ import {
   "moonbit-community/rtc/transport",
   "moonbit-community/rtc/turn",
   "moonbitlang/core/queue",
-  "moonbitlang/core/strconv",
+  "moonbitlang/core/string",
 }
 
 import {

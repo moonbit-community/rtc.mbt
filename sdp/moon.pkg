@@ -1,4 +1,4 @@
 import {
   "moonbit-community/rtc/ice",
-  "moonbitlang/core/strconv",
+  "moonbitlang/core/string",
 }

@@ -229,7 +229,7 @@ pub fn IceCandidate::priority_value(
 
 ///|
 fn parse_uint64(value : String, context : String) -> UInt64 raise IceError {
-  @strconv.from_str(value) catch {
+  @string.from_str(value) catch {
     _ => raise InvalidCandidate("invalid ICE \{context}")
   }
 }

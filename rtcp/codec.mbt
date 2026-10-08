@@ -285,7 +285,7 @@ fn build_packet(
   if word_length > 0xffff {
     raise PacketTooLarge(total_length)
   }
-  let output : Array[Byte] = Array::new(capacity=total_length)
+  let output : Array[Byte] = Array(capacity=total_length)
   output.push(0x80 | count)
   output.push(packet_type)
   rtcp_write_u16(output, word_length.to_uint16())

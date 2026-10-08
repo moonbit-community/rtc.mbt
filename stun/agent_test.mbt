@@ -1,13 +1,17 @@
 ///|
-fn transaction_message(transaction_id : TransactionId) -> Message {
-  Message::new(class=SuccessResponse, stun_method=Binding, transaction_id~)
+fn transaction_message(transaction_id : @stun.TransactionId) -> @stun.Message {
+  @stun.Message::new(
+    class=SuccessResponse,
+    stun_method=Binding,
+    transaction_id~,
+  )
 }
 
 ///|
 test "transaction agent tracks exact deterministic deadlines" {
-  let agent = TransactionAgent::new()
-  let first = TransactionId::from_bytes(b"first-id-001")
-  let second = TransactionId::from_bytes(b"second-id-02")
+  let agent = @stun.TransactionAgent::new()
+  let first = @stun.TransactionId::from_bytes(b"first-id-001")
+  let second = @stun.TransactionId::from_bytes(b"second-id-02")
   let first_deadline = @transport.Instant::from_milliseconds(10)
   let second_deadline = @transport.Instant::from_milliseconds(20)
   agent.start(first, first_deadline)
@@ -25,9 +29,9 @@ test "transaction agent tracks exact deterministic deadlines" {
 
 ///|
 test "processing and stopping transactions produce one queued event" {
-  let agent = TransactionAgent::new()
-  let received_id = TransactionId::from_bytes(b"received-001")
-  let stopped_id = TransactionId::from_bytes(b"stopped--001")
+  let agent = @stun.TransactionAgent::new()
+  let received_id = @stun.TransactionId::from_bytes(b"received-001")
+  let stopped_id = @stun.TransactionId::from_bytes(b"stopped--001")
   let deadline = @transport.Instant::from_milliseconds(100)
   agent.start(received_id, deadline)
   agent.start(stopped_id, deadline)
@@ -49,8 +53,8 @@ test "processing and stopping transactions produce one queued event" {
 
 ///|
 test "transaction agent rejects duplicates, missing stops, and use after close" {
-  let agent = TransactionAgent::new()
-  let transaction_id = TransactionId::from_bytes(b"close-id-001")
+  let agent = @stun.TransactionAgent::new()
+  let transaction_id = @stun.TransactionId::from_bytes(b"close-id-001")
   let deadline = @transport.Instant::from_milliseconds(100)
   agent.start(transaction_id, deadline)
   try agent.start(transaction_id, deadline) catch {
@@ -59,7 +63,7 @@ test "transaction agent rejects duplicates, missing stops, and use after close" 
   } noraise {
     _ => fail("duplicate transaction was accepted")
   }
-  let missing = TransactionId::from_bytes(b"missing-id01")
+  let missing = @stun.TransactionId::from_bytes(b"missing-id01")
   try agent.stop(missing) catch {
     TransactionNotFound => ()
     _ => fail("unexpected STUN error")

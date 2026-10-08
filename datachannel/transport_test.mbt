@@ -1,15 +1,15 @@
 ///|
 fn[T] test_from_sctp(
   operation : () -> T raise @sctp.SctpError,
-) -> T raise DataChannelError {
+) -> T raise @datachannel.DataChannelError {
   operation() catch {
     error => raise Sctp(error)
   }
 }
 
 ///|
-fn transport_pair() -> (Transport, Transport) raise DataChannelError {
-  let client = Transport::new(
+fn transport_pair() -> (@datachannel.Transport, @datachannel.Transport) raise @datachannel.DataChannelError {
+  let client = @datachannel.Transport::new(
     role=DtlsClient,
     association_config=test_from_sctp(() => {
       @sctp.AssociationConfig::new(
@@ -20,7 +20,7 @@ fn transport_pair() -> (Transport, Transport) raise DataChannelError {
       )
     }),
   )
-  let server = Transport::new(
+  let server = @datachannel.Transport::new(
     role=DtlsServer,
     association_config=test_from_sctp(() => {
       @sctp.AssociationConfig::new(
@@ -36,10 +36,10 @@ fn transport_pair() -> (Transport, Transport) raise DataChannelError {
 
 ///|
 fn pump_transports(
-  client : Transport,
-  server : Transport,
+  client : @datachannel.Transport,
+  server : @datachannel.Transport,
   now : @transport.Instant,
-) -> Bool raise DataChannelError {
+) -> Bool raise @datachannel.DataChannelError {
   for round = 0; round < 256; round = round + 1 {
     let mut progressed = false
     match client.poll_datagram() {
@@ -65,9 +65,9 @@ fn pump_transports(
 
 ///|
 fn collect_messages(
-  transport : Transport,
-) -> Array[(@sctp.StreamId, DataChannelMessage)] {
-  let result : Array[(@sctp.StreamId, DataChannelMessage)] = []
+  transport : @datachannel.Transport,
+) -> Array[(@sctp.StreamId, @datachannel.DataChannelMessage)] {
+  let result : Array[(@sctp.StreamId, @datachannel.DataChannelMessage)] = []
   while transport.poll_event() is Some(event) {
     match event {
       MessageReceived(stream, message) => result.push((stream, message))
@@ -78,7 +78,10 @@ fn collect_messages(
 }
 
 ///|
-fn saw_opened(transport : Transport, stream : @sctp.StreamId) -> Bool {
+fn saw_opened(
+  transport : @datachannel.Transport,
+  stream : @sctp.StreamId,
+) -> Bool {
   let mut found = false
   while transport.poll_event() is Some(event) {
     match event {
@@ -90,7 +93,10 @@ fn saw_opened(transport : Transport, stream : @sctp.StreamId) -> Bool {
 }
 
 ///|
-fn saw_closed(transport : Transport, stream : @sctp.StreamId) -> Bool {
+fn saw_closed(
+  transport : @datachannel.Transport,
+  stream : @sctp.StreamId,
+) -> Bool {
   let mut found = false
   while transport.poll_event() is Some(event) {
     match event {
@@ -103,7 +109,7 @@ fn saw_closed(transport : Transport, stream : @sctp.StreamId) -> Bool {
 
 ///|
 fn saw_buffered_amount_low(
-  transport : Transport,
+  transport : @datachannel.Transport,
   stream : @sctp.StreamId,
 ) -> Bool {
   let mut found = false
@@ -127,7 +133,7 @@ test "DataChannel transport runs SCTP, DCEP, fragmentation, empty PPIDs, and clo
   assert_eq(server.association_state(), Established)
 
   let channel = client.create_channel(
-    DataChannelConfig::new(label="chat", protocol="moonbit"),
+    @datachannel.DataChannelConfig::new(label="chat", protocol="moonbit"),
     now,
   )
   assert_eq(channel.id(), StreamId(0))
@@ -175,7 +181,7 @@ test "DataChannel transport multiplexes ordered, unordered, and PR-SCTP channels
   server.start(start)
   assert_true(pump_transports(client, server, start))
   let reliable = client.create_channel(
-    DataChannelConfig::new(label="reliable"),
+    @datachannel.DataChannelConfig::new(label="reliable"),
     start,
   )
   assert_true(
@@ -184,7 +190,7 @@ test "DataChannel transport multiplexes ordered, unordered, and PR-SCTP channels
   assert_true(saw_opened(client, reliable.id()))
   assert_true(saw_opened(server, reliable.id()))
   let unordered = client.create_channel(
-    DataChannelConfig::new(label="unordered", ordering=Unordered),
+    @datachannel.DataChannelConfig::new(label="unordered", ordering=Unordered),
     @transport.Instant::from_milliseconds(2),
   )
   assert_true(
@@ -193,7 +199,7 @@ test "DataChannel transport multiplexes ordered, unordered, and PR-SCTP channels
   assert_true(saw_opened(client, unordered.id()))
   assert_true(saw_opened(server, unordered.id()))
   let retransmit_limited = client.create_channel(
-    DataChannelConfig::new(
+    @datachannel.DataChannelConfig::new(
       label="max-retransmits",
       ordering=Unordered,
       reliability=RetransmitCount(2),
@@ -206,7 +212,10 @@ test "DataChannel transport multiplexes ordered, unordered, and PR-SCTP channels
   assert_true(saw_opened(client, retransmit_limited.id()))
   assert_true(saw_opened(server, retransmit_limited.id()))
   let lifetime_limited = client.create_channel(
-    DataChannelConfig::new(label="max-lifetime", reliability=Timed(750U)),
+    @datachannel.DataChannelConfig::new(
+      label="max-lifetime",
+      reliability=Timed(750U),
+    ),
     @transport.Instant::from_milliseconds(4),
   )
   assert_true(

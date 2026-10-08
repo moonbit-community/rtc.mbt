@@ -1,8 +1,8 @@
 ///|
 fn test_identity(
-  key_type? : CertificateKeyType = EcdsaCertificate,
-) -> CertificateIdentity raise DtlsError {
-  CertificateIdentity::generate(
+  key_type? : @dtls.CertificateKeyType = EcdsaCertificate,
+) -> @dtls.CertificateIdentity raise @dtls.DtlsError {
+  @dtls.CertificateIdentity::generate(
     key_type~,
     not_before=@transport.WallTime::from_unix_nanoseconds(1700000000000000000L),
     not_after=@transport.WallTime::from_unix_nanoseconds(1800000000000000000L),
@@ -12,20 +12,20 @@ fn test_identity(
 ///|
 fn test_endpoint_pair(
   mtu? : Int = 1200,
-  cipher_suites? : Array[CipherSuite] = [],
-  key_type? : CertificateKeyType = EcdsaCertificate,
-) -> (Endpoint, Endpoint) raise DtlsError {
+  cipher_suites? : Array[@dtls.CipherSuite] = [],
+  key_type? : @dtls.CertificateKeyType = EcdsaCertificate,
+) -> (@dtls.Endpoint, @dtls.Endpoint) raise @dtls.DtlsError {
   let client_identity = test_identity(key_type~)
   let server_identity = test_identity(key_type~)
   let wall_time = @transport.WallTime::from_unix_nanoseconds(
     1750000000000000000L,
   )
   let profiles = [
-    SrtpProtectionProfile::aes128_cm_hmac_sha1_80(),
-    SrtpProtectionProfile::aead_aes128_gcm(),
+    @dtls.SrtpProtectionProfile::aes128_cm_hmac_sha1_80(),
+    @dtls.SrtpProtectionProfile::aead_aes128_gcm(),
   ]
-  let client = Endpoint::new(
-    Config::new(
+  let client = @dtls.Endpoint::new(
+    @dtls.Config::new(
       role=Client,
       identity=client_identity,
       expected_peer_fingerprint=server_identity.fingerprint(),
@@ -35,8 +35,8 @@ fn test_endpoint_pair(
       mtu~,
     ),
   )
-  let server = Endpoint::new(
-    Config::new(
+  let server = @dtls.Endpoint::new(
+    @dtls.Config::new(
       role=Server,
       identity=server_identity,
       expected_peer_fingerprint=client_identity.fingerprint(),
@@ -51,17 +51,17 @@ fn test_endpoint_pair(
 
 ///|
 fn test_psk_endpoint_pair(
-  suite : CipherSuite,
+  suite : @dtls.CipherSuite,
   client_psk? : Bytes = b"shared DTLS pre-shared key",
   server_psk? : Bytes = b"shared DTLS pre-shared key",
-) -> (Endpoint, Endpoint) raise DtlsError {
+) -> (@dtls.Endpoint, @dtls.Endpoint) raise @dtls.DtlsError {
   let client_identity = test_identity()
   let server_identity = test_identity()
   let wall_time = @transport.WallTime::from_unix_nanoseconds(
     1750000000000000000L,
   )
-  let client = Endpoint::new(
-    Config::new(
+  let client = @dtls.Endpoint::new(
+    @dtls.Config::new(
       role=Client,
       identity=client_identity,
       expected_peer_fingerprint=server_identity.fingerprint(),
@@ -71,8 +71,8 @@ fn test_psk_endpoint_pair(
       psk_identity=b"moonbit-rtc-psk",
     ),
   )
-  let server = Endpoint::new(
-    Config::new(
+  let server = @dtls.Endpoint::new(
+    @dtls.Config::new(
       role=Server,
       identity=server_identity,
       expected_peer_fingerprint=client_identity.fingerprint(),
@@ -87,10 +87,10 @@ fn test_psk_endpoint_pair(
 
 ///|
 fn pump_handshake(
-  client : Endpoint,
-  server : Endpoint,
+  client : @dtls.Endpoint,
+  server : @dtls.Endpoint,
   now : @transport.Instant,
-) -> Bool raise DtlsError {
+) -> Bool raise @dtls.DtlsError {
   for step = 0; step < 200; step = step + 1 {
     match client.poll_datagram() {
       Some(datagram) => server.handle_datagram(now, datagram)
@@ -108,7 +108,7 @@ fn pump_handshake(
 }
 
 ///|
-fn received_application_data(endpoint : Endpoint) -> Bytes? {
+fn received_application_data(endpoint : @dtls.Endpoint) -> Bytes? {
   let mut received : Bytes? = None
   for index = 0; index < 32; index = index + 1 {
     match endpoint.poll_event() {
@@ -131,11 +131,11 @@ test "MoonBit DTLS peers complete mutual-certificate EMS handshake" {
   assert_eq(server.state(), Connected)
   assert_eq(
     client.selected_srtp_profile(),
-    Some(SrtpProtectionProfile::aes128_cm_hmac_sha1_80()),
+    Some(@dtls.SrtpProtectionProfile::aes128_cm_hmac_sha1_80()),
   )
   assert_eq(
     server.selected_srtp_profile(),
-    Some(SrtpProtectionProfile::aes128_cm_hmac_sha1_80()),
+    Some(@dtls.SrtpProtectionProfile::aes128_cm_hmac_sha1_80()),
   )
   let client_keying_material = client.export_keying_material(
     "EXTRACTOR-dtls_srtp", 60,
@@ -163,7 +163,7 @@ test "MoonBit DTLS peers complete mutual-certificate EMS handshake" {
 
 ///|
 test "DTLS peers negotiate every pinned ECDSA cipher suite" {
-  let suites : Array[CipherSuite] = [
+  let suites : Array[@dtls.CipherSuite] = [
     EcdheEcdsaAes128GcmSha256,
     EcdheEcdsaAes256CbcSha,
     EcdheEcdsaChacha20Poly1305Sha256,
@@ -192,7 +192,7 @@ test "DTLS peers negotiate every pinned ECDSA cipher suite" {
 
 ///|
 test "DTLS peers negotiate every pinned RSA cipher suite" {
-  let suites : Array[CipherSuite] = [
+  let suites : Array[@dtls.CipherSuite] = [
     EcdheRsaAes128GcmSha256,
     EcdheRsaAes256CbcSha,
     EcdheRsaChacha20Poly1305Sha256,
@@ -213,7 +213,7 @@ test "DTLS peers negotiate every pinned RSA cipher suite" {
 
 ///|
 test "DTLS peers negotiate every pinned PSK cipher suite" {
-  let suites : Array[CipherSuite] = [
+  let suites : Array[@dtls.CipherSuite] = [
     PskAes128GcmSha256,
     PskAes128Ccm,
     PskAes128Ccm8,
@@ -288,16 +288,16 @@ test "DTLS fingerprint mismatch fails before accepting peer key exchange" {
   let wall_time = @transport.WallTime::from_unix_nanoseconds(
     1750000000000000000L,
   )
-  let client = Endpoint::new(
-    Config::new(
+  let client = @dtls.Endpoint::new(
+    @dtls.Config::new(
       role=Client,
       identity=client_identity,
       expected_peer_fingerprint=client_identity.fingerprint(),
       wall_time~,
     ),
   )
-  let server = Endpoint::new(
-    Config::new(
+  let server = @dtls.Endpoint::new(
+    @dtls.Config::new(
       role=Server,
       identity=server_identity,
       expected_peer_fingerprint=client_identity.fingerprint(),

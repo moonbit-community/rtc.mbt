@@ -244,9 +244,9 @@ test "bench SCTP reliable throughput" (it : @bench.T) {
 
 ///|
 fn bench_swap_datagram(
-  datagram : OutboundDatagram,
-  now : Instant,
-) -> InboundDatagram {
+  datagram : @rtc.OutboundDatagram,
+  now : @rtc.Instant,
+) -> @rtc.InboundDatagram {
   {
     now,
     context: {
@@ -261,10 +261,10 @@ fn bench_swap_datagram(
 
 ///|
 fn bench_pump_peers(
-  offerer : PeerConnection,
-  answerer : PeerConnection,
-  now : Instant,
-) -> Unit raise RtcError {
+  offerer : @rtc.PeerConnection,
+  answerer : @rtc.PeerConnection,
+  now : @rtc.Instant,
+) -> Unit raise @rtc.RtcError {
   for round = 0; round < 16384; round = round + 1 {
     let mut progressed = false
     match offerer.poll_datagram() {
@@ -289,26 +289,36 @@ fn bench_pump_peers(
 }
 
 ///|
-fn bench_peer_pair() -> (PeerConnection, PeerConnection, @sctp.StreamId) {
-  let now = try! Instant::from_milliseconds(0)
-  let sample = ClockSample::new(
+fn bench_peer_pair() -> (
+  @rtc.PeerConnection,
+  @rtc.PeerConnection,
+  @sctp.StreamId,
+) {
+  let now = try! @rtc.Instant::from_milliseconds(0)
+  let sample = @rtc.ClockSample::new(
     monotonic=now,
-    wall=WallTime::from_unix_nanoseconds(1700000000000000000L),
+    wall=@rtc.WallTime::from_unix_nanoseconds(1700000000000000000L),
   )
-  let offerer = try! PeerConnection::new(
-    Configuration::new(host_candidates=[
+  let offerer = try! @rtc.PeerConnection::new(
+    @rtc.Configuration::new(host_candidates=[
       try! @ice.IceCandidate::host(
         foundation="bench-offerer",
-        SocketAddress::new(address=IpAddress::loopback_v4(), port=58000),
+        @rtc.SocketAddress::new(
+          address=@rtc.IpAddress::loopback_v4(),
+          port=58000,
+        ),
       ),
     ]),
     sample,
   )
-  let answerer = try! PeerConnection::new(
-    Configuration::new(host_candidates=[
+  let answerer = try! @rtc.PeerConnection::new(
+    @rtc.Configuration::new(host_candidates=[
       try! @ice.IceCandidate::host(
         foundation="bench-answerer",
-        SocketAddress::new(address=IpAddress::loopback_v4(), port=58001),
+        @rtc.SocketAddress::new(
+          address=@rtc.IpAddress::loopback_v4(),
+          port=58001,
+        ),
       ),
     ]),
     sample,
@@ -336,8 +346,8 @@ fn bench_peer_pair() -> (PeerConnection, PeerConnection, @sctp.StreamId) {
 ///|
 test "bench end-to-end PeerConnection DataChannel pipeline" (it : @bench.T) {
   let (offerer, answerer, channel) = bench_peer_pair()
-  let now = try! Instant::from_milliseconds(1)
-  let message = RtcMessage::DataChannel(
+  let now = try! @rtc.Instant::from_milliseconds(1)
+  let message = @rtc.RtcMessage::DataChannel(
     channel_id=channel,
     message=Binary(Bytes::make(4096, 0x77)),
   )

@@ -19,9 +19,9 @@ async fn reserve_tcp_port() -> UInt16 {
 
 ///|
 async fn wait_for_open(
-  events : EventStream,
+  events : @async.EventStream,
   expected : @rtc.DataChannel,
-) -> Unit raise DriverError {
+) -> Unit raise @async.DriverError {
   for ;; {
     match events.next() {
       Some(DataChannelOpened(channel)) if channel.id() == expected.id() =>
@@ -45,7 +45,7 @@ async test "async Drivers exchange a DataChannel message over real UDP" {
       foundation="answerer",
       @rtc.SocketAddress::new(address=loopback, port=answerer_port),
     )
-    let sample = sample_clock()
+    let sample = @async.sample_clock()
     let offerer = @rtc.PeerConnection::new(
       @rtc.Configuration::new(host_candidates=[offerer_candidate]),
       sample,
@@ -65,10 +65,10 @@ async test "async Drivers exchange a DataChannel message over real UDP" {
     answerer.set_local_description(answer, sample.monotonic())
     offerer.set_remote_description(answer, sample.monotonic())
 
-    let (offerer_driver, offerer_handle, offerer_events, _) = Driver::create(
+    let (offerer_driver, offerer_handle, offerer_events, _) = @async.Driver::create(
       offerer,
     )
-    let (answerer_driver, answerer_handle, answerer_events, answerer_messages) = Driver::create(
+    let (answerer_driver, answerer_handle, answerer_events, answerer_messages) = @async.Driver::create(
       answerer,
     )
     @async_runtime.with_task_group <| group => {
@@ -114,7 +114,7 @@ async test "async Drivers exchange a DataChannel message over real ICE TCP" {
       @rtc.SocketAddress::new(address=loopback, port=answerer_port),
       tcp_type=Passive,
     )
-    let sample = sample_clock()
+    let sample = @async.sample_clock()
     let offerer = @rtc.PeerConnection::new(
       @rtc.Configuration::new(host_candidates=[offerer_candidate]),
       sample,
@@ -134,10 +134,10 @@ async test "async Drivers exchange a DataChannel message over real ICE TCP" {
     answerer.set_local_description(answer, sample.monotonic())
     offerer.set_remote_description(answer, sample.monotonic())
 
-    let (offerer_driver, offerer_handle, offerer_events, _) = Driver::create(
+    let (offerer_driver, offerer_handle, offerer_events, _) = @async.Driver::create(
       offerer,
     )
-    let (answerer_driver, answerer_handle, answerer_events, answerer_messages) = Driver::create(
+    let (answerer_driver, answerer_handle, answerer_events, answerer_messages) = @async.Driver::create(
       answerer,
     )
     @async_runtime.with_task_group <| group => {
@@ -171,8 +171,8 @@ async test "async Drivers exchange a DataChannel message over real ICE TCP" {
 
 ///|
 test "system clock samples are monotonic-compatible and wall-clock based" {
-  let first = sample_clock()
-  let second = sample_clock()
+  let first = @async.sample_clock()
+  let second = @async.sample_clock()
   assert_true(second.monotonic() >= first.monotonic())
   assert_true(first.wall().as_unix_nanoseconds() > 0L)
 }

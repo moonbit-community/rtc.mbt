@@ -21,8 +21,8 @@ fn rfc5769_ipv4_response() -> Bytes {
 ///|
 test "RFC 5769 request decodes, authenticates, and round-trips exactly" {
   let wire = rfc5769_request()
-  assert_true(Message::is_stun(wire))
-  let message = Message::decode(wire)
+  assert_true(@stun.Message::is_stun(wire))
+  let message = @stun.Message::decode(wire)
   assert_eq(message.class(), Request)
   assert_eq(message.stun_method(), Binding)
   assert_eq(
@@ -48,7 +48,7 @@ test "RFC 5769 request decodes, authenticates, and round-trips exactly" {
 ///|
 test "RFC 5769 IPv4 response authenticates and preserves nonzero padding" {
   let wire = rfc5769_ipv4_response()
-  let message = Message::decode(wire)
+  let message = @stun.Message::decode(wire)
   assert_eq(message.class(), SuccessResponse)
   assert_eq(message.stun_method(), Binding)
   assert_eq(message.attributes()[0].as_text(), "test vector")
@@ -60,21 +60,21 @@ test "RFC 5769 IPv4 response authenticates and preserves nonzero padding" {
 
 ///|
 test "SHA-256 integrity and fingerprint reject modified input" {
-  let message = Message::new(
+  let message = @stun.Message::new(
     class=Request,
     stun_method=Binding,
-    transaction_id=TransactionId::from_bytes(b"0123456789ab"),
+    transaction_id=@stun.TransactionId::from_bytes(b"0123456789ab"),
     attributes=[
-      Attribute::username("remote:local"),
-      Attribute::priority(0x6e0001ffU),
-      Attribute::use_candidate(),
+      @stun.Attribute::username("remote:local"),
+      @stun.Attribute::priority(0x6e0001ffU),
+      @stun.Attribute::use_candidate(),
     ],
   )
   let wire = message.encode_authenticated(
     b"a short-term credential",
     sha256=true,
   )
-  let decoded = Message::decode(wire)
+  let decoded = @stun.Message::decode(wire)
   decoded.verify_integrity(b"a short-term credential", sha256=true)
   decoded.verify_fingerprint()
   try decoded.verify_integrity(b"wrong credential", sha256=true) catch {
@@ -85,7 +85,7 @@ test "SHA-256 integrity and fingerprint reject modified input" {
   }
   let corrupted = wire.to_array()
   corrupted[corrupted.length() - 1] = corrupted[corrupted.length() - 1] ^ 1
-  let corrupted = Message::decode(Bytes::from_array(corrupted))
+  let corrupted = @stun.Message::decode(Bytes::from_array(corrupted))
   try corrupted.verify_fingerprint() catch {
     IntegrityFailure => ()
     _ => fail("unexpected STUN error")
@@ -98,27 +98,31 @@ test "SHA-256 integrity and fingerprint reject modified input" {
 test "unknown attributes and arbitrary padding survive decoding" {
   let wire = b"\x00\x01\x00\x08\x21\x12\xa4\x42\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x61\x62" +
     b"\x80\x3f\x00\x01\xaa\x01\x02\x03"
-  let message = Message::decode(wire)
+  let message = @stun.Message::decode(wire)
   assert_eq(message.attributes().length(), 1)
   assert_eq(message.attributes()[0].attribute_type(), UnknownAttribute(0x803f))
   assert_eq(message.encode(), wire)
-  let required = Message::new(
+  let required = @stun.Message::new(
     class=Request,
     stun_method=Binding,
-    transaction_id=TransactionId::from_bytes(b"0123456789ab"),
+    transaction_id=@stun.TransactionId::from_bytes(b"0123456789ab"),
     attributes=[
-      Attribute::new(attribute_type=UnknownAttribute(0x1234), value=b"abc"),
+      @stun.Attribute::new(
+        attribute_type=UnknownAttribute(0x1234),
+        value=b"abc",
+      ),
     ],
   )
-  assert_eq(Message::decode(required.encode()).unknown_required_attributes(), [
-    0x1234,
-  ])
+  assert_eq(
+    @stun.Message::decode(required.encode()).unknown_required_attributes(),
+    [0x1234],
+  )
 }
 
 ///|
 test "message type coding covers classes and unknown methods" {
-  let transaction_id = TransactionId::from_bytes(b"0123456789ab")
-  let cases : Array[(MessageClass, Method)] = [
+  let transaction_id = @stun.TransactionId::from_bytes(b"0123456789ab")
+  let cases : Array[(@stun.MessageClass, @stun.Method)] = [
     (Request, Binding),
     (Indication, Send),
     (SuccessResponse, Allocate),
@@ -126,16 +130,16 @@ test "message type coding covers classes and unknown methods" {
   ]
   for item in cases {
     let (class, stun_method) = item
-    let original = Message::new(class~, stun_method~, transaction_id~)
-    assert_eq(Message::decode(original.encode()), original)
+    let original = @stun.Message::new(class~, stun_method~, transaction_id~)
+    assert_eq(@stun.Message::decode(original.encode()), original)
   }
 }
 
 ///|
 test "strict framing rejects truncated, mismatched, and non-STUN packets" {
-  assert_false(Message::is_stun(b"not a STUN packet"))
+  assert_false(@stun.Message::is_stun(b"not a STUN packet"))
   let truncated = rfc5769_request()[0:19].to_owned()
-  try Message::decode(truncated) catch {
+  try @stun.Message::decode(truncated) catch {
     InvalidMessage(_) => ()
     _ => fail("unexpected STUN error")
   } noraise {
@@ -143,7 +147,7 @@ test "strict framing rejects truncated, mismatched, and non-STUN packets" {
   }
   let mismatched = rfc5769_request().to_array()
   mismatched[3] = 0x54
-  try Message::decode(Bytes::from_array(mismatched)) catch {
+  try @stun.Message::decode(Bytes::from_array(mismatched)) catch {
     InvalidMessage(_) => ()
     _ => fail("unexpected STUN error")
   } noraise {
@@ -151,8 +155,8 @@ test "strict framing rejects truncated, mismatched, and non-STUN packets" {
   }
   let high_bits = rfc5769_request().to_array()
   high_bits[0] = high_bits[0] | 0xc0
-  assert_false(Message::is_stun(Bytes::from_array(high_bits)))
-  try Message::decode(Bytes::from_array(high_bits)) catch {
+  assert_false(@stun.Message::is_stun(Bytes::from_array(high_bits)))
+  try @stun.Message::decode(Bytes::from_array(high_bits)) catch {
     InvalidMessage(_) => ()
     _ => fail("unexpected STUN error")
   } noraise {
