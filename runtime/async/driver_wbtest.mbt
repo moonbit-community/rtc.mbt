@@ -47,6 +47,58 @@ async test "bounded output queues retain pending events and messages" {
 }
 
 ///|
+async test "blocked event reads translate task cancellation" {
+  let core = @rtc.PeerConnection::new(@rtc.Configuration::new(), sample_clock())
+  let (_, _, events, _) = Driver::create(core)
+  @async_runtime.with_task_group <| group => {
+    let task = group.spawn(() => {
+      let outcome : Result[@rtc.PeerEvent?, DriverError] = Ok(events.next()) catch {
+        error => Err(error)
+      }
+      outcome
+    })
+    @async_runtime.sleep(10)
+    task.cancel()
+    match task.wait() {
+      Err(Cancelled) => ()
+      Err(error) => fail("event read reported \{Repr(error)}")
+      Ok(event) => fail("cancelled event read returned \{Repr(event)}")
+    }
+  }
+}
+
+///|
+async test "driver cancellation terminates streams with Cancelled" {
+  let core = @rtc.PeerConnection::new(@rtc.Configuration::new(), sample_clock())
+  let (driver, _, events, _) = Driver::create(core)
+  @async_runtime.with_task_group <| group => {
+    let task = group.spawn(() => {
+      let outcome : Result[Unit, DriverError] = try {
+        driver.run()
+        Ok(())
+      } catch {
+        error => Err(error)
+      }
+      outcome
+    })
+    @async_runtime.sleep(10)
+    task.cancel()
+    match task.wait() {
+      Err(Cancelled) => ()
+      Err(error) => fail("driver cancellation reported \{Repr(error)}")
+      Ok(_) => fail("cancelled driver returned successfully")
+    }
+    try {
+      ignore(events.next())
+      fail("cancelled driver ended its event stream without an error")
+    } catch {
+      Cancelled => ()
+      error => fail("cancelled driver stream reported \{Repr(error)}")
+    }
+  }
+}
+
+///|
 test "backpressure classifier distinguishes control from RTP ingress" {
   assert_false(is_control_datagram(b""))
   assert_true(is_control_datagram(b"\x00"))

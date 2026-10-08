@@ -321,9 +321,14 @@ async fn put_input(
   if shared.closing || shared.terminated {
     raise Closed
   }
-  shared.inputs.put(input) catch {
+  try {
+    match @async_runtime.handle_cancellation(() => shared.inputs.put(input)) {
+      Some(_) => ()
+      None => raise Cancelled
+    }
+  } catch {
     DriverStopping => raise Closed
-    error if @async_runtime.is_cancellation_error(error) => raise Cancelled
+    Cancelled => raise Cancelled
     _ => raise Io("driver command queue failed")
   }
   signal_driver(shared)
@@ -375,9 +380,14 @@ async fn put_network_input(
   } else {
     shared.inputs
   }
-  queue.put(input) catch {
+  try {
+    match @async_runtime.handle_cancellation(() => queue.put(input)) {
+      Some(_) => ()
+      None => raise Cancelled
+    }
+  } catch {
     DriverStopping => raise Closed
-    error if @async_runtime.is_cancellation_error(error) => raise Cancelled
+    Cancelled => raise Cancelled
     _ => raise Io("driver network ingress queue failed")
   }
   signal_driver(shared)
@@ -405,9 +415,17 @@ pub async fn PeerHandle::close(self : PeerHandle) -> Unit raise DriverError {
     return
   }
   self.shared.closing = true
-  self.shared.close_requests.put(()) catch {
+  try {
+    match
+      @async_runtime.handle_cancellation(() => {
+        self.shared.close_requests.put(())
+      }) {
+      Some(_) => ()
+      None => raise Cancelled
+    }
+  } catch {
     StreamEnded | DriverStopping => ()
-    error if @async_runtime.is_cancellation_error(error) => raise Cancelled
+    Cancelled => raise Cancelled
     _ => raise Io("driver close signal failed")
   }
 }
@@ -416,10 +434,15 @@ pub async fn PeerHandle::close(self : PeerHandle) -> Unit raise DriverError {
 pub async fn EventStream::next(
   self : EventStream,
 ) -> @rtc.PeerEvent? raise DriverError {
-  let event = self.shared.events.get() catch {
+  let event = try {
+    match @async_runtime.handle_cancellation(() => self.shared.events.get()) {
+      Some(event) => event
+      None => raise Cancelled
+    }
+  } catch {
     StreamEnded => return None
     StreamFailed(error) => raise error
-    error if @async_runtime.is_cancellation_error(error) => raise Cancelled
+    Cancelled => raise Cancelled
     _ => raise Io("driver event stream failed")
   }
   if self.shared.output_blocked {
@@ -432,10 +455,15 @@ pub async fn EventStream::next(
 pub async fn MessageStream::next(
   self : MessageStream,
 ) -> @rtc.RtcMessage? raise DriverError {
-  let message = self.shared.messages.get() catch {
+  let message = try {
+    match @async_runtime.handle_cancellation(() => self.shared.messages.get()) {
+      Some(message) => message
+      None => raise Cancelled
+    }
+  } catch {
     StreamEnded => return None
     StreamFailed(error) => raise error
-    error if @async_runtime.is_cancellation_error(error) => raise Cancelled
+    Cancelled => raise Cancelled
     _ => raise Io("driver message stream failed")
   }
   if self.shared.output_blocked {
@@ -490,8 +518,13 @@ async fn bind_socket(
   local_address : @rtc.SocketAddress,
 ) -> BoundSocket raise DriverError {
   let address = async_address(local_address)
-  let socket = @socket.UdpServer(address) catch {
-    error if @async_runtime.is_cancellation_error(error) => raise Cancelled
+  let socket = try {
+    match @async_runtime.handle_cancellation(() => @socket.UdpServer(address)) {
+      Some(socket) => socket
+      None => raise Cancelled
+    }
+  } catch {
+    Cancelled => raise Cancelled
     _ => raise Io("failed to bind UDP host candidate")
   }
   if socket.addr != address {
@@ -523,8 +556,16 @@ async fn send_datagram(
     raise Io("core selected an unbound UDP local address")
   }
   let peer = async_address(datagram.context.peer)
-  bound.socket.sendto(datagram.payload, peer) catch {
-    error if @async_runtime.is_cancellation_error(error) => raise Cancelled
+  try {
+    match
+      @async_runtime.handle_cancellation(() => {
+        bound.socket.sendto(datagram.payload, peer)
+      }) {
+      Some(_) => ()
+      None => raise Cancelled
+    }
+  } catch {
+    Cancelled => raise Cancelled
     _ => raise Io("UDP send failed")
   }
 }
@@ -537,8 +578,13 @@ async fn receive_loop(
 ) -> Unit raise DriverError {
   let buffer : FixedArray[Byte] = FixedArray::make(receive_mtu, b'\x00')
   for ;; {
-    let (length, peer) = bound.socket.recvfrom(buffer) catch {
-      error if @async_runtime.is_cancellation_error(error) => return
+    let (length, peer) = try {
+      match
+        @async_runtime.handle_cancellation(() => bound.socket.recvfrom(buffer)) {
+        Some(result) => result
+        None => return
+      }
+    } catch {
       _ => raise Io("UDP receive failed")
     }
     if length < 0 {
@@ -603,12 +649,18 @@ async fn secure_stream(
   server_name : String?,
 ) -> DriverStream raise DriverError {
   let secure = try {
-    match server_name {
-      Some(host) => @tls.Tls::client(socket, host~)
-      None => @tls.Tls::client(socket)
+    match
+      @async_runtime.handle_cancellation(() => {
+        match server_name {
+          Some(host) => @tls.Tls::client(socket, host~)
+          None => @tls.Tls::client(socket)
+        }
+      }) {
+      Some(secure) => secure
+      None => raise Cancelled
     }
   } catch {
-    error if @async_runtime.is_cancellation_error(error) => raise Cancelled
+    Cancelled => raise Cancelled
     _ => raise Io("TLS stream handshake failed")
   }
   Secure(secure, socket)
@@ -621,8 +673,12 @@ async fn receive_stream_loop(
   bound : BoundStream,
 ) -> Unit {
   for ;; {
-    let chunk = bound.stream.read_some() catch {
-      error if @async_runtime.is_cancellation_error(error) => return
+    let chunk = try {
+      match @async_runtime.handle_cancellation(() => bound.stream.read_some()) {
+        Some(chunk) => chunk
+        None => return
+      }
+    } catch {
       _ => {
         if runtime.stream(bound.connection) is Some(_) {
           let now = driver_now() catch { _ => return }
@@ -684,11 +740,18 @@ async fn outgoing_stream_loop(
       return
     }
   }
-  let socket = @socket.Tcp::connect(peer_address) catch {
-    error if @async_runtime.is_cancellation_error(error) => {
-      ignore(runtime.remove_pending(connection))
-      return
+  let socket = try {
+    match
+      @async_runtime.handle_cancellation(() => {
+        @socket.Tcp::connect(peer_address)
+      }) {
+      Some(socket) => socket
+      None => {
+        ignore(runtime.remove_pending(connection))
+        return
+      }
     }
+  } catch {
     _ => {
       report_connection_error(
         shared, runtime, connection, "TCP connection failed",
@@ -762,8 +825,12 @@ async fn accept_stream_loop(
   group : @async_runtime.TaskGroup[Unit],
 ) -> Unit raise DriverError {
   for ;; {
-    let (socket, peer_address) = bound.server.accept() catch {
-      error if @async_runtime.is_cancellation_error(error) => return
+    let (socket, peer_address) = try {
+      match @async_runtime.handle_cancellation(() => bound.server.accept()) {
+        Some(result) => result
+        None => return
+      }
+    } catch {
       _ =>
         if runtime.has_listener(bound.listener) {
           raise Io("TCP listener accept failed")
@@ -794,11 +861,18 @@ async fn accept_stream_loop(
       protocol: Tcp,
     }
     let now = driver_now()
-    let enqueued = enqueue_core_io(
-      shared,
-      StreamAccepted(now~, listener=bound.listener, connection~, context~),
-    ) catch {
-      error if @async_runtime.is_cancellation_error(error) => return
+    let enqueued = try {
+      match
+        @async_runtime.handle_cancellation(() => {
+          enqueue_core_io(
+            shared,
+            StreamAccepted(now~, listener=bound.listener, connection~, context~),
+          )
+        }) {
+        Some(enqueued) => enqueued
+        None => return
+      }
+    } catch {
       _ => raise Io("failed to queue an accepted TCP stream")
     }
     if !enqueued {
@@ -924,9 +998,16 @@ async fn Driver::flush_core(
           raise Io("core reused an active TCP listener identifier")
         }
         let listen_address = async_address(local_address)
-        let server = @socket.TcpServer(listen_address) catch {
-          error if @async_runtime.is_cancellation_error(error) =>
-            raise Cancelled
+        let server = try {
+          match
+            @async_runtime.handle_cancellation(() => {
+              @socket.TcpServer(listen_address)
+            }) {
+            Some(server) => server
+            None => raise Cancelled
+          }
+        } catch {
+          Cancelled => raise Cancelled
           _ => raise Io("failed to bind TCP host candidate")
         }
         let actual_address = {
@@ -955,9 +1036,14 @@ async fn Driver::flush_core(
           )
           continue
         }
-        bound.stream.write(bytes) catch {
-          error if @async_runtime.is_cancellation_error(error) =>
-            raise Cancelled
+        try {
+          match
+            @async_runtime.handle_cancellation(() => bound.stream.write(bytes)) {
+            Some(_) => ()
+            None => raise Cancelled
+          }
+        } catch {
+          Cancelled => raise Cancelled
           _ => {
             ignore(runtime.close_stream(connection))
             let now = driver_now()
@@ -1044,21 +1130,31 @@ async fn wait_for_driver_signal(
   match delay {
     Some(0) => false
     Some(delay) => {
-      let signal = @async_runtime.with_timeout_opt(delay, () => {
-        shared.wakeups.get()
-      }) catch {
+      let signal = try {
+        match
+          @async_runtime.handle_cancellation(() => {
+            @async_runtime.with_timeout_opt(delay, () => shared.wakeups.get())
+          }) {
+          Some(signal) => signal
+          None => raise Cancelled
+        }
+      } catch {
         DriverStopping => return false
-        error if @async_runtime.is_cancellation_error(error) => raise Cancelled
+        Cancelled => raise Cancelled
         _ => raise Io("driver wakeup wait failed")
       }
       signal is Some(_)
     }
     None => {
       ignore(
-        shared.wakeups.get() catch {
+        try {
+          match @async_runtime.handle_cancellation(() => shared.wakeups.get()) {
+            Some(signal) => signal
+            None => raise Cancelled
+          }
+        } catch {
           DriverStopping => return false
-          error if @async_runtime.is_cancellation_error(error) =>
-            raise Cancelled
+          Cancelled => raise Cancelled
           _ => raise Io("driver wakeup wait failed")
         },
       )
@@ -1232,31 +1328,45 @@ async fn Driver::run_impl(self : Driver) -> Unit raise DriverError {
     socket.socket.close()
   })
   defer runtime.close_all()
-  (@async_runtime.with_task_group <| group => {
-    group.spawn_bg(no_wait=true) <| () => {
-      self.shared.close_requests.get() catch {
-        error if @async_runtime.is_cancellation_error(error) => return
-        StreamEnded => return
-        _ => return
-      }
-      self.shared.closing = true
-      self.shared.inputs.close(error=DriverStopping)
-      self.shared.control_inputs.close(error=DriverStopping)
-      self.shared.wakeups.close(error=DriverStopping)
+  try {
+    match
+      @async_runtime.handle_cancellation(() => {
+        @async_runtime.with_task_group <| group => {
+          group.spawn_bg(no_wait=true) <| () => {
+            try {
+              match
+                @async_runtime.handle_cancellation(() => {
+                  self.shared.close_requests.get()
+                }) {
+                Some(_) => ()
+                None => return
+              }
+            } catch {
+              StreamEnded => return
+              _ => return
+            }
+            self.shared.closing = true
+            self.shared.inputs.close(error=DriverStopping)
+            self.shared.control_inputs.close(error=DriverStopping)
+            self.shared.wakeups.close(error=DriverStopping)
+          }
+          for socket in sockets {
+            group.spawn_bg(no_wait=true, () => {
+              receive_loop(self.shared, socket, self.receive_mtu)
+            })
+          }
+          self.main_loop(sockets, runtime, group)
+        }
+      }) {
+      Some(_) => ()
+      None => raise Cancelled
     }
-    for socket in sockets {
-      group.spawn_bg(no_wait=true, () => {
-        receive_loop(self.shared, socket, self.receive_mtu)
-      })
-    }
-    self.main_loop(sockets, runtime, group)
-  }) catch {
+  } catch {
     Core(error) => raise Core(error)
     BackpressureExceeded => raise BackpressureExceeded
     Cancelled => raise Cancelled
     Closed => raise Closed
     Io(message) => raise Io(message)
-    error if @async_runtime.is_cancellation_error(error) => raise Cancelled
     _ => raise Io("async task group failed")
   }
 }
@@ -1294,20 +1404,33 @@ pub async fn with_peer_connection(
   use_peer : async (PeerHandle, EventStream, MessageStream) -> Unit,
 ) -> Unit raise DriverError {
   let (driver, handle, events, messages) = Driver::create(core)
-  (@async_runtime.with_task_group <| group => {
-    let cleanup_handle = handle.clone()
-    group.add_defer(() => cleanup_handle.close() catch { _ => () })
-    let driver_task = group.spawn(() => driver.run())
-    use_peer(handle, events, messages)
-    cleanup_handle.close()
-    driver_task.wait()
-  }) catch {
+  try {
+    match
+      @async_runtime.handle_cancellation(() => {
+        @async_runtime.with_task_group <| group => {
+          let cleanup_handle = handle.clone()
+          group.add_defer(() => {
+            @async_runtime.protect_from_cancel(() => {
+              cleanup_handle.close() catch {
+                _ => ()
+              }
+            })
+          })
+          let driver_task = group.spawn(() => driver.run())
+          use_peer(handle, events, messages)
+          cleanup_handle.close()
+          driver_task.wait()
+        }
+      }) {
+      Some(_) => ()
+      None => raise Cancelled
+    }
+  } catch {
     Core(error) => raise Core(error)
     BackpressureExceeded => raise BackpressureExceeded
     Cancelled => raise Cancelled
     Closed => raise Closed
     Io(message) => raise Io(message)
-    error if @async_runtime.is_cancellation_error(error) => raise Cancelled
     _ => raise Io("peer connection scope failed")
   }
 }

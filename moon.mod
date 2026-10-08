@@ -3,7 +3,7 @@ name = "moonbit-community/rtc"
 version = "0.0.1"
 
 import {
-  "moonbitlang/async@0.20.2",
+  "moonbitlang/async@0.22.4",
 }
 
 readme = "README.mbt.md"
