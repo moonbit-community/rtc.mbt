@@ -26,6 +26,25 @@ jobs:
     steps:
       - name: Install dependencies from the pinned Ubuntu snapshot
         run: |
+          retry() {
+            local attempt status delay=5
+            for attempt in 1 2 3 4; do
+              if "$@"; then
+                echo "APT attempt ${attempt}/4 succeeded (exit 0): $*"
+                return 0
+              else
+                status=$?
+              fi
+              echo "APT attempt ${attempt}/4 failed (exit ${status}): $*" >&2
+              if (( attempt == 4 )); then
+                return "$status"
+              fi
+              echo "Retrying in ${delay}s" >&2
+              sleep "$delay"
+              delay=$((delay * 2))
+            done
+          }
+
           printf '%s\n' \
             "deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/${UBUNTU_SNAPSHOT} jammy main" \
             "deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/${UBUNTU_SNAPSHOT} jammy-updates main" \
@@ -36,13 +55,15 @@ jobs:
             -o Dir::Etc::sourcelist=/etc/apt/rtc-snapshot.list
             -o Dir::Etc::sourceparts=-
             -o Acquire::https::CAInfo=/opt/bootstrap-ca.pem
+            -o Acquire::https::Timeout=30
+            -o Acquire::Retries=0
           )
 
-          apt-get "${apt_options[@]}" update \
+          retry apt-get "${apt_options[@]}" update \
             -o APT::Update::Error-Mode=any
 
           DEBIAN_FRONTEND=noninteractive \
-            apt-get "${apt_options[@]}" install \
+            retry apt-get "${apt_options[@]}" install \
               --yes \
               --allow-downgrades \
               --no-install-recommends \
@@ -62,6 +83,7 @@ jobs:
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
       - name: Verify and record the exact crypto build identity
+        id: crypto-identity
         run: |
           test "$(dpkg-query -W -f='${Version}' openssl)" = "$OPENSSL_PACKAGE_VERSION"
           test "$(dpkg-query -W -f='${Version}' libssl3)" = "$OPENSSL_PACKAGE_VERSION"
@@ -79,7 +101,7 @@ jobs:
           moon test --target native
 
       - name: Archive pinned OpenSSL build identity
-        if: always()
+        if: ${{ always() && steps.crypto-identity.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: openssl-build-identity
@@ -136,6 +158,9 @@ jobs:
 
       - name: Check formatting
         run: moon fmt --check
+
+      - name: Check snapshot installation retries
+        run: python3 scripts/test-ci-snapshot-retry.py
 
       - name: Strict C shim compile
         run: |
@@ -219,8 +244,29 @@ jobs:
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
+      - name: Record ASan toolchain and native package versions
+        id: asan-identity
+        run: |
+          moon version --all | tee moonbit-version.txt
+          openssl version -a | tee openssl-version.txt
+          cc --version | tee c-compiler-version.txt
+          dpkg-query -W openssl libssl3 libssl-dev 'libasan*' build-essential gcc libc6 \
+            | tee native-packages.txt
+
       - name: Resolve MoonBit dependencies
         run: moon update
 
       - name: Run C stubs and native test entries under ASan
         run: scripts/run-asan.mjs
+
+      - name: Archive ASan build identity
+        if: ${{ always() && steps.asan-identity.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: asan-build-identity
+          path: |
+            moonbit-version.txt
+            openssl-version.txt
+            c-compiler-version.txt
+            native-packages.txt
+          if-no-files-found: error
