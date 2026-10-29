@@ -1,6 +1,6 @@
 ///|
 fn test_identity(
-  key_type? : @dtls.CertificateKeyType = EcdsaCertificate,
+  key_type~ : @dtls.CertificateKeyType = EcdsaCertificate,
 ) -> @dtls.CertificateIdentity raise @dtls.DtlsError {
   @dtls.CertificateIdentity::generate(
     key_type~,
@@ -11,9 +11,9 @@ fn test_identity(
 
 ///|
 fn test_endpoint_pair(
-  mtu? : Int = 1200,
-  cipher_suites? : Array[@dtls.CipherSuite] = [],
-  key_type? : @dtls.CertificateKeyType = EcdsaCertificate,
+  mtu~ : Int32 = 1200,
+  cipher_suites~ : Array[@dtls.CipherSuite] = [],
+  key_type~ : @dtls.CertificateKeyType = EcdsaCertificate,
 ) -> (@dtls.Endpoint, @dtls.Endpoint) raise @dtls.DtlsError {
   let client_identity = test_identity(key_type~)
   let server_identity = test_identity(key_type~)
@@ -52,8 +52,8 @@ fn test_endpoint_pair(
 ///|
 fn test_psk_endpoint_pair(
   suite : @dtls.CipherSuite,
-  client_psk? : Bytes = b"shared DTLS pre-shared key",
-  server_psk? : Bytes = b"shared DTLS pre-shared key",
+  client_psk~ : Bytes = b"shared DTLS pre-shared key",
+  server_psk~ : Bytes = b"shared DTLS pre-shared key",
 ) -> (@dtls.Endpoint, @dtls.Endpoint) raise @dtls.DtlsError {
   let client_identity = test_identity()
   let server_identity = test_identity()

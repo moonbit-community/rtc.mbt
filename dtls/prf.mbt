@@ -45,7 +45,7 @@ fn append_three(first : Bytes, second : Bytes, third : Bytes) -> Bytes {
 fn p_hash_secret(
   secret : @crypto.Secret,
   seed : Bytes,
-  requested_length : Int,
+  requested_length : Int32,
 ) -> Bytes raise DtlsError {
   if requested_length < 0 {
     raise InvalidHandshake("TLS PRF output length cannot be negative")
@@ -109,9 +109,9 @@ fn encryption_keys_with_lengths(
   master_secret : @crypto.Secret,
   client_random : Bytes,
   server_random : Bytes,
-  mac_length~ : Int,
-  key_length~ : Int,
-  iv_length~ : Int,
+  mac_length~ : Int32,
+  key_length~ : Int32,
+  iv_length~ : Int32,
 ) -> EncryptionKeys raise DtlsError {
   if master_secret.length() != 48 ||
     client_random.length() != 32 ||
@@ -148,7 +148,7 @@ fn encryption_keys_for_secret(
   master_secret : @crypto.Secret,
   client_random : Bytes,
   server_random : Bytes,
-  suite? : CipherSuite = EcdheEcdsaAes128GcmSha256,
+  suite~ : CipherSuite = EcdheEcdsaAes128GcmSha256,
 ) -> EncryptionKeys raise DtlsError {
   let (mac_length, key_length, iv_length) = match suite {
     EcdheEcdsaAes256CbcSha | EcdheRsaAes256CbcSha => (20, 32, 0)

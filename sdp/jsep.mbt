@@ -301,12 +301,12 @@ pub fn SdpDocument::new_datachannel(
   ice_credentials~ : @ice.IceCredentials,
   fingerprint~ : DtlsFingerprint,
   setup~ : DtlsSetup,
-  candidates? : Array[String] = [],
-  end_of_candidates? : Bool = false,
-  sctp_port? : UInt16 = 5000,
-  max_message_size? : UInt64 = 65536UL,
-  media_sections? : Array[RtpMediaParameters] = [],
-  application_index? : Int = 0,
+  candidates~ : Array[String] = [],
+  end_of_candidates~ : Bool = false,
+  sctp_port~ : UInt16 = 5000,
+  max_message_size~ : UInt64 = 65536UL,
+  media_sections~ : Array[RtpMediaParameters] = [],
+  application_index~ : Int32 = 0,
 ) -> SdpDocument raise SdpError {
   if mid.is_empty() || mid.contains(" ") {
     raise InvalidSyntax("invalid data-channel MID")

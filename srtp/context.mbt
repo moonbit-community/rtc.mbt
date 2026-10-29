@@ -24,9 +24,9 @@ struct SrtcpReceiveState {
 
 ///|
 priv struct ParsedRtpHeader {
-  length : Int
+  length : Int32
   sequence_number : UInt16
-  ssrc : UInt
+  ssrc : UInt32
 }
 
 ///|
@@ -35,12 +35,12 @@ pub struct Context {
   profile : ProtectionProfile
   rtp_material : SessionMaterial
   rtcp_material : SessionMaterial
-  send_rtp_states : Map[UInt, RtpIndexState]
-  receive_rtp_states : Map[UInt, RtpReceiveState]
-  send_rtcp_indices : Map[UInt, UInt]
-  receive_rtcp_states : Map[UInt, SrtcpReceiveState]
-  rtp_replay_window : Int
-  rtcp_replay_window : Int
+  send_rtp_states : Map[UInt32, RtpIndexState]
+  receive_rtp_states : Map[UInt32, RtpReceiveState]
+  send_rtcp_indices : Map[UInt32, UInt32]
+  receive_rtcp_states : Map[UInt32, SrtcpReceiveState]
+  rtp_replay_window : Int32
+  rtcp_replay_window : Int32
   mut closed : Bool
 }
 
@@ -70,10 +70,10 @@ fn[T] srtp_auth_open(
 fn derive_session_value(
   provider : @crypto.Provider,
   master_key : @crypto.Secret,
-  master_key_length : Int,
+  master_key_length : Int32,
   master_salt : Bytes,
   label : Byte,
-  output_length : Int,
+  output_length : Int32,
 ) -> Bytes raise SrtpError {
   if output_length < 0 {
     raise InvalidPacket("negative SRTP key derivation length")
@@ -150,8 +150,8 @@ pub fn Context::new(
   profile~ : ProtectionProfile,
   master_key~ : Bytes,
   master_salt~ : Bytes,
-  rtp_replay_window? : Int = 64,
-  rtcp_replay_window? : Int = 64,
+  rtp_replay_window~ : Int32 = 64,
+  rtcp_replay_window~ : Int32 = 64,
 ) -> Context raise SrtpError {
   if master_key.length() != profile.key_length() {
     raise InvalidPacket(
@@ -263,7 +263,7 @@ fn update_packet_index(state : RtpIndexState, index : UInt64) -> Unit {
 }
 
 ///|
-fn Context::send_rtp_state(self : Context, ssrc : UInt) -> RtpIndexState {
+fn Context::send_rtp_state(self : Context, ssrc : UInt32) -> RtpIndexState {
   match self.send_rtp_states.get(ssrc) {
     Some(state) => state
     None => {
@@ -275,7 +275,7 @@ fn Context::send_rtp_state(self : Context, ssrc : UInt) -> RtpIndexState {
 }
 
 ///|
-fn new_replay_window(width : Int) -> @replay.ReplayWindow raise SrtpError {
+fn new_replay_window(width : Int32) -> @replay.ReplayWindow raise SrtpError {
   @replay.ReplayWindow::new(width~) catch {
     _ => raise InvalidPacket("failed to create SRTP replay window")
   }
@@ -284,7 +284,7 @@ fn new_replay_window(width : Int) -> @replay.ReplayWindow raise SrtpError {
 ///|
 fn Context::receive_rtp_state(
   self : Context,
-  ssrc : UInt,
+  ssrc : UInt32,
 ) -> RtpReceiveState raise SrtpError {
   match self.receive_rtp_states.get(ssrc) {
     Some(state) => state
@@ -300,13 +300,13 @@ fn Context::receive_rtp_state(
 }
 
 ///|
-fn write_u16_at(output : Array[Byte], offset : Int, value : UInt16) -> Unit {
+fn write_u16_at(output : Array[Byte], offset : Int32, value : UInt16) -> Unit {
   output[offset] = (value >> 8).to_byte()
   output[offset + 1] = value.to_byte()
 }
 
 ///|
-fn write_u32_at(output : Array[Byte], offset : Int, value : UInt) -> Unit {
+fn write_u32_at(output : Array[Byte], offset : Int32, value : UInt32) -> Unit {
   output[offset] = (value >> 24).to_byte()
   output[offset + 1] = (value >> 16).to_byte()
   output[offset + 2] = (value >> 8).to_byte()
@@ -316,8 +316,8 @@ fn write_u32_at(output : Array[Byte], offset : Int, value : UInt) -> Unit {
 ///|
 fn aes_cm_counter(
   sequence_number : UInt16,
-  rollover_counter : UInt,
-  ssrc : UInt,
+  rollover_counter : UInt32,
+  ssrc : UInt32,
   salt : Bytes,
 ) -> Bytes {
   let counter : Array[Byte] = Array::make(16, 0)
@@ -333,8 +333,8 @@ fn aes_cm_counter(
 ///|
 fn aead_rtp_nonce(
   sequence_number : UInt16,
-  rollover_counter : UInt,
-  ssrc : UInt,
+  rollover_counter : UInt32,
+  ssrc : UInt32,
   salt : Bytes,
 ) -> Bytes {
   let nonce : Array[Byte] = Array::make(12, 0)
@@ -348,7 +348,7 @@ fn aead_rtp_nonce(
 }
 
 ///|
-fn aead_rtcp_nonce(index : UInt, ssrc : UInt, salt : Bytes) -> Bytes {
+fn aead_rtcp_nonce(index : UInt32, ssrc : UInt32, salt : Bytes) -> Bytes {
   let nonce : Array[Byte] = Array::make(12, 0)
   write_u32_at(nonce, 2, ssrc)
   write_u32_at(nonce, 8, index)
@@ -376,7 +376,7 @@ fn cipher_algorithm(profile : ProtectionProfile) -> @crypto.CipherAlgorithm {
 }
 
 ///|
-fn append_rollover(packet : Bytes, rollover_counter : UInt) -> Bytes {
+fn append_rollover(packet : Bytes, rollover_counter : UInt32) -> Bytes {
   packet +
   Bytes::from_array([
     (rollover_counter >> 24).to_byte(),
@@ -581,7 +581,7 @@ pub fn Context::unprotect_rtp(
 }
 
 ///|
-fn rtcp_ssrc(plaintext : Bytes) -> UInt raise SrtpError {
+fn rtcp_ssrc(plaintext : Bytes) -> UInt32 raise SrtpError {
   if plaintext.length() < 8 || plaintext[0] >> 6 != 2 {
     raise InvalidPacket("SRTCP packet is shorter than its SSRC prefix")
   }
@@ -592,7 +592,7 @@ fn rtcp_ssrc(plaintext : Bytes) -> UInt raise SrtpError {
 }
 
 ///|
-fn encode_srtcp_index(index : UInt) -> Bytes {
+fn encode_srtcp_index(index : UInt32) -> Bytes {
   let encrypted_index = index | 0x80000000U
   Bytes::from_array([
     (encrypted_index >> 24).to_byte(),
@@ -603,7 +603,7 @@ fn encode_srtcp_index(index : UInt) -> Bytes {
 }
 
 ///|
-fn decode_srtcp_index(data : Bytes, offset : Int) -> UInt raise SrtpError {
+fn decode_srtcp_index(data : Bytes, offset : Int32) -> UInt32 raise SrtpError {
   if offset < 0 || offset + 4 > data.length() {
     raise InvalidPacket("truncated SRTCP index")
   }
@@ -683,7 +683,7 @@ pub fn Context::encrypt_rtcp(
 ///|
 fn Context::receive_rtcp_state(
   self : Context,
-  ssrc : UInt,
+  ssrc : UInt32,
 ) -> SrtcpReceiveState raise SrtpError {
   match self.receive_rtcp_states.get(ssrc) {
     Some(state) => state

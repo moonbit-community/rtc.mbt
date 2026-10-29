@@ -1,6 +1,6 @@
 ///|
 pub(all) suberror ReplayWindowError {
-  InvalidWidth(Int)
+  InvalidWidth(Int32)
 } derive(Debug, Eq)
 
 ///|
@@ -13,7 +13,7 @@ pub(all) enum ReplayDecision {
 
 ///|
 pub struct ReplayWindow {
-  width : Int
+  width : Int32
   mut initialized : Bool
   mut max_sequence : UInt64
   mut bitmap : UInt64
@@ -21,7 +21,7 @@ pub struct ReplayWindow {
 
 ///|
 pub fn ReplayWindow::new(
-  width? : Int = 64,
+  width~ : Int32 = 64,
 ) -> ReplayWindow raise ReplayWindowError {
   if width < 1 || width > 64 {
     raise InvalidWidth(width)

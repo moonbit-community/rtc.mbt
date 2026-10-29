@@ -35,12 +35,12 @@ pub struct DataChannelConfig {
 ///|
 pub fn DataChannelConfig::new(
   label~ : String,
-  protocol? : String = "",
-  ordering? : @sctp.Ordering = Ordered,
-  reliability? : @sctp.Reliability = Reliable,
-  negotiated? : Bool = false,
+  protocol~ : String = "",
+  ordering~ : @sctp.Ordering = Ordered,
+  reliability~ : @sctp.Reliability = Reliable,
+  negotiated~ : Bool = false,
   id? : @sctp.StreamId,
-  priority? : UInt16 = 256,
+  priority~ : UInt16 = 256,
 ) -> DataChannelConfig raise DataChannelError {
   let label_length = @utf8.encode(label).length()
   let protocol_length = @utf8.encode(protocol).length()
@@ -118,11 +118,11 @@ pub struct DataChannel {
 pub fn DataChannel::new(
   id~ : @sctp.StreamId,
   label~ : String,
-  protocol? : String = "",
-  ordering? : @sctp.Ordering = Ordered,
-  reliability? : @sctp.Reliability = Reliable,
-  negotiated? : Bool = false,
-  priority? : UInt16 = 256,
+  protocol~ : String = "",
+  ordering~ : @sctp.Ordering = Ordered,
+  reliability~ : @sctp.Reliability = Reliable,
+  negotiated~ : Bool = false,
+  priority~ : UInt16 = 256,
 ) -> DataChannel {
   {
     id,
@@ -196,7 +196,7 @@ pub(all) enum ChannelType {
 pub struct DcepOpen {
   channel_type : ChannelType
   priority : UInt16
-  reliability_parameter : UInt
+  reliability_parameter : UInt32
   label : String
   protocol : String
 } derive(Debug, Eq)
@@ -204,10 +204,10 @@ pub struct DcepOpen {
 ///|
 pub fn DcepOpen::new(
   channel_type~ : ChannelType,
-  priority? : UInt16 = 256,
-  reliability_parameter? : UInt = 0U,
+  priority~ : UInt16 = 256,
+  reliability_parameter~ : UInt32 = 0U,
   label~ : String,
-  protocol? : String = "",
+  protocol~ : String = "",
 ) -> DcepOpen raise DataChannelError {
   let label_length = @utf8.encode(label).length()
   let protocol_length = @utf8.encode(protocol).length()
@@ -230,7 +230,7 @@ pub fn DcepOpen::priority(self : DcepOpen) -> UInt16 {
 }
 
 ///|
-pub fn DcepOpen::reliability_parameter(self : DcepOpen) -> UInt {
+pub fn DcepOpen::reliability_parameter(self : DcepOpen) -> UInt32 {
   self.reliability_parameter
 }
 
@@ -262,7 +262,7 @@ pub(all) enum PayloadProtocolIdentifier {
 ///|
 pub fn PayloadProtocolIdentifier::code(
   self : PayloadProtocolIdentifier,
-) -> UInt {
+) -> UInt32 {
   match self {
     Dcep => 50U
     StringPayload => 51U

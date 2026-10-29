@@ -9,7 +9,7 @@ pub struct SrflxGatherer {
   mut request : Bytes?
   mut deadline : @transport.Instant?
   mut rto_milliseconds : Int64
-  mut retransmissions : Int
+  mut retransmissions : Int32
 }
 
 ///|

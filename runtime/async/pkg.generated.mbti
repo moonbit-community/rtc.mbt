@@ -26,7 +26,7 @@ pub(all) suberror DriverError {
 pub struct Driver {
   core : @rtc.PeerConnection
   shared : Shared
-  receive_mtu : Int
+  receive_mtu : Int32
   pending_events : Array[@rtc.PeerEvent]
   pending_messages : Array[@rtc.RtcMessage]
 }

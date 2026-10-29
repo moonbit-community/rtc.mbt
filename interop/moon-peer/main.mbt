@@ -16,9 +16,9 @@ enum InteropMode {
 
 ///|
 struct OutboundMedia {
-  audio_ssrc : UInt
+  audio_ssrc : UInt32
   audio_payload_type : Byte
-  video_ssrc : UInt
+  video_ssrc : UInt32
   video_payload_type : Byte
 }
 

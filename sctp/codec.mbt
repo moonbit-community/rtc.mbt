@@ -1,5 +1,5 @@
 ///|
-fn sctp_writer(capacity : Int) -> @codec.Writer raise SctpError {
+fn sctp_writer(capacity : Int32) -> @codec.Writer raise SctpError {
   @codec.Writer::new(capacity~) catch {
     InvalidLength(length) =>
       raise InvalidPacket("invalid SCTP writer length \{length}")
@@ -40,7 +40,7 @@ fn sctp_read_u16(
 fn sctp_read_u32(
   reader : @codec.Reader,
   context : String,
-) -> UInt raise SctpError {
+) -> UInt32 raise SctpError {
   reader.read_u32_be() catch {
     InvalidLength(length) =>
       raise InvalidPacket("\{context}: invalid length \{length}")
@@ -52,7 +52,7 @@ fn sctp_read_u32(
 ///|
 fn sctp_read_bytes(
   reader : @codec.Reader,
-  length : Int,
+  length : Int32,
   context : String,
 ) -> Bytes raise SctpError {
   reader.read_bytes(length) catch {
@@ -64,12 +64,12 @@ fn sctp_read_bytes(
 }
 
 ///|
-fn padding_length(length : Int) -> Int {
+fn padding_length(length : Int32) -> Int32 {
   (4 - length % 4) % 4
 }
 
 ///|
-fn crc32c(data : Bytes) -> UInt {
+fn crc32c(data : Bytes) -> UInt32 {
   let mut checksum = 0xffffffffU
   for index = 0; index < data.length(); index = index + 1 {
     let byte : Byte = if index >= 8 && index < 12 { 0 } else { data[index] }
@@ -302,7 +302,7 @@ fn decode_sack(flags : Byte, value : Bytes) -> SackChunk raise SctpError {
     }
     gap_ack_blocks.push({ start, end, })
   }
-  let duplicate_tsns : Array[UInt] = []
+  let duplicate_tsns : Array[UInt32] = []
   for index = 0; index < duplicate_count; index = index + 1 {
     duplicate_tsns.push(sctp_read_u32(reader, "SCTP duplicate TSN"))
   }

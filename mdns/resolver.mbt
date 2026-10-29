@@ -46,7 +46,7 @@ fn mdns_destination() -> @transport.SocketAddress {
 
 ///|
 pub fn Resolver::new(
-  mode? : Mode = QueryOnly,
+  mode~ : Mode = QueryOnly,
   retry_interval? : @transport.Duration,
   query_timeout? : @transport.Duration,
 ) -> Resolver raise MdnsError {
@@ -129,7 +129,7 @@ pub fn Resolver::registered(
 pub fn Resolver::answer_query(
   self : Resolver,
   payload : Bytes,
-  ttl_seconds? : UInt = 120U,
+  ttl_seconds~ : UInt32 = 120U,
 ) -> Bytes? raise MdnsError {
   if self.mode != QueryAndGather {
     raise UnsupportedMode
@@ -186,7 +186,7 @@ pub fn Resolver::is_pending(self : Resolver, query_id : QueryId) -> Bool {
 }
 
 ///|
-pub fn Resolver::pending_count(self : Resolver) -> Int {
+pub fn Resolver::pending_count(self : Resolver) -> Int32 {
   self.pending.length()
 }
 
@@ -261,7 +261,7 @@ pub fn Resolver::handle_timeout(
 }
 
 ///|
-fn ttl_duration(ttl_seconds : UInt) -> @transport.Duration raise MdnsError {
+fn ttl_duration(ttl_seconds : UInt32) -> @transport.Duration raise MdnsError {
   duration_milliseconds(ttl_seconds.to_int64() * 1000L)
 }
 

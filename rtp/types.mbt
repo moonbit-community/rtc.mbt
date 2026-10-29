@@ -2,7 +2,7 @@
 pub(all) suberror RtpError {
   InvalidPacket(String)
   InvalidExtension(String)
-  PayloadTooLarge(Int)
+  PayloadTooLarge(Int32)
 } derive(Debug, Eq)
 
 ///|
@@ -40,22 +40,22 @@ pub(all) struct Packet {
   marker : Bool
   payload_type : Byte
   sequence_number : UInt16
-  timestamp : UInt
-  ssrc : UInt
-  csrc : Array[UInt]
+  timestamp : UInt32
+  ssrc : UInt32
+  csrc : Array[UInt32]
   extensions : Array[HeaderExtension]
   payload : Bytes
 } derive(Debug, Eq)
 
 ///|
 pub fn Packet::new(
-  marker? : Bool = false,
+  marker~ : Bool = false,
   payload_type~ : Byte,
   sequence_number~ : UInt16,
-  timestamp~ : UInt,
-  ssrc~ : UInt,
-  csrc? : Array[UInt] = [],
-  extensions? : Array[HeaderExtension] = [],
+  timestamp~ : UInt32,
+  ssrc~ : UInt32,
+  csrc~ : Array[UInt32] = [],
+  extensions~ : Array[HeaderExtension] = [],
   payload~ : Bytes,
 ) -> Packet raise RtpError {
   if payload_type > 127 {
@@ -95,17 +95,17 @@ pub fn Packet::sequence_number(self : Packet) -> UInt16 {
 }
 
 ///|
-pub fn Packet::timestamp(self : Packet) -> UInt {
+pub fn Packet::timestamp(self : Packet) -> UInt32 {
   self.timestamp
 }
 
 ///|
-pub fn Packet::ssrc(self : Packet) -> UInt {
+pub fn Packet::ssrc(self : Packet) -> UInt32 {
   self.ssrc
 }
 
 ///|
-pub fn Packet::csrc(self : Packet) -> Array[UInt] {
+pub fn Packet::csrc(self : Packet) -> Array[UInt32] {
   self.csrc.copy()
 }
 

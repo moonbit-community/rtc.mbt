@@ -82,7 +82,7 @@ pub struct IceCandidate {
   foundation : String
   component : UInt16
   protocol : @transport.TransportProtocol
-  priority : UInt
+  priority : UInt32
   address : CandidateAddress
   port : UInt16
   candidate_type : CandidateType

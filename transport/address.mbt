@@ -1,12 +1,12 @@
 ///|
 pub(all) suberror AddressError {
-  InvalidIpv6Length(Int)
+  InvalidIpv6Length(Int32)
   InvalidAddress(String)
 } derive(Debug, Eq)
 
 ///|
 pub enum IpAddress {
-  V4(UInt)
+  V4(UInt32)
   V6(Bytes)
 } derive(Debug, Eq)
 

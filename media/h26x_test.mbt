@@ -1,7 +1,7 @@
 ///|
 fn h26x_test_packet(
   sequence : UInt16,
-  timestamp : UInt,
+  timestamp : UInt32,
   marker : Bool,
   payload : Bytes,
 ) -> @rtp.Packet raise @rtp.RtpError {

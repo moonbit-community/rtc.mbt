@@ -183,7 +183,7 @@ pub fn CipherSuite::uses_rsa(self : CipherSuite) -> Bool {
 }
 
 ///|
-pub fn CipherSuite::maximum_record_expansion(self : CipherSuite) -> Int {
+pub fn CipherSuite::maximum_record_expansion(self : CipherSuite) -> Int32 {
   match self {
     EcdheEcdsaAes128Ccm8 | PskAes128Ccm8 => 16
     EcdheEcdsaAes256CbcSha | EcdheRsaAes256CbcSha => 52
@@ -242,7 +242,7 @@ pub struct RecordHeader {
 ///|
 pub fn RecordHeader::new(
   content_type~ : ContentType,
-  version? : ProtocolVersion = Dtls12,
+  version~ : ProtocolVersion = Dtls12,
   epoch~ : UInt16,
   sequence_number~ : UInt64,
   content_length~ : UInt16,
@@ -287,7 +287,7 @@ pub struct Record {
 ///|
 pub fn Record::new(
   content_type~ : ContentType,
-  version? : ProtocolVersion = Dtls12,
+  version~ : ProtocolVersion = Dtls12,
   epoch~ : UInt16,
   sequence_number~ : UInt64,
   payload~ : Bytes,
@@ -354,18 +354,18 @@ pub fn HandshakeType::code(self : HandshakeType) -> Byte {
 ///|
 pub struct HandshakeFragment {
   handshake_type : HandshakeType
-  total_length : UInt
+  total_length : UInt32
   message_sequence : UInt16
-  fragment_offset : UInt
+  fragment_offset : UInt32
   body : Bytes
 } derive(Debug, Eq)
 
 ///|
 pub fn HandshakeFragment::new(
   handshake_type~ : HandshakeType,
-  total_length~ : UInt,
+  total_length~ : UInt32,
   message_sequence~ : UInt16,
-  fragment_offset~ : UInt,
+  fragment_offset~ : UInt32,
   body~ : Bytes,
 ) -> HandshakeFragment raise DtlsError {
   if total_length > 0xffffffU ||
@@ -386,7 +386,7 @@ pub fn HandshakeFragment::handshake_type(
 }
 
 ///|
-pub fn HandshakeFragment::total_length(self : HandshakeFragment) -> UInt {
+pub fn HandshakeFragment::total_length(self : HandshakeFragment) -> UInt32 {
   self.total_length
 }
 
@@ -396,7 +396,7 @@ pub fn HandshakeFragment::message_sequence(self : HandshakeFragment) -> UInt16 {
 }
 
 ///|
-pub fn HandshakeFragment::fragment_offset(self : HandshakeFragment) -> UInt {
+pub fn HandshakeFragment::fragment_offset(self : HandshakeFragment) -> UInt32 {
   self.fragment_offset
 }
 

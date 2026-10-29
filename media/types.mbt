@@ -24,7 +24,7 @@ pub(all) enum TransceiverDirection {
 ///|
 pub(all) struct CodecCapability {
   mime_type : String
-  clock_rate : UInt
+  clock_rate : UInt32
   channels : UInt16
   fmtp : String
   rtcp_feedback : Array[String]
@@ -33,10 +33,10 @@ pub(all) struct CodecCapability {
 ///|
 pub fn CodecCapability::new(
   mime_type~ : String,
-  clock_rate~ : UInt,
-  channels? : UInt16 = 1,
-  fmtp? : String = "",
-  rtcp_feedback? : Array[String] = [],
+  clock_rate~ : UInt32,
+  channels~ : UInt16 = 1,
+  fmtp~ : String = "",
+  rtcp_feedback~ : Array[String] = [],
 ) -> CodecCapability raise MediaError {
   let normalized = mime_type.to_lower()
   if !(normalized.has_prefix("audio/") || normalized.has_prefix("video/")) ||
@@ -75,7 +75,7 @@ pub fn CodecCapability::encoding_name(self : CodecCapability) -> String {
 }
 
 ///|
-pub fn CodecCapability::clock_rate(self : CodecCapability) -> UInt {
+pub fn CodecCapability::clock_rate(self : CodecCapability) -> UInt32 {
   self.clock_rate
 }
 
@@ -134,9 +134,9 @@ pub fn MediaTrack::codec(self : MediaTrack) -> CodecCapability {
 
 ///|
 pub(all) struct RtpEncodingParameters {
-  ssrc : UInt?
+  ssrc : UInt32?
   payload_type : Byte?
-  rtx_ssrc : UInt?
+  rtx_ssrc : UInt32?
   rtx_payload_type : Byte?
   rid : String?
   active : Bool
@@ -147,12 +147,12 @@ pub(all) struct RtpEncodingParameters {
 
 ///|
 pub fn RtpEncodingParameters::new(
-  ssrc? : UInt,
+  ssrc? : UInt32,
   payload_type? : Byte,
-  rtx_ssrc? : UInt,
+  rtx_ssrc? : UInt32,
   rtx_payload_type? : Byte,
   rid? : String,
-  active? : Bool = true,
+  active~ : Bool = true,
   max_bitrate? : UInt64,
   scale_resolution_down_by? : Double,
   scalability_mode? : String,
@@ -207,10 +207,10 @@ pub struct RtpParameters {
 ///|
 pub fn RtpParameters::new(
   codec~ : CodecCapability,
-  encodings? : Array[RtpEncodingParameters] = [],
+  encodings~ : Array[RtpEncodingParameters] = [],
 ) -> RtpParameters raise MediaError {
   let rids : Array[String] = []
-  let ssrcs : Array[UInt] = []
+  let ssrcs : Array[UInt32] = []
   for encoding in encodings {
     match encoding.rid {
       Some(rid) => {
@@ -353,7 +353,7 @@ pub struct RtpTransceiver {
 ///|
 pub fn RtpTransceiver::new(
   kind~ : MediaKind,
-  direction? : TransceiverDirection = SendRecv,
+  direction~ : TransceiverDirection = SendRecv,
 ) -> RtpTransceiver {
   {
     mid: None,

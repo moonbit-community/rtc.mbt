@@ -1,13 +1,13 @@
 ///|
 pub(all) suberror CodecError {
-  InvalidLength(Int)
-  Truncated(needed~ : Int, remaining~ : Int)
+  InvalidLength(Int32)
+  Truncated(needed~ : Int32, remaining~ : Int32)
 } derive(Debug, Eq)
 
 ///|
 pub struct Reader {
   data : Bytes
-  mut offset : Int
+  mut offset : Int32
 }
 
 ///|
@@ -16,17 +16,17 @@ pub fn Reader::new(data : Bytes) -> Reader {
 }
 
 ///|
-pub fn Reader::position(self : Reader) -> Int {
+pub fn Reader::position(self : Reader) -> Int32 {
   self.offset
 }
 
 ///|
-pub fn Reader::remaining(self : Reader) -> Int {
+pub fn Reader::remaining(self : Reader) -> Int32 {
   self.data.length() - self.offset
 }
 
 ///|
-fn Reader::require(self : Reader, length : Int) -> Unit raise CodecError {
+fn Reader::require(self : Reader, length : Int32) -> Unit raise CodecError {
   if length < 0 {
     raise InvalidLength(length)
   }
@@ -54,7 +54,7 @@ pub fn Reader::read_u16_be(self : Reader) -> UInt16 raise CodecError {
 }
 
 ///|
-pub fn Reader::read_u24_be(self : Reader) -> UInt raise CodecError {
+pub fn Reader::read_u24_be(self : Reader) -> UInt32 raise CodecError {
   self.require(3)
   let value = (self.data[self.offset].to_uint() << 16) |
     (self.data[self.offset + 1].to_uint() << 8) |
@@ -64,7 +64,7 @@ pub fn Reader::read_u24_be(self : Reader) -> UInt raise CodecError {
 }
 
 ///|
-pub fn Reader::read_u32_be(self : Reader) -> UInt raise CodecError {
+pub fn Reader::read_u32_be(self : Reader) -> UInt32 raise CodecError {
   self.require(4)
   let value = (self.data[self.offset].to_uint() << 24) |
     (self.data[self.offset + 1].to_uint() << 16) |
@@ -92,7 +92,7 @@ pub fn Reader::read_u64_be(self : Reader) -> UInt64 raise CodecError {
 ///|
 pub fn Reader::read_bytes(
   self : Reader,
-  length : Int,
+  length : Int32,
 ) -> Bytes raise CodecError {
   self.require(length)
   let end = self.offset + length
@@ -102,7 +102,7 @@ pub fn Reader::read_bytes(
 }
 
 ///|
-pub fn Reader::skip(self : Reader, length : Int) -> Unit raise CodecError {
+pub fn Reader::skip(self : Reader, length : Int32) -> Unit raise CodecError {
   self.require(length)
   self.offset += length
 }
@@ -113,7 +113,7 @@ pub struct Writer {
 }
 
 ///|
-pub fn Writer::new(capacity? : Int = 0) -> Writer raise CodecError {
+pub fn Writer::new(capacity~ : Int32 = 0) -> Writer raise CodecError {
   if capacity < 0 {
     raise InvalidLength(capacity)
   }
@@ -121,7 +121,7 @@ pub fn Writer::new(capacity? : Int = 0) -> Writer raise CodecError {
 }
 
 ///|
-pub fn Writer::length(self : Writer) -> Int {
+pub fn Writer::length(self : Writer) -> Int32 {
   self.bytes.length()
 }
 
@@ -137,14 +137,14 @@ pub fn Writer::write_u16_be(self : Writer, value : UInt16) -> Unit {
 }
 
 ///|
-pub fn Writer::write_u24_be(self : Writer, value : UInt) -> Unit {
+pub fn Writer::write_u24_be(self : Writer, value : UInt32) -> Unit {
   self.bytes.push((value >> 16).to_byte())
   self.bytes.push((value >> 8).to_byte())
   self.bytes.push(value.to_byte())
 }
 
 ///|
-pub fn Writer::write_u32_be(self : Writer, value : UInt) -> Unit {
+pub fn Writer::write_u32_be(self : Writer, value : UInt32) -> Unit {
   self.bytes.push((value >> 24).to_byte())
   self.bytes.push((value >> 16).to_byte())
   self.bytes.push((value >> 8).to_byte())

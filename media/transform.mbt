@@ -9,9 +9,9 @@ pub(all) struct EncodedFrameContext {
   direction : TransformDirection
   track_id : String?
   codec : CodecCapability
-  ssrc : UInt
+  ssrc : UInt32
   sequence_number : UInt16
-  timestamp : UInt
+  timestamp : UInt32
   marker : Bool
 } derive(Debug, Eq)
 
@@ -20,9 +20,9 @@ pub fn EncodedFrameContext::new(
   direction~ : TransformDirection,
   track_id? : String,
   codec~ : CodecCapability,
-  ssrc~ : UInt,
+  ssrc~ : UInt32,
   sequence_number~ : UInt16,
-  timestamp~ : UInt,
+  timestamp~ : UInt32,
   marker~ : Bool,
 ) -> EncodedFrameContext {
   { direction, track_id, codec, ssrc, sequence_number, timestamp, marker, }
@@ -72,7 +72,9 @@ pub fn EncodedTransformPipeline::add(
 }
 
 ///|
-pub fn EncodedTransformPipeline::length(self : EncodedTransformPipeline) -> Int {
+pub fn EncodedTransformPipeline::length(
+  self : EncodedTransformPipeline,
+) -> Int32 {
   self.stages.length()
 }
 

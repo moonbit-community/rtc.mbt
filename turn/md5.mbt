@@ -1,10 +1,10 @@
 ///|
-fn rotate_left(value : UInt, shift : Int) -> UInt {
+fn rotate_left(value : UInt32, shift : Int32) -> UInt32 {
   (value << shift) | (value >> (32 - shift))
 }
 
 ///|
-fn read_u32_le(data : Array[Byte], offset : Int) -> UInt {
+fn read_u32_le(data : Array[Byte], offset : Int32) -> UInt32 {
   data[offset].to_uint() |
   (data[offset + 1].to_uint() << 8) |
   (data[offset + 2].to_uint() << 16) |
@@ -12,7 +12,7 @@ fn read_u32_le(data : Array[Byte], offset : Int) -> UInt {
 }
 
 ///|
-fn append_u32_le(output : Array[Byte], value : UInt) -> Unit {
+fn append_u32_le(output : Array[Byte], value : UInt32) -> Unit {
   output.push(value.to_byte())
   output.push((value >> 8).to_byte())
   output.push((value >> 16).to_byte())
@@ -21,12 +21,12 @@ fn append_u32_le(output : Array[Byte], value : UInt) -> Unit {
 
 ///|
 fn md5(data : Bytes) -> Bytes {
-  let shifts : Array[Int] = [
+  let shifts : Array[Int32] = [
     7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 5, 9, 14, 20, 5,
     9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16,
     23, 4, 11, 16, 23, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21,
   ]
-  let constants : Array[UInt] = [
+  let constants : Array[UInt32] = [
     0xd76aa478U, 0xe8c7b756U, 0x242070dbU, 0xc1bdceeeU, 0xf57c0fafU, 0x4787c62aU,
     0xa8304613U, 0xfd469501U, 0x698098d8U, 0x8b44f7afU, 0xffff5bb1U, 0x895cd7beU,
     0x6b901122U, 0xfd987193U, 0xa679438eU, 0x49b40821U, 0xf61e2562U, 0xc040b340U,
@@ -53,7 +53,7 @@ fn md5(data : Bytes) -> Bytes {
   let mut c0 = 0x98badcfeU
   let mut d0 = 0x10325476U
   for offset = 0; offset < padded.length(); offset = offset + 64 {
-    let words : Array[UInt] = []
+    let words : Array[UInt32] = []
     for index = 0; index < 16; index = index + 1 {
       words.push(read_u32_le(padded, offset + index * 4))
     }

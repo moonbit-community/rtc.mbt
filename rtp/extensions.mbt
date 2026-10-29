@@ -7,7 +7,7 @@ pub(all) struct AudioLevelExtension {
 ///|
 pub fn AudioLevelExtension::new(
   level~ : Byte,
-  voice? : Bool = false,
+  voice~ : Bool = false,
 ) -> AudioLevelExtension raise RtpError {
   if level > 127 {
     raise InvalidExtension("RTP audio level exceeds 127")
@@ -234,9 +234,9 @@ pub(all) struct VideoOrientationExtension {
 
 ///|
 pub fn VideoOrientationExtension::new(
-  direction? : CameraDirection = Front,
-  flip? : Bool = false,
-  rotation? : VideoRotation = Degree0,
+  direction~ : CameraDirection = Front,
+  flip~ : Bool = false,
+  rotation~ : VideoRotation = Degree0,
 ) -> VideoOrientationExtension {
   { direction, flip, rotation, }
 }

@@ -1,11 +1,11 @@
 ///|
 fn interceptor_test_rtp(
   sequence : UInt16,
-  timestamp : UInt,
-  ssrc : UInt,
+  timestamp : UInt32,
+  ssrc : UInt32,
   payload_type : Byte,
   payload : Bytes,
-  extensions? : Array[@rtp.HeaderExtension] = [],
+  extensions~ : Array[@rtp.HeaderExtension] = [],
 ) -> @rtp.Packet raise @rtp.RtpError {
   @rtp.Packet::new(
     payload_type~,
@@ -142,7 +142,7 @@ test "TWCC recorder shares one transport sequence across extension ids" {
   fn packet(
     rtp_sequence : UInt16,
     transport_sequence : UInt16,
-    ssrc : UInt,
+    ssrc : UInt32,
     extension_id : Byte,
   ) -> @rtp.Packet raise @rtp.RtpError {
     interceptor_test_rtp(rtp_sequence, 0U, ssrc, 96, b"x", extensions=[

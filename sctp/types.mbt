@@ -16,7 +16,7 @@ pub(all) suberror SctpError {
 pub(all) enum Reliability {
   Reliable
   RetransmitCount(UInt16)
-  Timed(UInt)
+  Timed(UInt32)
 } derive(Debug, Eq)
 
 ///|
@@ -37,7 +37,7 @@ pub fn StreamId::value(self : StreamId) -> UInt16 {
 ///|
 pub struct Message {
   stream : StreamId
-  protocol_id : UInt
+  protocol_id : UInt32
   unordered : Bool
   payload : Bytes
 } derive(Debug, Eq)
@@ -45,8 +45,8 @@ pub struct Message {
 ///|
 pub fn Message::new(
   stream~ : StreamId,
-  protocol_id~ : UInt,
-  unordered? : Bool = false,
+  protocol_id~ : UInt32,
+  unordered~ : Bool = false,
   payload~ : Bytes,
 ) -> Message {
   { stream, protocol_id, unordered, payload, }
@@ -58,7 +58,7 @@ pub fn Message::stream(self : Message) -> StreamId {
 }
 
 ///|
-pub fn Message::protocol_id(self : Message) -> UInt {
+pub fn Message::protocol_id(self : Message) -> UInt32 {
   self.protocol_id
 }
 
@@ -110,23 +110,23 @@ pub(all) enum Parameter {
 ///|
 pub struct InitChunk {
   acknowledgement : Bool
-  initiate_tag : UInt
-  advertised_receiver_window : UInt
+  initiate_tag : UInt32
+  advertised_receiver_window : UInt32
   outbound_streams : UInt16
   inbound_streams : UInt16
-  initial_tsn : UInt
+  initial_tsn : UInt32
   parameters : Array[Parameter]
 } derive(Debug, Eq)
 
 ///|
 pub fn InitChunk::new(
-  acknowledgement? : Bool = false,
-  initiate_tag~ : UInt,
-  advertised_receiver_window? : UInt = 1048576U,
-  outbound_streams? : UInt16 = 65535,
-  inbound_streams? : UInt16 = 65535,
-  initial_tsn~ : UInt,
-  parameters? : Array[Parameter] = [],
+  acknowledgement~ : Bool = false,
+  initiate_tag~ : UInt32,
+  advertised_receiver_window~ : UInt32 = 1048576U,
+  outbound_streams~ : UInt16 = 65535,
+  inbound_streams~ : UInt16 = 65535,
+  initial_tsn~ : UInt32,
+  parameters~ : Array[Parameter] = [],
 ) -> InitChunk raise SctpError {
   if initiate_tag == 0U {
     raise InvalidPacket("SCTP initiate tag must be nonzero")
@@ -151,17 +151,17 @@ pub fn InitChunk::is_acknowledgement(self : InitChunk) -> Bool {
 }
 
 ///|
-pub fn InitChunk::initiate_tag(self : InitChunk) -> UInt {
+pub fn InitChunk::initiate_tag(self : InitChunk) -> UInt32 {
   self.initiate_tag
 }
 
 ///|
-pub fn InitChunk::initial_tsn(self : InitChunk) -> UInt {
+pub fn InitChunk::initial_tsn(self : InitChunk) -> UInt32 {
   self.initial_tsn
 }
 
 ///|
-pub fn InitChunk::advertised_receiver_window(self : InitChunk) -> UInt {
+pub fn InitChunk::advertised_receiver_window(self : InitChunk) -> UInt32 {
   self.advertised_receiver_window
 }
 
@@ -186,23 +186,23 @@ pub struct DataChunk {
   beginning : Bool
   ending : Bool
   immediate_sack : Bool
-  tsn : UInt
+  tsn : UInt32
   stream : StreamId
   stream_sequence : UInt16
-  protocol_id : UInt
+  protocol_id : UInt32
   user_data : Bytes
 } derive(Debug, Eq)
 
 ///|
 pub fn DataChunk::new(
-  unordered? : Bool = false,
-  beginning? : Bool = true,
-  ending? : Bool = true,
-  immediate_sack? : Bool = false,
-  tsn~ : UInt,
+  unordered~ : Bool = false,
+  beginning~ : Bool = true,
+  ending~ : Bool = true,
+  immediate_sack~ : Bool = false,
+  tsn~ : UInt32,
   stream~ : StreamId,
   stream_sequence~ : UInt16,
-  protocol_id~ : UInt,
+  protocol_id~ : UInt32,
   user_data~ : Bytes,
 ) -> DataChunk {
   {
@@ -219,7 +219,7 @@ pub fn DataChunk::new(
 }
 
 ///|
-pub fn DataChunk::tsn(self : DataChunk) -> UInt {
+pub fn DataChunk::tsn(self : DataChunk) -> UInt32 {
   self.tsn
 }
 
@@ -234,7 +234,7 @@ pub fn DataChunk::stream_sequence(self : DataChunk) -> UInt16 {
 }
 
 ///|
-pub fn DataChunk::protocol_id(self : DataChunk) -> UInt {
+pub fn DataChunk::protocol_id(self : DataChunk) -> UInt32 {
   self.protocol_id
 }
 
@@ -266,18 +266,18 @@ pub(all) struct GapAckBlock {
 
 ///|
 pub struct SackChunk {
-  cumulative_tsn_ack : UInt
-  advertised_receiver_window : UInt
+  cumulative_tsn_ack : UInt32
+  advertised_receiver_window : UInt32
   gap_ack_blocks : Array[GapAckBlock]
-  duplicate_tsns : Array[UInt]
+  duplicate_tsns : Array[UInt32]
 } derive(Debug, Eq)
 
 ///|
 pub fn SackChunk::new(
-  cumulative_tsn_ack~ : UInt,
-  advertised_receiver_window? : UInt = 1048576U,
-  gap_ack_blocks? : Array[GapAckBlock] = [],
-  duplicate_tsns? : Array[UInt] = [],
+  cumulative_tsn_ack~ : UInt32,
+  advertised_receiver_window~ : UInt32 = 1048576U,
+  gap_ack_blocks~ : Array[GapAckBlock] = [],
+  duplicate_tsns~ : Array[UInt32] = [],
 ) -> SackChunk {
   {
     cumulative_tsn_ack,
@@ -288,7 +288,7 @@ pub fn SackChunk::new(
 }
 
 ///|
-pub fn SackChunk::cumulative_tsn_ack(self : SackChunk) -> UInt {
+pub fn SackChunk::cumulative_tsn_ack(self : SackChunk) -> UInt32 {
   self.cumulative_tsn_ack
 }
 
@@ -298,19 +298,19 @@ pub fn SackChunk::gap_ack_blocks(self : SackChunk) -> Array[GapAckBlock] {
 }
 
 ///|
-pub fn SackChunk::duplicate_tsns(self : SackChunk) -> Array[UInt] {
+pub fn SackChunk::duplicate_tsns(self : SackChunk) -> Array[UInt32] {
   self.duplicate_tsns.copy()
 }
 
 ///|
 pub(all) enum ReconfigParameter {
   OutgoingResetRequest(
-    request_sequence~ : UInt,
-    response_sequence~ : UInt,
-    sender_last_tsn~ : UInt,
+    request_sequence~ : UInt32,
+    response_sequence~ : UInt32,
+    sender_last_tsn~ : UInt32,
     streams~ : Array[StreamId]
   )
-  ReconfigResponse(request_sequence~ : UInt, result~ : UInt)
+  ReconfigResponse(request_sequence~ : UInt32, result~ : UInt32)
   UnknownReconfigParameter(UInt16, Bytes)
 } derive(Debug, Eq)
 
@@ -340,20 +340,20 @@ pub fn ForwardTsnStream::sequence(self : ForwardTsnStream) -> UInt16 {
 
 ///|
 pub struct ForwardTsn {
-  new_cumulative_tsn : UInt
+  new_cumulative_tsn : UInt32
   streams : Array[ForwardTsnStream]
 } derive(Debug, Eq)
 
 ///|
 pub fn ForwardTsn::new(
-  new_cumulative_tsn~ : UInt,
-  streams? : Array[ForwardTsnStream] = [],
+  new_cumulative_tsn~ : UInt32,
+  streams~ : Array[ForwardTsnStream] = [],
 ) -> ForwardTsn {
   { new_cumulative_tsn, streams: streams.copy(), }
 }
 
 ///|
-pub fn ForwardTsn::new_cumulative_tsn(self : ForwardTsn) -> UInt {
+pub fn ForwardTsn::new_cumulative_tsn(self : ForwardTsn) -> UInt32 {
   self.new_cumulative_tsn
 }
 
@@ -370,7 +370,7 @@ pub(all) enum Chunk {
   HeartbeatChunk(Bytes)
   HeartbeatAckChunk(Bytes)
   AbortChunk(Bytes)
-  ShutdownChunk(UInt)
+  ShutdownChunk(UInt32)
   ShutdownAckChunk
   ErrorChunk(Bytes)
   CookieEchoChunk(Bytes)
@@ -385,7 +385,7 @@ pub(all) enum Chunk {
 pub struct Packet {
   source_port : UInt16
   destination_port : UInt16
-  verification_tag : UInt
+  verification_tag : UInt32
   chunks : Array[Chunk]
 } derive(Debug, Eq)
 
@@ -393,7 +393,7 @@ pub struct Packet {
 pub fn Packet::new(
   source_port~ : UInt16,
   destination_port~ : UInt16,
-  verification_tag~ : UInt,
+  verification_tag~ : UInt32,
   chunks~ : Array[Chunk],
 ) -> Packet raise SctpError {
   if source_port == 0 || destination_port == 0 {
@@ -413,7 +413,7 @@ pub fn Packet::destination_port(self : Packet) -> UInt16 {
 }
 
 ///|
-pub fn Packet::verification_tag(self : Packet) -> UInt {
+pub fn Packet::verification_tag(self : Packet) -> UInt32 {
   self.verification_tag
 }
 

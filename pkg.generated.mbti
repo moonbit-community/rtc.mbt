@@ -60,7 +60,7 @@ pub(all) struct CodecStats {
   id : String
   payload_type : Byte
   mime_type : String
-  clock_rate : UInt
+  clock_rate : UInt32
   channels : UInt16
   fmtp : String
 } derive(Eq, @debug.Debug)
@@ -72,24 +72,24 @@ pub struct Configuration {
   host_candidates : Array[@ice.IceCandidate]
   sctp_port : UInt16
   max_message_size : UInt64
-  command_capacity : Int
-  event_capacity : Int
-  message_capacity : Int
+  command_capacity : Int32
+  event_capacity : Int32
+  message_capacity : Int32
   settings : Settings
   interceptor_pipeline : @interceptor.Pipeline
   encoded_transform_pipeline : @media.EncodedTransformPipeline
 }
-pub fn Configuration::command_capacity(Self) -> Int
+pub fn Configuration::command_capacity(Self) -> Int32
 pub fn Configuration::encoded_transform_pipeline(Self) -> @media.EncodedTransformPipeline
-pub fn Configuration::event_capacity(Self) -> Int
+pub fn Configuration::event_capacity(Self) -> Int32
 pub fn Configuration::host_candidates(Self) -> Array[@ice.IceCandidate]
 pub fn Configuration::ice_servers(Self) -> Array[IceServer]
 pub fn Configuration::ice_transport_policy(Self) -> @ice.IceTransportPolicy
 pub fn Configuration::interceptor_pipeline(Self) -> @interceptor.Pipeline
 pub fn Configuration::max_message_size(Self) -> UInt64
 pub fn Configuration::mdns_mode(Self) -> @mdns.Mode
-pub fn Configuration::message_capacity(Self) -> Int
-pub fn Configuration::new(ice_servers? : Array[IceServer], ice_transport_policy? : @ice.IceTransportPolicy, mdns_mode? : @mdns.Mode, host_candidates? : Array[@ice.IceCandidate], sctp_port? : UInt16, max_message_size? : UInt64, command_capacity? : Int, event_capacity? : Int, message_capacity? : Int, settings? : Settings, interceptor_pipeline? : @interceptor.Pipeline, encoded_transform_pipeline? : @media.EncodedTransformPipeline) -> Self raise RtcError
+pub fn Configuration::message_capacity(Self) -> Int32
+pub fn Configuration::new(ice_servers? : Array[IceServer], ice_transport_policy? : @ice.IceTransportPolicy, mdns_mode? : @mdns.Mode, host_candidates? : Array[@ice.IceCandidate], sctp_port? : UInt16, max_message_size? : UInt64, command_capacity? : Int32, event_capacity? : Int32, message_capacity? : Int32, settings? : Settings, interceptor_pipeline? : @interceptor.Pipeline, encoded_transform_pipeline? : @media.EncodedTransformPipeline) -> Self raise RtcError
 pub fn Configuration::sctp_port(Self) -> UInt16
 pub fn Configuration::settings(Self) -> Settings
 
@@ -166,7 +166,7 @@ pub struct PeerConnection {
   mut outbound_srtp : @srtp.Context?
   mut inbound_srtp : @srtp.Context?
   mut media_started : Bool
-  rtcp_sender_ssrc : UInt
+  rtcp_sender_ssrc : UInt32
   mut next_rtcp_report : @transport.Instant?
   mut next_transport_sequence : UInt16
   mut remote_twcc_recorder : @interceptor.TwccRecorder?
@@ -180,8 +180,8 @@ pub struct PeerConnection {
   mut bytes_received : UInt64
   mut packets_sent : UInt64
   mut packets_received : UInt64
-  mut data_channels_opened : UInt
-  mut data_channels_closed : UInt
+  mut data_channels_opened : UInt32
+  mut data_channels_closed : UInt32
 }
 pub fn PeerConnection::add_ice_candidate(Self, @ice.IceCandidate, @transport.Instant) -> Unit raise RtcError
 pub fn PeerConnection::add_track(Self, @media.MediaTrack, @transport.Instant) -> @media.RtpTransceiver raise RtcError
@@ -196,10 +196,10 @@ pub fn PeerConnection::create_pranswer(Self, @transport.Instant) -> @sdp.Session
 pub fn PeerConnection::data_channel_buffered_amount(Self, @sctp.StreamId) -> UInt64
 pub fn PeerConnection::data_channel_buffered_amount_low_threshold(Self, @sctp.StreamId) -> UInt64
 pub fn PeerConnection::detailed_stats(Self, @transport.Instant) -> DetailedStatsReport
-pub fn PeerConnection::driver_command_capacity(Self) -> Int
-pub fn PeerConnection::driver_event_capacity(Self) -> Int
-pub fn PeerConnection::driver_message_capacity(Self) -> Int
-pub fn PeerConnection::driver_receive_mtu(Self) -> Int
+pub fn PeerConnection::driver_command_capacity(Self) -> Int32
+pub fn PeerConnection::driver_event_capacity(Self) -> Int32
+pub fn PeerConnection::driver_message_capacity(Self) -> Int32
+pub fn PeerConnection::driver_receive_mtu(Self) -> Int32
 pub fn PeerConnection::handle_datagram(Self, @transport.InboundDatagram) -> Unit raise RtcError
 pub fn PeerConnection::handle_io_event(Self, @transport.IoEvent) -> Unit raise RtcError
 pub fn PeerConnection::handle_mdns_datagram(Self, @transport.InboundDatagram) -> Unit raise RtcError
@@ -209,7 +209,7 @@ pub fn PeerConnection::local_description(Self) -> @sdp.SessionDescription?
 pub fn PeerConnection::local_host_candidates(Self) -> Array[@ice.IceCandidate]
 pub fn PeerConnection::local_track_encodings(Self, String) -> Array[@media.RtpEncodingParameters]
 pub fn PeerConnection::local_track_payload_type(Self, String) -> Byte?
-pub fn PeerConnection::local_track_ssrc(Self, String) -> UInt?
+pub fn PeerConnection::local_track_ssrc(Self, String) -> UInt32?
 pub fn PeerConnection::new(Configuration, @transport.ClockSample) -> Self raise RtcError
 pub fn PeerConnection::poll_datagram(Self) -> @transport.OutboundDatagram?
 pub fn PeerConnection::poll_event(Self) -> PeerEvent?
@@ -272,7 +272,7 @@ pub(all) struct RtpStreamStats {
   track_id : String
   kind : @media.MediaKind
   outbound : Bool
-  ssrc : UInt
+  ssrc : UInt32
   rid : String?
   codec_id : String
   packets : UInt64
@@ -289,7 +289,7 @@ pub struct Settings {
   ice_check_interval : @transport.Duration
   ice_initial_rto : @transport.Duration
   ice_reliable_timeout : @transport.Duration
-  ice_max_retransmissions : Int
+  ice_max_retransmissions : Int32
   ice_disconnected_timeout : @transport.Duration
   ice_failed_timeout : @transport.Duration
   ice_keepalive_interval : @transport.Duration
@@ -304,15 +304,15 @@ pub struct Settings {
   dtls_psk_identity : Bytes?
   dtls_srtp_profiles : Array[@dtls.SrtpProtectionProfile]
   dtls_flight_interval : @transport.Duration
-  dtls_mtu : Int
-  dtls_replay_window : Int
-  srtp_replay_window : Int
-  srtcp_replay_window : Int
-  sctp_max_payload_size : Int
+  dtls_mtu : Int32
+  dtls_replay_window : Int32
+  srtp_replay_window : Int32
+  srtcp_replay_window : Int32
+  sctp_max_payload_size : Int32
   sctp_send_buffer_size : UInt64
-  sctp_receive_buffer_size : UInt
+  sctp_receive_buffer_size : UInt32
   sctp_initial_rto : @transport.Duration
-  receive_mtu : Int
+  receive_mtu : Int32
   ignore_rid_pause_for_recv : Bool
   write_ssrc_attributes_for_simulcast : Bool
 }
@@ -320,10 +320,10 @@ pub fn Settings::answering_dtls_role(Self) -> @dtls.Role?
 pub fn Settings::dtls_certificate_key_type(Self) -> @dtls.CertificateKeyType
 pub fn Settings::dtls_cipher_suites(Self) -> Array[@dtls.CipherSuite]
 pub fn Settings::dtls_flight_interval(Self) -> @transport.Duration
-pub fn Settings::dtls_mtu(Self) -> Int
+pub fn Settings::dtls_mtu(Self) -> Int32
 pub fn Settings::dtls_psk(Self) -> Bytes?
 pub fn Settings::dtls_psk_identity(Self) -> Bytes?
-pub fn Settings::dtls_replay_window(Self) -> Int
+pub fn Settings::dtls_replay_window(Self) -> Int32
 pub fn Settings::dtls_srtp_profiles(Self) -> Array[@dtls.SrtpProtectionProfile]
 pub fn Settings::ice_check_interval(Self) -> @transport.Duration
 pub fn Settings::ice_credentials(Self) -> @ice.IceCredentials?
@@ -331,20 +331,20 @@ pub fn Settings::ice_disconnected_timeout(Self) -> @transport.Duration
 pub fn Settings::ice_failed_timeout(Self) -> @transport.Duration
 pub fn Settings::ice_initial_rto(Self) -> @transport.Duration
 pub fn Settings::ice_keepalive_interval(Self) -> @transport.Duration
-pub fn Settings::ice_max_retransmissions(Self) -> Int
+pub fn Settings::ice_max_retransmissions(Self) -> Int32
 pub fn Settings::ice_reliable_timeout(Self) -> @transport.Duration
 pub fn Settings::ignore_rid_pause_for_recv(Self) -> Bool
 pub fn Settings::mdns_local_name(Self) -> String?
 pub fn Settings::mdns_query_timeout(Self) -> @transport.Duration
 pub fn Settings::mdns_retry_interval(Self) -> @transport.Duration
-pub fn Settings::new(ice_credentials? : @ice.IceCredentials, ice_check_interval? : @transport.Duration, ice_initial_rto? : @transport.Duration, ice_reliable_timeout? : @transport.Duration, ice_max_retransmissions? : Int, ice_disconnected_timeout? : @transport.Duration, ice_failed_timeout? : @transport.Duration, ice_keepalive_interval? : @transport.Duration, mdns_retry_interval? : @transport.Duration, mdns_query_timeout? : @transport.Duration, mdns_local_name? : String, answering_dtls_role? : @dtls.Role, verify_peer_fingerprint? : Bool, dtls_certificate_key_type? : @dtls.CertificateKeyType, dtls_cipher_suites? : Array[@dtls.CipherSuite], dtls_psk? : Bytes, dtls_psk_identity? : Bytes, dtls_srtp_profiles? : Array[@dtls.SrtpProtectionProfile], dtls_flight_interval? : @transport.Duration, dtls_mtu? : Int, dtls_replay_window? : Int, srtp_replay_window? : Int, srtcp_replay_window? : Int, sctp_max_payload_size? : Int, sctp_send_buffer_size? : UInt64, sctp_receive_buffer_size? : UInt, sctp_initial_rto? : @transport.Duration, receive_mtu? : Int, ignore_rid_pause_for_recv? : Bool, write_ssrc_attributes_for_simulcast? : Bool) -> Self raise RtcError
-pub fn Settings::receive_mtu(Self) -> Int
+pub fn Settings::new(ice_credentials? : @ice.IceCredentials, ice_check_interval? : @transport.Duration, ice_initial_rto? : @transport.Duration, ice_reliable_timeout? : @transport.Duration, ice_max_retransmissions? : Int32, ice_disconnected_timeout? : @transport.Duration, ice_failed_timeout? : @transport.Duration, ice_keepalive_interval? : @transport.Duration, mdns_retry_interval? : @transport.Duration, mdns_query_timeout? : @transport.Duration, mdns_local_name? : String, answering_dtls_role? : @dtls.Role, verify_peer_fingerprint? : Bool, dtls_certificate_key_type? : @dtls.CertificateKeyType, dtls_cipher_suites? : Array[@dtls.CipherSuite], dtls_psk? : Bytes, dtls_psk_identity? : Bytes, dtls_srtp_profiles? : Array[@dtls.SrtpProtectionProfile], dtls_flight_interval? : @transport.Duration, dtls_mtu? : Int32, dtls_replay_window? : Int32, srtp_replay_window? : Int32, srtcp_replay_window? : Int32, sctp_max_payload_size? : Int32, sctp_send_buffer_size? : UInt64, sctp_receive_buffer_size? : UInt32, sctp_initial_rto? : @transport.Duration, receive_mtu? : Int32, ignore_rid_pause_for_recv? : Bool, write_ssrc_attributes_for_simulcast? : Bool) -> Self raise RtcError
+pub fn Settings::receive_mtu(Self) -> Int32
 pub fn Settings::sctp_initial_rto(Self) -> @transport.Duration
-pub fn Settings::sctp_max_payload_size(Self) -> Int
-pub fn Settings::sctp_receive_buffer_size(Self) -> UInt
+pub fn Settings::sctp_max_payload_size(Self) -> Int32
+pub fn Settings::sctp_receive_buffer_size(Self) -> UInt32
 pub fn Settings::sctp_send_buffer_size(Self) -> UInt64
-pub fn Settings::srtcp_replay_window(Self) -> Int
-pub fn Settings::srtp_replay_window(Self) -> Int
+pub fn Settings::srtcp_replay_window(Self) -> Int32
+pub fn Settings::srtp_replay_window(Self) -> Int32
 pub fn Settings::verify_peer_fingerprint(Self) -> Bool
 pub fn Settings::write_ssrc_attributes_for_simulcast(Self) -> Bool
 
@@ -355,8 +355,8 @@ pub(all) struct StatsReport {
   packets_sent : UInt64
   packets_received : UInt64
   packets_lost : UInt64
-  data_channels_opened : UInt
-  data_channels_closed : UInt
+  data_channels_opened : UInt32
+  data_channels_closed : UInt32
 } derive(Eq, @debug.Debug)
 
 pub(all) struct TransportStats {

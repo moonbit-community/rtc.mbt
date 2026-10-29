@@ -9,8 +9,8 @@ pub struct CertificateIdentity {
 
 ///|
 pub fn CertificateIdentity::generate(
-  common_name? : String = "moonbit-rtc",
-  key_type? : CertificateKeyType = EcdsaCertificate,
+  common_name~ : String = "moonbit-rtc",
+  key_type~ : CertificateKeyType = EcdsaCertificate,
   not_before~ : @transport.WallTime,
   not_after~ : @transport.WallTime,
 ) -> CertificateIdentity raise DtlsError {
@@ -62,7 +62,7 @@ fn fingerprint_digest(
 ///|
 pub fn CertificateIdentity::fingerprint(
   self : CertificateIdentity,
-  algorithm? : FingerprintAlgorithm = Sha256,
+  algorithm~ : FingerprintAlgorithm = Sha256,
 ) -> Fingerprint raise DtlsError {
   let value = crypto_operation(() => {
     self.certificate.fingerprint(self.provider, fingerprint_digest(algorithm))
@@ -115,7 +115,7 @@ fn verify_peer_certificate(
   certificate_der : Bytes,
   expected_fingerprint : Fingerprint,
   wall_time : @transport.WallTime,
-  verify_fingerprint? : Bool = true,
+  verify_fingerprint~ : Bool = true,
 ) -> @crypto.PublicKey raise DtlsError {
   let certificate = crypto_operation(() => {
     provider.import_certificate(certificate_der)

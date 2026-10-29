@@ -1,7 +1,7 @@
 ///|
 priv enum TurnOperation {
   AllocateOperation
-  RefreshOperation(UInt)
+  RefreshOperation(UInt32)
   PermissionOperation(@transport.SocketAddress)
   ChannelBindOperation(@transport.SocketAddress, UInt16)
 }
@@ -13,7 +13,7 @@ struct PendingTurnTransaction {
   authenticated : Bool
   mut deadline : @transport.Instant
   mut rto_milliseconds : Int64
-  mut retransmissions : Int
+  mut retransmissions : Int32
 }
 
 ///|
@@ -74,7 +74,7 @@ fn turn_after(
 ///|
 fn lifetime_deadline(
   now : @transport.Instant,
-  seconds : UInt,
+  seconds : UInt32,
 ) -> @transport.Instant raise TurnError {
   turn_after(now, seconds.to_int64() * 1000L)
 }
@@ -84,7 +84,7 @@ pub fn Allocation::new(
   local_address~ : @transport.SocketAddress,
   server~ : @transport.SocketAddress,
   credentials~ : TurnCredentials,
-  transport? : TurnTransport = Udp,
+  transport~ : TurnTransport = Udp,
 ) -> Allocation raise TurnError {
   if server.port() == 0 {
     raise InvalidConfiguration("TURN server port must be nonzero")
@@ -423,7 +423,7 @@ fn Allocation::handle_authentication_challenge(
 }
 
 ///|
-fn response_lifetime(message : @stun.Message) -> UInt raise TurnError {
+fn response_lifetime(message : @stun.Message) -> UInt32 raise TurnError {
   match message.first_attribute(Lifetime) {
     Some(attribute) => turn_stun(() => attribute.as_u32())
     None => 600U
@@ -434,7 +434,7 @@ fn response_lifetime(message : @stun.Message) -> UInt raise TurnError {
 fn Allocation::schedule_lifetime(
   self : Allocation,
   now : @transport.Instant,
-  lifetime : UInt,
+  lifetime : UInt32,
 ) -> Unit raise TurnError {
   if lifetime == 0U {
     self.expires_at = Some(now)
@@ -654,7 +654,7 @@ pub fn Allocation::handle_datagram(
 }
 
 ///|
-fn turn_stream_frame_length(buffer : Bytes) -> Int? raise TurnError {
+fn turn_stream_frame_length(buffer : Bytes) -> Int32? raise TurnError {
   if buffer.length() < 4 {
     return None
   }

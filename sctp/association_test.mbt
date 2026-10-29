@@ -236,7 +236,7 @@ test "SCTP TSN wraparound preserves reassembly and acknowledgements" {
   )
   let fragments = drain_packets(active)
   assert_eq(fragments.length(), 4)
-  let tsns : Array[UInt] = []
+  let tsns : Array[UInt32] = []
   for fragment in fragments {
     guard @sctp.Packet::decode(fragment).chunks() is [DataChunkValue(chunk)] else {
       fail("wrapped SCTP send emitted a non-DATA packet")

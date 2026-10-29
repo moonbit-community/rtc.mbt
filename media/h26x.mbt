@@ -13,8 +13,8 @@ fn h26x_payload_codec(codec : H26xCodec) -> @rtp.PayloadCodec {
 }
 
 ///|
-fn h26x_annexb_ranges(data : Bytes) -> Array[(Int, Int)] {
-  let starts : Array[(Int, Int)] = []
+fn h26x_annexb_ranges(data : Bytes) -> Array[(Int32, Int32)] {
+  let starts : Array[(Int32, Int32)] = []
   let mut offset = 0
   while offset + 2 < data.length() {
     if offset + 3 < data.length() &&
@@ -33,7 +33,7 @@ fn h26x_annexb_ranges(data : Bytes) -> Array[(Int, Int)] {
       offset += 1
     }
   }
-  let ranges : Array[(Int, Int)] = []
+  let ranges : Array[(Int32, Int32)] = []
   if starts.is_empty() {
     if !data.is_empty() {
       ranges.push((0, data.length()))
@@ -131,8 +131,8 @@ pub fn H26xNal::data(self : H26xNal) -> Bytes {
 pub struct H26xReader {
   codec : H26xCodec
   data : Bytes
-  ranges : Array[(Int, Int)]
-  mut index : Int
+  ranges : Array[(Int32, Int32)]
+  mut index : Int32
 }
 
 ///|
@@ -170,9 +170,9 @@ pub struct H26xWriter {
   codec : H26xCodec
   output : Array[Byte]
   pending_payloads : Array[Bytes]
-  mut pending_timestamp : UInt?
+  mut pending_timestamp : UInt32?
   mut closed : Bool
-  mut dropped_incomplete_samples : UInt
+  mut dropped_incomplete_samples : UInt32
 }
 
 ///|
@@ -274,7 +274,7 @@ pub fn H26xWriter::write_sample(
 }
 
 ///|
-pub fn H26xWriter::dropped_incomplete_samples(self : H26xWriter) -> UInt {
+pub fn H26xWriter::dropped_incomplete_samples(self : H26xWriter) -> UInt32 {
   self.dropped_incomplete_samples
 }
 

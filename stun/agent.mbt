@@ -42,7 +42,7 @@ pub fn TransactionAgent::is_closed(self : TransactionAgent) -> Bool {
 }
 
 ///|
-pub fn TransactionAgent::transaction_count(self : TransactionAgent) -> Int {
+pub fn TransactionAgent::transaction_count(self : TransactionAgent) -> Int32 {
   self.transactions.length()
 }
 

@@ -9,7 +9,7 @@ import {
 
 // Errors
 pub(all) suberror ReplayWindowError {
-  InvalidWidth(Int)
+  InvalidWidth(Int32)
 } derive(Eq, @debug.Debug)
 
 // Types and methods
@@ -21,14 +21,14 @@ pub(all) enum ReplayDecision {
 } derive(Eq, @debug.Debug)
 
 pub struct ReplayWindow {
-  width : Int
+  width : Int32
   mut initialized : Bool
   mut max_sequence : UInt64
   mut bitmap : UInt64
 }
 pub fn ReplayWindow::check_and_mark(Self, UInt64) -> ReplayDecision
 pub fn ReplayWindow::highest(Self) -> UInt64?
-pub fn ReplayWindow::new(width? : Int) -> Self raise ReplayWindowError
+pub fn ReplayWindow::new(width? : Int32) -> Self raise ReplayWindowError
 
 // Type aliases
 

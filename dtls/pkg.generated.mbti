@@ -98,7 +98,7 @@ pub(all) enum CipherSuite {
 pub fn CipherSuite::code(Self) -> UInt16
 pub fn CipherSuite::from_code(UInt16) -> Self raise DtlsError
 pub fn CipherSuite::is_psk(Self) -> Bool
-pub fn CipherSuite::maximum_record_expansion(Self) -> Int
+pub fn CipherSuite::maximum_record_expansion(Self) -> Int32
 pub fn CipherSuite::uses_rsa(Self) -> Bool
 
 pub struct ClientHelloMessage {
@@ -130,13 +130,13 @@ pub struct Config {
   psk_identity : Bytes?
   srtp_profiles : Array[SrtpProtectionProfile]
   flight_interval : @transport.Duration
-  mtu : Int
-  replay_window : Int
+  mtu : Int32
+  replay_window : Int32
   verify_peer_fingerprint : Bool
 }
 pub fn Config::cipher_suites(Self) -> Array[CipherSuite]
 pub fn Config::local_fingerprint(Self) -> Fingerprint raise DtlsError
-pub fn Config::new(role~ : Role, identity~ : CertificateIdentity, expected_peer_fingerprint~ : Fingerprint, wall_time~ : @transport.WallTime, cipher_suites? : Array[CipherSuite], psk? : Bytes, psk_identity? : Bytes, srtp_profiles? : Array[SrtpProtectionProfile], flight_interval? : @transport.Duration, mtu? : Int, replay_window? : Int, verify_peer_fingerprint? : Bool) -> Self raise DtlsError
+pub fn Config::new(role~ : Role, identity~ : CertificateIdentity, expected_peer_fingerprint~ : Fingerprint, wall_time~ : @transport.WallTime, cipher_suites? : Array[CipherSuite], psk? : Bytes, psk_identity? : Bytes, srtp_profiles? : Array[SrtpProtectionProfile], flight_interval? : @transport.Duration, mtu? : Int32, replay_window? : Int32, verify_peer_fingerprint? : Bool) -> Self raise DtlsError
 pub fn Config::psk_identity(Self) -> Bytes?
 pub fn Config::role(Self) -> Role
 pub fn Config::srtp_profiles(Self) -> Array[SrtpProtectionProfile]
@@ -180,16 +180,16 @@ pub struct Endpoint {
   mut selected_cipher_suite : CipherSuite?
   mut selected_srtp_profile : SrtpProtectionProfile?
   mut certificate_requested : Bool
-  mut client_server_stage : Int
-  mut server_client_stage : Int
+  mut client_server_stage : Int32
+  mut server_client_stage : Int32
   mut peer_changed_cipher_spec : Bool
   mut last_flight : Array[Bytes]
   mut retransmit_deadline : @transport.Instant?
   mut retransmit_interval_milliseconds : Int64
-  mut retransmissions : Int
+  mut retransmissions : Int32
 }
 pub fn Endpoint::close(Self) -> Unit raise DtlsError
-pub fn Endpoint::export_keying_material(Self, String, Int) -> Bytes raise DtlsError
+pub fn Endpoint::export_keying_material(Self, String, Int32) -> Bytes raise DtlsError
 pub fn Endpoint::handle_datagram(Self, @transport.Instant, Bytes) -> Unit raise DtlsError
 pub fn Endpoint::handle_timeout(Self, @transport.Instant) -> Unit raise DtlsError
 pub fn Endpoint::new(Config) -> Self
@@ -225,19 +225,19 @@ type FragmentBuffer
 
 pub struct HandshakeFragment {
   handshake_type : HandshakeType
-  total_length : UInt
+  total_length : UInt32
   message_sequence : UInt16
-  fragment_offset : UInt
+  fragment_offset : UInt32
   body : Bytes
 } derive(Eq, @debug.Debug)
 pub fn HandshakeFragment::body(Self) -> Bytes
 pub fn HandshakeFragment::encode(Self) -> Bytes raise DtlsError
-pub fn HandshakeFragment::fragment_offset(Self) -> UInt
+pub fn HandshakeFragment::fragment_offset(Self) -> UInt32
 pub fn HandshakeFragment::handshake_type(Self) -> HandshakeType
 pub fn HandshakeFragment::is_complete(Self) -> Bool
 pub fn HandshakeFragment::message_sequence(Self) -> UInt16
-pub fn HandshakeFragment::new(handshake_type~ : HandshakeType, total_length~ : UInt, message_sequence~ : UInt16, fragment_offset~ : UInt, body~ : Bytes) -> Self raise DtlsError
-pub fn HandshakeFragment::total_length(Self) -> UInt
+pub fn HandshakeFragment::new(handshake_type~ : HandshakeType, total_length~ : UInt32, message_sequence~ : UInt16, fragment_offset~ : UInt32, body~ : Bytes) -> Self raise DtlsError
+pub fn HandshakeFragment::total_length(Self) -> UInt32
 
 pub(all) enum HandshakeMessage {
   ClientHelloHandshake(ClientHelloMessage)

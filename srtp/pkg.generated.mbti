@@ -25,12 +25,12 @@ pub struct Context {
   profile : ProtectionProfile
   rtp_material : SessionMaterial
   rtcp_material : SessionMaterial
-  send_rtp_states : Map[UInt, RtpIndexState]
-  receive_rtp_states : Map[UInt, RtpReceiveState]
-  send_rtcp_indices : Map[UInt, UInt]
-  receive_rtcp_states : Map[UInt, SrtcpReceiveState]
-  rtp_replay_window : Int
-  rtcp_replay_window : Int
+  send_rtp_states : Map[UInt32, RtpIndexState]
+  receive_rtp_states : Map[UInt32, RtpReceiveState]
+  send_rtcp_indices : Map[UInt32, UInt32]
+  receive_rtcp_states : Map[UInt32, SrtcpReceiveState]
+  rtp_replay_window : Int32
+  rtcp_replay_window : Int32
   mut closed : Bool
 }
 pub fn Context::close(Self) -> Unit
@@ -38,7 +38,7 @@ pub fn Context::decrypt_rtcp(Self, Bytes) -> Bytes raise SrtpError
 pub fn Context::decrypt_rtp(Self, Bytes) -> Bytes raise SrtpError
 pub fn Context::encrypt_rtcp(Self, Bytes) -> Bytes raise SrtpError
 pub fn Context::encrypt_rtp(Self, Bytes) -> Bytes raise SrtpError
-pub fn Context::new(profile~ : ProtectionProfile, master_key~ : Bytes, master_salt~ : Bytes, rtp_replay_window? : Int, rtcp_replay_window? : Int) -> Self raise SrtpError
+pub fn Context::new(profile~ : ProtectionProfile, master_key~ : Bytes, master_salt~ : Bytes, rtp_replay_window? : Int32, rtcp_replay_window? : Int32) -> Self raise SrtpError
 pub fn Context::profile(Self) -> ProtectionProfile
 pub fn Context::protect_rtcp(Self, Array[@rtcp.Packet]) -> Bytes raise SrtpError
 pub fn Context::protect_rtp(Self, @rtp.Packet) -> Bytes raise SrtpError
@@ -53,10 +53,10 @@ pub(all) enum ProtectionProfile {
 } derive(Eq, @debug.Debug)
 pub fn ProtectionProfile::code(Self) -> UInt16
 pub fn ProtectionProfile::from_code(UInt16) -> Self raise SrtpError
-pub fn ProtectionProfile::key_length(Self) -> Int
-pub fn ProtectionProfile::rtcp_auth_tag_length(Self) -> Int
-pub fn ProtectionProfile::rtp_auth_tag_length(Self) -> Int
-pub fn ProtectionProfile::salt_length(Self) -> Int
+pub fn ProtectionProfile::key_length(Self) -> Int32
+pub fn ProtectionProfile::rtcp_auth_tag_length(Self) -> Int32
+pub fn ProtectionProfile::rtp_auth_tag_length(Self) -> Int32
+pub fn ProtectionProfile::salt_length(Self) -> Int32
 
 type RtpIndexState
 
