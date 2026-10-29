@@ -75,7 +75,7 @@ pub fn Pipeline::add(self : Pipeline, stage : Stage) -> Unit {
 }
 
 ///|
-pub fn Pipeline::length(self : Pipeline) -> Int {
+pub fn Pipeline::length(self : Pipeline) -> Int32 {
   self.stages.length()
 }
 

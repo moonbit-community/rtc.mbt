@@ -1,11 +1,11 @@
 ///|
-const IVF_HEADER_SIZE : Int = 32
+const IVF_HEADER_SIZE : Int32 = 32
 
 ///|
-const IVF_FRAME_HEADER_SIZE : Int = 12
+const IVF_FRAME_HEADER_SIZE : Int32 = 12
 
 ///|
-fn media_read_u16_le(data : Bytes, offset : Int) -> UInt16 raise MediaError {
+fn media_read_u16_le(data : Bytes, offset : Int32) -> UInt16 raise MediaError {
   if offset < 0 || offset + 2 > data.length() {
     raise InvalidMedia("truncated little-endian 16-bit field")
   }
@@ -13,7 +13,7 @@ fn media_read_u16_le(data : Bytes, offset : Int) -> UInt16 raise MediaError {
 }
 
 ///|
-fn media_read_u32_le(data : Bytes, offset : Int) -> UInt raise MediaError {
+fn media_read_u32_le(data : Bytes, offset : Int32) -> UInt32 raise MediaError {
   if offset < 0 || offset + 4 > data.length() {
     raise InvalidMedia("truncated little-endian 32-bit field")
   }
@@ -24,7 +24,7 @@ fn media_read_u32_le(data : Bytes, offset : Int) -> UInt raise MediaError {
 }
 
 ///|
-fn media_read_u64_le(data : Bytes, offset : Int) -> UInt64 raise MediaError {
+fn media_read_u64_le(data : Bytes, offset : Int32) -> UInt64 raise MediaError {
   if offset < 0 || offset + 8 > data.length() {
     raise InvalidMedia("truncated little-endian 64-bit field")
   }
@@ -42,7 +42,7 @@ fn media_write_u16_le(output : Array[Byte], value : UInt16) -> Unit {
 }
 
 ///|
-fn media_write_u32_le(output : Array[Byte], value : UInt) -> Unit {
+fn media_write_u32_le(output : Array[Byte], value : UInt32) -> Unit {
   output.push(value.to_byte())
   output.push((value >> 8).to_byte())
   output.push((value >> 16).to_byte())
@@ -87,9 +87,9 @@ pub(all) struct IvfHeader {
   codec : IvfCodec
   width : UInt16
   height : UInt16
-  timebase_denominator : UInt
-  timebase_numerator : UInt
-  num_frames : UInt
+  timebase_denominator : UInt32
+  timebase_numerator : UInt32
+  num_frames : UInt32
 } derive(Debug, Eq)
 
 ///|
@@ -97,9 +97,9 @@ pub fn IvfHeader::new(
   codec~ : IvfCodec,
   width~ : UInt16,
   height~ : UInt16,
-  timebase_denominator~ : UInt,
-  timebase_numerator~ : UInt,
-  num_frames? : UInt = 0,
+  timebase_denominator~ : UInt32,
+  timebase_numerator~ : UInt32,
+  num_frames~ : UInt32 = 0,
 ) -> IvfHeader raise MediaError {
   if width == 0 ||
     height == 0 ||
@@ -133,17 +133,17 @@ pub fn IvfHeader::height(self : IvfHeader) -> UInt16 {
 }
 
 ///|
-pub fn IvfHeader::timebase_denominator(self : IvfHeader) -> UInt {
+pub fn IvfHeader::timebase_denominator(self : IvfHeader) -> UInt32 {
   self.timebase_denominator
 }
 
 ///|
-pub fn IvfHeader::timebase_numerator(self : IvfHeader) -> UInt {
+pub fn IvfHeader::timebase_numerator(self : IvfHeader) -> UInt32 {
   self.timebase_numerator
 }
 
 ///|
-pub fn IvfHeader::num_frames(self : IvfHeader) -> UInt {
+pub fn IvfHeader::num_frames(self : IvfHeader) -> UInt32 {
   self.num_frames
 }
 
@@ -169,7 +169,7 @@ pub fn IvfFrame::timestamp(self : IvfFrame) -> UInt64 {
 }
 
 ///|
-fn ivf_encode_header(header : IvfHeader, num_frames : UInt) -> Array[Byte] {
+fn ivf_encode_header(header : IvfHeader, num_frames : UInt32) -> Array[Byte] {
   let output : Array[Byte] = []
   for byte in b"DKIF" {
     output.push(byte)
@@ -192,7 +192,7 @@ fn ivf_encode_header(header : IvfHeader, num_frames : UInt) -> Array[Byte] {
 pub struct IvfWriter {
   header : IvfHeader
   output : Array[Byte]
-  mut frame_count : UInt
+  mut frame_count : UInt32
   mut closed : Bool
 }
 
@@ -227,7 +227,7 @@ pub fn IvfWriter::write_frame(
 }
 
 ///|
-pub fn IvfWriter::frame_count(self : IvfWriter) -> UInt {
+pub fn IvfWriter::frame_count(self : IvfWriter) -> UInt32 {
   self.frame_count
 }
 
@@ -251,8 +251,8 @@ pub fn IvfWriter::bytes(self : IvfWriter) -> Bytes {
 pub struct IvfReader {
   data : Bytes
   header : IvfHeader
-  mut offset : Int
-  mut frame_index : UInt
+  mut offset : Int32
+  mut frame_index : UInt32
 }
 
 ///|
@@ -310,6 +310,6 @@ pub fn IvfReader::next_frame(self : IvfReader) -> IvfFrame? raise MediaError {
 }
 
 ///|
-pub fn IvfReader::bytes_read(self : IvfReader) -> Int {
+pub fn IvfReader::bytes_read(self : IvfReader) -> Int32 {
   self.offset
 }

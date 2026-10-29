@@ -16,7 +16,7 @@ pub(all) enum ProtectionProfile {
 } derive(Debug, Eq)
 
 ///|
-pub fn ProtectionProfile::key_length(self : ProtectionProfile) -> Int {
+pub fn ProtectionProfile::key_length(self : ProtectionProfile) -> Int32 {
   match self {
     Aes128CmHmacSha1_80 | Aes128CmHmacSha1_32 | AeadAes128Gcm => 16
     AeadAes256Gcm => 32
@@ -24,7 +24,7 @@ pub fn ProtectionProfile::key_length(self : ProtectionProfile) -> Int {
 }
 
 ///|
-pub fn ProtectionProfile::salt_length(self : ProtectionProfile) -> Int {
+pub fn ProtectionProfile::salt_length(self : ProtectionProfile) -> Int32 {
   match self {
     Aes128CmHmacSha1_80 | Aes128CmHmacSha1_32 => 14
     AeadAes128Gcm | AeadAes256Gcm => 12
@@ -32,7 +32,9 @@ pub fn ProtectionProfile::salt_length(self : ProtectionProfile) -> Int {
 }
 
 ///|
-pub fn ProtectionProfile::rtp_auth_tag_length(self : ProtectionProfile) -> Int {
+pub fn ProtectionProfile::rtp_auth_tag_length(
+  self : ProtectionProfile,
+) -> Int32 {
   match self {
     Aes128CmHmacSha1_80 => 10
     Aes128CmHmacSha1_32 => 4
@@ -41,7 +43,9 @@ pub fn ProtectionProfile::rtp_auth_tag_length(self : ProtectionProfile) -> Int {
 }
 
 ///|
-pub fn ProtectionProfile::rtcp_auth_tag_length(self : ProtectionProfile) -> Int {
+pub fn ProtectionProfile::rtcp_auth_tag_length(
+  self : ProtectionProfile,
+) -> Int32 {
   match self {
     Aes128CmHmacSha1_80 | Aes128CmHmacSha1_32 => 10
     AeadAes128Gcm | AeadAes256Gcm => 16

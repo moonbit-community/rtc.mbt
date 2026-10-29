@@ -2,7 +2,7 @@
 priv enum RecordCipherMode {
   AeadCipher(
     algorithm~ : @crypto.AeadAlgorithm,
-    tag_length~ : Int,
+    tag_length~ : Int32,
     explicit_nonce~ : Bool
   )
   CbcCipher
@@ -19,7 +19,7 @@ struct RecordCipher {
   write_iv : Bytes
   read_iv : Bytes
   replay_windows : Map[UInt16, @replay.ReplayWindow]
-  replay_window : Int
+  replay_window : Int32
 }
 
 ///|
@@ -42,7 +42,7 @@ fn cipher_mode(suite : CipherSuite) -> RecordCipherMode {
 }
 
 ///|
-fn expected_key_lengths(suite : CipherSuite) -> (Int, Int, Int) {
+fn expected_key_lengths(suite : CipherSuite) -> (Int32, Int32, Int32) {
   match suite {
     EcdheEcdsaAes256CbcSha | EcdheRsaAes256CbcSha => (32, 0, 20)
     EcdheRsaChacha20Poly1305Sha256 | EcdheEcdsaChacha20Poly1305Sha256 =>
@@ -55,8 +55,8 @@ fn expected_key_lengths(suite : CipherSuite) -> (Int, Int, Int) {
 fn RecordCipher::new(
   keys : EncryptionKeys,
   role : Role,
-  suite? : CipherSuite = EcdheEcdsaAes128GcmSha256,
-  replay_window? : Int = 64,
+  suite~ : CipherSuite = EcdheEcdsaAes128GcmSha256,
+  replay_window~ : Int32 = 64,
 ) -> RecordCipher raise DtlsError {
   if role == Auto {
     raise HandshakeFailed("DTLS record cipher requires a fixed role")
@@ -129,7 +129,7 @@ fn record_aad(
   version : ProtocolVersion,
   epoch : UInt16,
   sequence_number : UInt64,
-  plaintext_length : Int,
+  plaintext_length : Int32,
 ) -> Bytes raise DtlsError {
   if plaintext_length < 0 || plaintext_length > 0xffff {
     raise InvalidRecord("invalid DTLS plaintext length")
@@ -213,7 +213,7 @@ fn cbc_plaintext(
 fn RecordCipher::seal(
   self : RecordCipher,
   content_type~ : ContentType,
-  version? : ProtocolVersion = Dtls12,
+  version~ : ProtocolVersion = Dtls12,
   epoch~ : UInt16,
   sequence_number~ : UInt64,
   plaintext~ : Bytes,
@@ -302,7 +302,7 @@ fn RecordCipher::open_aead(
   self : RecordCipher,
   record : Record,
   algorithm : @crypto.AeadAlgorithm,
-  tag_length : Int,
+  tag_length : Int32,
   has_explicit : Bool,
 ) -> Bytes raise DtlsError {
   let payload = record.payload

@@ -1,6 +1,6 @@
 ///|
 fn test_encryption_keys(
-  suite? : CipherSuite = EcdheEcdsaAes128GcmSha256,
+  suite~ : CipherSuite = EcdheEcdsaAes128GcmSha256,
 ) -> EncryptionKeys raise DtlsError {
   encryption_keys_for_secret(
     @crypto.Secret::from_bytes(upstream_master_secret()),

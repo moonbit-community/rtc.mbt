@@ -121,7 +121,7 @@ fn random_uint64(provider : @crypto.Provider) -> UInt64 raise RtcError {
 ///|
 fn random_ice_token(
   provider : @crypto.Provider,
-  length : Int,
+  length : Int32,
 ) -> String raise RtcError {
   let alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/"
   let bytes = rtc_crypto(() => provider.random_bytes(length))
@@ -170,7 +170,7 @@ fn parse_ice_server_port(value : String) -> UInt16 raise RtcError {
 fn parse_literal_ice_server(
   url : String,
   expected_scheme : String,
-  default_port? : UInt16 = 3478,
+  default_port~ : UInt16 = 3478,
 ) -> SocketAddress? raise RtcError {
   let prefix = expected_scheme + ":"
   guard url.to_lower().strip_prefix(prefix) is Some(remainder) else {
@@ -343,7 +343,7 @@ struct PendingRelayDatagram {
 ///|
 enum RtcStreamOwner {
   IceStream
-  TurnStream(Int)
+  TurnStream(Int32)
 } derive(Debug, Eq)
 
 ///|
@@ -371,16 +371,16 @@ struct ActiveRtcListener {
 
 ///|
 priv struct LocalMediaControl {
-  ssrc : UInt
-  rtx_ssrc : UInt?
+  ssrc : UInt32
+  rtx_ssrc : UInt32?
   sender_report : @interceptor.SenderReportGenerator
   rtx_sender : @interceptor.RtxSender?
 }
 
 ///|
 priv struct RemoteMediaControl {
-  ssrc : UInt
-  rtx_ssrc : UInt?
+  ssrc : UInt32
+  rtx_ssrc : UInt32?
   receiver_report : @interceptor.ReceiverReportGenerator
   nack_generator : @interceptor.NackGenerator
   rtx_receiver : @interceptor.RtxReceiver?
@@ -394,9 +394,9 @@ struct LocalMediaSection {
   mut track : MediaTrack?
   mut codec : @media.CodecCapability
   mut payload_type : Byte
-  mut ssrc : UInt?
+  mut ssrc : UInt32?
   mut rtx_payload_type : Byte?
-  mut rtx_ssrc : UInt?
+  mut rtx_ssrc : UInt32?
   mut encodings : Array[@media.RtpEncodingParameters]
   mut twcc_extension_id : Byte?
   mut control : LocalMediaControl?
@@ -453,7 +453,7 @@ pub struct PeerConnection {
   mut outbound_srtp : @srtp.Context?
   mut inbound_srtp : @srtp.Context?
   mut media_started : Bool
-  rtcp_sender_ssrc : UInt
+  rtcp_sender_ssrc : UInt32
   mut next_rtcp_report : Instant?
   mut next_transport_sequence : UInt16
   mut remote_twcc_recorder : @interceptor.TwccRecorder?
@@ -467,8 +467,8 @@ pub struct PeerConnection {
   mut bytes_received : UInt64
   mut packets_sent : UInt64
   mut packets_received : UInt64
-  mut data_channels_opened : UInt
-  mut data_channels_closed : UInt
+  mut data_channels_opened : UInt32
+  mut data_channels_closed : UInt32
 }
 
 ///|
@@ -960,9 +960,9 @@ fn negotiated_transport_cc_id(
 fn media_rtp_parameters(
   codec : @media.CodecCapability,
   payload_type : Byte,
-  ssrc : UInt?,
+  ssrc : UInt32?,
   rtx_payload_type : Byte?,
-  rtx_ssrc : UInt?,
+  rtx_ssrc : UInt32?,
 ) -> @media.RtpParameters raise RtcError {
   rtc_media(() => {
     @media.RtpParameters::new(codec~, encodings=[
@@ -980,7 +980,7 @@ fn media_rtp_parameters(
 fn sdp_stream_parameters(
   encodings : Array[@media.RtpEncodingParameters],
   include_rtx : Bool,
-  include_ssrc? : Bool = true,
+  include_ssrc~ : Bool = true,
 ) -> Array[@sdp.RtpStreamParameters] raise RtcError {
   let streams : Array[@sdp.RtpStreamParameters] = []
   for encoding in encodings {
@@ -1185,7 +1185,7 @@ fn PeerConnection::unused_rtx_payload_type(
 ///|
 fn PeerConnection::generate_media_ssrc(
   self : PeerConnection,
-) -> UInt raise RtcError {
+) -> UInt32 raise RtcError {
   let provider = rtc_crypto(() => @crypto.Provider::open())
   for attempt = 0; attempt < 64; attempt = attempt + 1 {
     let candidate = (random_uint64(provider) & 0xffffffffUL).to_uint()
@@ -1205,8 +1205,8 @@ fn PeerConnection::generate_media_ssrc(
 ///|
 fn PeerConnection::new_local_media_control(
   _self : PeerConnection,
-  ssrc : UInt,
-  rtx_ssrc : UInt?,
+  ssrc : UInt32,
+  rtx_ssrc : UInt32?,
   rtx_payload_type : Byte?,
 ) -> LocalMediaControl raise RtcError {
   let rtx_sender = match (rtx_ssrc, rtx_payload_type) {
@@ -1233,11 +1233,11 @@ fn PeerConnection::new_local_media_control(
 ///|
 fn PeerConnection::new_remote_media_control(
   self : PeerConnection,
-  ssrc : UInt,
+  ssrc : UInt32,
   payload_type : Byte,
-  rtx_ssrc : UInt?,
+  rtx_ssrc : UInt32?,
   rtx_payload_type : Byte?,
-  clock_rate : UInt,
+  clock_rate : UInt32,
 ) -> RemoteMediaControl raise RtcError {
   let rtx_receiver = match (rtx_ssrc, rtx_payload_type) {
     (Some(rtx_source), Some(rtx_pt)) =>
@@ -1276,7 +1276,7 @@ fn PeerConnection::new_remote_media_control(
 ///|
 fn local_control_for_ssrc(
   section : LocalMediaSection,
-  ssrc : UInt,
+  ssrc : UInt32,
 ) -> LocalMediaControl? {
   match section.control {
     Some(control) if control.ssrc == ssrc || control.rtx_ssrc == Some(ssrc) =>
@@ -1294,7 +1294,7 @@ fn local_control_for_ssrc(
 ///|
 fn remote_control_for_ssrc(
   section : RemoteMediaSection,
-  ssrc : UInt,
+  ssrc : UInt32,
 ) -> RemoteMediaControl? {
   match section.control {
     Some(control) if control.ssrc == ssrc || control.rtx_ssrc == Some(ssrc) =>
@@ -1520,13 +1520,13 @@ fn PeerConnection::local_sdp_media_sections(
         }
         let include_simulcast_ssrc = section.encodings.length() <= 1 ||
           self.configuration.settings.write_ssrc_attributes_for_simulcast
-        let ssrc : UInt? = if sdp_direction_can_send(direction) &&
+        let ssrc : UInt32? = if sdp_direction_can_send(direction) &&
           include_simulcast_ssrc {
           section.ssrc
         } else {
           None
         }
-        let rtx_ssrc : UInt? = if sdp_direction_can_send(direction) &&
+        let rtx_ssrc : UInt32? = if sdp_direction_can_send(direction) &&
           include_simulcast_ssrc &&
           selected_rtx_payload_type is Some(_) {
           section.rtx_ssrc
@@ -1609,7 +1609,7 @@ fn PeerConnection::next_local_description(
   setup : @sdp.DtlsSetup,
   mid : String,
   now : Instant,
-  application_index? : Int = 0,
+  application_index~ : Int32 = 0,
 ) -> SessionDescription raise RtcError {
   self.gather_candidates(now)
   let version = self.session_version
@@ -1659,7 +1659,7 @@ pub fn PeerConnection::create_offer(
 ///|
 fn datachannel_media_index(
   description : SessionDescription,
-) -> Int raise RtcError {
+) -> Int32 raise RtcError {
   let media_descriptions = rtc_sdp(() => {
     description.document().media_descriptions()
   })
@@ -2608,7 +2608,7 @@ pub fn PeerConnection::add_track(
   } else {
     None
   }
-  let rtx_ssrc : UInt? = if rtx_payload_type is Some(_) {
+  let rtx_ssrc : UInt32? = if rtx_payload_type is Some(_) {
     let mut candidate = self.generate_media_ssrc()
     while candidate == ssrc {
       candidate = self.generate_media_ssrc()
@@ -2657,7 +2657,7 @@ pub fn PeerConnection::add_track(
 pub fn PeerConnection::add_transceiver(
   self : PeerConnection,
   kind : MediaKind,
-  direction? : TransceiverDirection = SendRecv,
+  direction~ : TransceiverDirection = SendRecv,
   now~ : Instant,
 ) -> RtpTransceiver raise RtcError {
   if self.state == Closed {
@@ -2743,7 +2743,7 @@ pub fn PeerConnection::set_sender_encodings(
   if encodings.length() > 1 && encodings.any(encoding => encoding.rid is None) {
     raise InvalidConfiguration("each simulcast encoding requires a RID")
   }
-  let occupied : Array[UInt] = []
+  let occupied : Array[UInt32] = []
   for candidate in self.local_media_sections {
     match candidate.track {
       Some(track) if track.id() == track_id => continue
@@ -2792,7 +2792,7 @@ pub fn PeerConnection::set_sender_encodings(
       raise InvalidConfiguration("simulcast SSRC is duplicated")
     }
     occupied.push(ssrc)
-    let rtx_ssrc : UInt? = match section.rtx_payload_type {
+    let rtx_ssrc : UInt32? = match section.rtx_payload_type {
       Some(_) => {
         let value = match requested.rtx_ssrc {
           Some(candidate) => candidate
@@ -2925,7 +2925,7 @@ pub fn PeerConnection::transceivers(
 pub fn PeerConnection::local_track_ssrc(
   self : PeerConnection,
   track_id : String,
-) -> UInt? {
+) -> UInt32? {
   for section in self.local_media_sections {
     match section.track {
       Some(track) if track.id() == track_id => return section.ssrc
@@ -3819,7 +3819,7 @@ fn PeerConnection::handle_turn_event(
       }
     }
     PermissionCreated(peer) => {
-      let ready : Array[Int] = []
+      let ready : Array[Int32] = []
       for index = 0
           index < self.pending_relay_datagrams.length()
           index = index + 1 {
@@ -4052,7 +4052,7 @@ fn PeerConnection::drive(
 fn PeerConnection::active_stream_index(
   self : PeerConnection,
   connection : ConnectionId,
-) -> Int? {
+) -> Int32? {
   for index = 0; index < self.active_streams.length(); index = index + 1 {
     if self.active_streams[index].connection == connection {
       return Some(index)
@@ -4065,7 +4065,7 @@ fn PeerConnection::active_stream_index(
 fn PeerConnection::pending_stream_index(
   self : PeerConnection,
   connection : ConnectionId,
-) -> Int? {
+) -> Int32? {
   for index = 0; index < self.pending_streams.length(); index = index + 1 {
     if self.pending_streams[index].connection == connection {
       return Some(index)
@@ -5054,21 +5054,21 @@ pub fn PeerConnection::local_host_candidates(
 }
 
 ///|
-pub fn PeerConnection::driver_command_capacity(self : PeerConnection) -> Int {
+pub fn PeerConnection::driver_command_capacity(self : PeerConnection) -> Int32 {
   self.configuration.command_capacity()
 }
 
 ///|
-pub fn PeerConnection::driver_event_capacity(self : PeerConnection) -> Int {
+pub fn PeerConnection::driver_event_capacity(self : PeerConnection) -> Int32 {
   self.configuration.event_capacity()
 }
 
 ///|
-pub fn PeerConnection::driver_message_capacity(self : PeerConnection) -> Int {
+pub fn PeerConnection::driver_message_capacity(self : PeerConnection) -> Int32 {
   self.configuration.message_capacity()
 }
 
 ///|
-pub fn PeerConnection::driver_receive_mtu(self : PeerConnection) -> Int {
+pub fn PeerConnection::driver_receive_mtu(self : PeerConnection) -> Int32 {
   self.configuration.settings.receive_mtu
 }

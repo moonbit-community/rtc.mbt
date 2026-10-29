@@ -1,12 +1,12 @@
 ///|
-const RECORD_HEADER_LENGTH : Int = 13
+const RECORD_HEADER_LENGTH : Int32 = 13
 
 ///|
-const HANDSHAKE_HEADER_LENGTH : Int = 12
+const HANDSHAKE_HEADER_LENGTH : Int32 = 12
 
 ///|
 fn dtls_writer(
-  capacity : Int,
+  capacity : Int32,
   context : String,
 ) -> @codec.Writer raise DtlsError {
   @codec.Writer::new(capacity~) catch {
@@ -40,7 +40,7 @@ fn read_u16(reader : @codec.Reader, context : String) -> UInt16 raise DtlsError 
 }
 
 ///|
-fn read_u24(reader : @codec.Reader, context : String) -> UInt raise DtlsError {
+fn read_u24(reader : @codec.Reader, context : String) -> UInt32 raise DtlsError {
   reader.read_u24_be() catch {
     InvalidLength(length) =>
       raise InvalidHandshake("\{context}: invalid length \{length}")
@@ -52,7 +52,7 @@ fn read_u24(reader : @codec.Reader, context : String) -> UInt raise DtlsError {
 }
 
 ///|
-fn read_u32(reader : @codec.Reader, context : String) -> UInt raise DtlsError {
+fn read_u32(reader : @codec.Reader, context : String) -> UInt32 raise DtlsError {
   reader.read_u32_be() catch {
     InvalidLength(length) =>
       raise InvalidRecord("\{context}: invalid length \{length}")
@@ -64,7 +64,7 @@ fn read_u32(reader : @codec.Reader, context : String) -> UInt raise DtlsError {
 ///|
 fn read_bytes(
   reader : @codec.Reader,
-  length : Int,
+  length : Int32,
   context : String,
 ) -> Bytes raise DtlsError {
   reader.read_bytes(length) catch {

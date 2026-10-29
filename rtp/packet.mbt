@@ -1,8 +1,8 @@
 ///|
-const RTP_FIXED_HEADER_LENGTH : Int = 12
+const RTP_FIXED_HEADER_LENGTH : Int32 = 12
 
 ///|
-fn rtp_read_u16(data : Bytes, offset : Int) -> UInt16 raise RtpError {
+fn rtp_read_u16(data : Bytes, offset : Int32) -> UInt16 raise RtpError {
   if offset < 0 || offset + 2 > data.length() {
     raise InvalidPacket("truncated RTP 16-bit field")
   }
@@ -10,7 +10,7 @@ fn rtp_read_u16(data : Bytes, offset : Int) -> UInt16 raise RtpError {
 }
 
 ///|
-fn rtp_read_u32(data : Bytes, offset : Int) -> UInt raise RtpError {
+fn rtp_read_u32(data : Bytes, offset : Int32) -> UInt32 raise RtpError {
   if offset < 0 || offset + 4 > data.length() {
     raise InvalidPacket("truncated RTP 32-bit field")
   }
@@ -27,7 +27,7 @@ fn rtp_write_u16(output : Array[Byte], value : UInt16) -> Unit {
 }
 
 ///|
-fn rtp_write_u32(output : Array[Byte], value : UInt) -> Unit {
+fn rtp_write_u32(output : Array[Byte], value : UInt32) -> Unit {
   output.push((value >> 24).to_byte())
   output.push((value >> 16).to_byte())
   output.push((value >> 8).to_byte())
@@ -166,7 +166,7 @@ pub fn Packet::unmarshal(data : Bytes) -> Packet raise RtpError {
   let sequence_number = rtp_read_u16(data, 2)
   let timestamp = rtp_read_u32(data, 4)
   let ssrc = rtp_read_u32(data, 8)
-  let csrc : Array[UInt] = []
+  let csrc : Array[UInt32] = []
   let mut offset = RTP_FIXED_HEADER_LENGTH
   for index = 0; index < csrc_count; index = index + 1 {
     csrc.push(rtp_read_u32(data, offset))
@@ -280,7 +280,7 @@ pub fn Packet::encode(self : Packet) -> Bytes raise RtpError {
 }
 
 ///|
-pub fn Packet::header_size(self : Packet) -> Int raise RtpError {
+pub fn Packet::header_size(self : Packet) -> Int32 raise RtpError {
   let (_, extension_body) = encode_extensions(self.extensions)
   RTP_FIXED_HEADER_LENGTH +
   self.csrc.length() * 4 +
@@ -288,6 +288,6 @@ pub fn Packet::header_size(self : Packet) -> Int raise RtpError {
 }
 
 ///|
-pub fn Packet::marshal_size(self : Packet) -> Int raise RtpError {
+pub fn Packet::marshal_size(self : Packet) -> Int32 raise RtpError {
   self.header_size() + self.payload.length()
 }

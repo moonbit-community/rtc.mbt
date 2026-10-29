@@ -17,32 +17,32 @@ fn[T] interceptor_rtcp(
 }
 
 ///|
-fn interceptor_seq_distance(from : UInt16, to : UInt16) -> Int {
+fn interceptor_seq_distance(from : UInt16, to : UInt16) -> Int32 {
   (to - from).to_int()
 }
 
 ///|
 struct MissingPacket {
   sequence : UInt16
-  mut attempts : Int
+  mut attempts : Int32
 }
 
 ///|
 pub struct NackGenerator {
-  sender_ssrc : UInt
-  media_ssrc : UInt
-  max_tracked : Int
-  max_retries : Int
+  sender_ssrc : UInt32
+  media_ssrc : UInt32
+  max_tracked : Int32
+  max_retries : Int32
   missing : Array[MissingPacket]
   mut last_sequence : UInt16?
 }
 
 ///|
 pub fn NackGenerator::new(
-  sender_ssrc~ : UInt,
-  media_ssrc~ : UInt,
-  max_tracked? : Int = 1024,
-  max_retries? : Int = 5,
+  sender_ssrc~ : UInt32,
+  media_ssrc~ : UInt32,
+  max_tracked~ : Int32 = 1024,
+  max_retries~ : Int32 = 5,
 ) -> NackGenerator raise InterceptorError {
   if max_tracked <= 0 || max_tracked > 0x7fff {
     raise InvalidConfiguration("NACK tracking window is invalid")
@@ -64,7 +64,7 @@ pub fn NackGenerator::new(
 fn NackGenerator::missing_index(
   self : NackGenerator,
   sequence : UInt16,
-) -> Int? {
+) -> Int32? {
   for index = 0; index < self.missing.length(); index = index + 1 {
     if self.missing[index].sequence == sequence {
       return Some(index)
@@ -91,7 +91,7 @@ pub fn NackGenerator::observe(
       }
       if forward < 0x8000 {
         if forward > 1 {
-          let missing_count = Int::min(forward - 1, self.max_tracked)
+          let missing_count = Int32::min(forward - 1, self.max_tracked)
           let first = sequence - missing_count.to_uint16()
           for offset = 0; offset < missing_count; offset = offset + 1 {
             let candidate = first + offset.to_uint16()
@@ -167,14 +167,16 @@ pub fn NackGenerator::poll_feedback(
 
 ///|
 pub struct SenderReportGenerator {
-  sender_ssrc : UInt
-  mut packet_count : UInt
-  mut octet_count : UInt
-  mut last_rtp_timestamp : UInt
+  sender_ssrc : UInt32
+  mut packet_count : UInt32
+  mut octet_count : UInt32
+  mut last_rtp_timestamp : UInt32
 }
 
 ///|
-pub fn SenderReportGenerator::new(sender_ssrc : UInt) -> SenderReportGenerator {
+pub fn SenderReportGenerator::new(
+  sender_ssrc : UInt32,
+) -> SenderReportGenerator {
   { sender_ssrc, packet_count: 0, octet_count: 0, last_rtp_timestamp: 0, }
 }
 
@@ -195,7 +197,7 @@ pub fn SenderReportGenerator::observe(
 pub fn SenderReportGenerator::report(
   self : SenderReportGenerator,
   ntp_timestamp : UInt64,
-  reports? : Array[@rtcp.ReceptionReport] = [],
+  reports~ : Array[@rtcp.ReceptionReport] = [],
 ) -> @rtcp.SenderReportPacket raise InterceptorError {
   interceptor_rtcp(() => {
     @rtcp.SenderReportPacket::new(
@@ -212,40 +214,42 @@ pub fn SenderReportGenerator::report(
 ///|
 pub fn SenderReportGenerator::packet_count(
   self : SenderReportGenerator,
-) -> UInt {
+) -> UInt32 {
   self.packet_count
 }
 
 ///|
-pub fn SenderReportGenerator::octet_count(self : SenderReportGenerator) -> UInt {
+pub fn SenderReportGenerator::octet_count(
+  self : SenderReportGenerator,
+) -> UInt32 {
   self.octet_count
 }
 
 ///|
 pub struct ReceiverReportGenerator {
-  sender_ssrc : UInt
-  media_ssrc : UInt
-  clock_rate : UInt
+  sender_ssrc : UInt32
+  media_ssrc : UInt32
+  clock_rate : UInt32
   mut initialized : Bool
   mut base_sequence : UInt16
   mut max_sequence : UInt16
-  mut cycles : UInt
-  mut received : UInt
+  mut cycles : UInt32
+  mut received : UInt32
   mut octet_count : UInt64
-  mut expected_prior : UInt
-  mut received_prior : UInt
+  mut expected_prior : UInt32
+  mut received_prior : UInt32
   mut transit : Int64?
   mut jitter : Int64
-  seen : Array[UInt]
-  mut last_sender_report : UInt
+  seen : Array[UInt32]
+  mut last_sender_report : UInt32
   mut last_sender_report_arrival_ms : Int64?
 }
 
 ///|
 pub fn ReceiverReportGenerator::new(
-  sender_ssrc~ : UInt,
-  media_ssrc~ : UInt,
-  clock_rate~ : UInt,
+  sender_ssrc~ : UInt32,
+  media_ssrc~ : UInt32,
+  clock_rate~ : UInt32,
 ) -> ReceiverReportGenerator raise InterceptorError {
   if clock_rate == 0 {
     raise InvalidConfiguration("receiver-report clock rate must be positive")
@@ -274,7 +278,7 @@ pub fn ReceiverReportGenerator::new(
 fn ReceiverReportGenerator::extended_sequence(
   self : ReceiverReportGenerator,
   sequence : UInt16,
-) -> UInt {
+) -> UInt32 {
   if sequence > self.max_sequence &&
     (sequence - self.max_sequence).to_int() >= 0x8000 &&
     self.cycles >= 0x10000U {
@@ -288,7 +292,7 @@ fn ReceiverReportGenerator::extended_sequence(
 pub fn ReceiverReportGenerator::observe(
   self : ReceiverReportGenerator,
   packet : @rtp.Packet,
-  arrival_ticks : UInt,
+  arrival_ticks : UInt32,
 ) -> Unit {
   if packet.ssrc() != self.media_ssrc {
     return
@@ -412,7 +416,7 @@ pub fn ReceiverReportGenerator::packets_lost(
 ///|
 pub fn ReceiverReportGenerator::packet_count(
   self : ReceiverReportGenerator,
-) -> UInt {
+) -> UInt32 {
   self.received
 }
 
@@ -442,10 +446,10 @@ struct TwccObservation {
 
 ///|
 pub struct TwccRecorder {
-  sender_ssrc : UInt
-  media_ssrc : UInt
+  sender_ssrc : UInt32
+  media_ssrc : UInt32
   extension_id : Byte
-  max_packets : Int
+  max_packets : Int32
   observations : Array[TwccObservation]
   mut base_sequence : UInt16?
   mut feedback_packet_count : Byte
@@ -453,10 +457,10 @@ pub struct TwccRecorder {
 
 ///|
 pub fn TwccRecorder::new(
-  sender_ssrc~ : UInt,
-  media_ssrc~ : UInt,
+  sender_ssrc~ : UInt32,
+  media_ssrc~ : UInt32,
   extension_id~ : Byte,
-  max_packets? : Int = 4096,
+  max_packets~ : Int32 = 4096,
 ) -> TwccRecorder raise InterceptorError {
   if extension_id == 0 {
     raise InvalidConfiguration("transport-cc extension id is zero")
@@ -607,10 +611,10 @@ pub fn TwccRecorder::poll_feedback(
 
 ///|
 pub struct RtxSender {
-  media_ssrc : UInt
-  rtx_ssrc : UInt
+  media_ssrc : UInt32
+  rtx_ssrc : UInt32
   rtx_payload_type : Byte
-  capacity : Int
+  capacity : Int32
   history : Array[@rtp.Packet]
   mut sequence_number : UInt16
   mut retransmitted_packets : UInt64
@@ -619,11 +623,11 @@ pub struct RtxSender {
 
 ///|
 pub fn RtxSender::new(
-  media_ssrc~ : UInt,
-  rtx_ssrc~ : UInt,
+  media_ssrc~ : UInt32,
+  rtx_ssrc~ : UInt32,
   rtx_payload_type~ : Byte,
-  sequence_number? : UInt16 = 0,
-  capacity? : Int = 1024,
+  sequence_number~ : UInt16 = 0,
+  capacity~ : Int32 = 1024,
 ) -> RtxSender raise InterceptorError {
   if rtx_payload_type > 127 {
     raise InvalidConfiguration("RTX payload type exceeds seven bits")
@@ -721,21 +725,21 @@ pub fn RtxSender::retransmitted_bytes(self : RtxSender) -> UInt64 {
 
 ///|
 pub struct RtxReceiver {
-  media_ssrc : UInt
+  media_ssrc : UInt32
   media_payload_type : Byte
-  rtx_ssrc : UInt
+  rtx_ssrc : UInt32
   rtx_payload_type : Byte
   recent : Array[UInt16]
-  capacity : Int
+  capacity : Int32
 }
 
 ///|
 pub fn RtxReceiver::new(
-  media_ssrc~ : UInt,
+  media_ssrc~ : UInt32,
   media_payload_type~ : Byte,
-  rtx_ssrc~ : UInt,
+  rtx_ssrc~ : UInt32,
   rtx_payload_type~ : Byte,
-  capacity? : Int = 1024,
+  capacity~ : Int32 = 1024,
 ) -> RtxReceiver raise InterceptorError {
   if media_payload_type > 127 || rtx_payload_type > 127 {
     raise InvalidConfiguration("RTP payload type exceeds seven bits")

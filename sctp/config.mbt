@@ -4,25 +4,25 @@ pub struct AssociationConfig {
   local_port : UInt16
   remote_port : UInt16
   max_message_size : UInt64
-  max_payload_size : Int
+  max_payload_size : Int32
   send_buffer_size : UInt64
-  receive_buffer_size : UInt
-  initial_tag : UInt?
-  initial_tsn : UInt?
+  receive_buffer_size : UInt32
+  initial_tag : UInt32?
+  initial_tsn : UInt32?
   initial_rto : @transport.Duration
 }
 
 ///|
 pub fn AssociationConfig::new(
   role~ : AssociationRole,
-  local_port? : UInt16 = 5000,
-  remote_port? : UInt16 = 5000,
-  max_message_size? : UInt64 = 262144UL,
-  max_payload_size? : Int = 1100,
-  send_buffer_size? : UInt64 = 1048576UL,
-  receive_buffer_size? : UInt = 1048576U,
-  initial_tag? : UInt,
-  initial_tsn? : UInt,
+  local_port~ : UInt16 = 5000,
+  remote_port~ : UInt16 = 5000,
+  max_message_size~ : UInt64 = 262144UL,
+  max_payload_size~ : Int32 = 1100,
+  send_buffer_size~ : UInt64 = 1048576UL,
+  receive_buffer_size~ : UInt32 = 1048576U,
+  initial_tag? : UInt32,
+  initial_tsn? : UInt32,
   initial_rto? : @transport.Duration,
 ) -> AssociationConfig raise SctpError {
   if local_port == 0 || remote_port == 0 {

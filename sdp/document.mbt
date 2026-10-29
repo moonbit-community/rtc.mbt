@@ -84,7 +84,7 @@ fn SdpAttribute::marshal(self : SdpAttribute) -> String {
 }
 
 ///|
-fn decimal_uint(value : StringView, context : String) -> UInt raise SdpError {
+fn decimal_uint(value : StringView, context : String) -> UInt32 raise SdpError {
   @string.from_str(value) catch {
     _ => raise InvalidSyntax("invalid decimal \{context}")
   }
@@ -126,7 +126,7 @@ pub fn MediaDescription::new(
   port_count? : UInt16,
   protocol~ : String,
   formats~ : Array[String],
-  fields? : Array[SdpField] = [],
+  fields~ : Array[SdpField] = [],
 ) -> MediaDescription raise SdpError {
   if media_kind.is_empty() || protocol.is_empty() || formats.is_empty() {
     raise InvalidSyntax("SDP media line has an empty required token")
@@ -287,7 +287,7 @@ pub struct SdpDocument {
 ///|
 pub fn SdpDocument::new(
   session_fields~ : Array[SdpField],
-  media_descriptions? : Array[MediaDescription] = [],
+  media_descriptions~ : Array[MediaDescription] = [],
 ) -> SdpDocument raise SdpError {
   let document = {
     session_fields: session_fields.copy(),

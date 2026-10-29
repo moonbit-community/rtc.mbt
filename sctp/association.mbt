@@ -49,26 +49,26 @@ struct OutstandingData {
   expires_at : @transport.Instant?
   mut deadline : @transport.Instant
   mut rto_milliseconds : Int64
-  mut retransmissions : Int
+  mut retransmissions : Int32
 }
 
 ///|
 struct Reassembly {
   stream : StreamId
   stream_sequence : UInt16
-  protocol_id : UInt
+  protocol_id : UInt32
   unordered : Bool
-  first_tsn : UInt
+  first_tsn : UInt32
   bytes : Array[Byte]
 }
 
 ///|
 struct ForwardTsnTransaction {
-  new_cumulative_tsn : UInt
+  new_cumulative_tsn : UInt32
   packet : Bytes
   mut deadline : @transport.Instant
   mut rto_milliseconds : Int64
-  mut retransmissions : Int
+  mut retransmissions : Int32
 }
 
 ///|
@@ -77,13 +77,13 @@ struct ResetTransaction {
   packet : Bytes
   mut deadline : @transport.Instant
   mut rto_milliseconds : Int64
-  mut retransmissions : Int
+  mut retransmissions : Int32
 }
 
 ///|
 struct PendingReset {
-  request_sequence : UInt
-  sender_last_tsn : UInt
+  request_sequence : UInt32
+  sender_last_tsn : UInt32
   streams : Array[StreamId]
 }
 
@@ -95,12 +95,12 @@ pub struct Association {
   events : @queue.Queue[AssociationEvent]
   mut started : Bool
   mut state : AssociationState
-  local_tag : UInt
-  local_initial_tsn : UInt
-  mut peer_tag : UInt?
-  mut peer_initial_tsn : UInt?
-  mut next_tsn : UInt
-  mut cumulative_tsn : UInt?
+  local_tag : UInt32
+  local_initial_tsn : UInt32
+  mut peer_tag : UInt32?
+  mut peer_initial_tsn : UInt32?
+  mut next_tsn : UInt32
+  mut cumulative_tsn : UInt32?
   mut cookie : Bytes?
   mut init_ack_packet : Bytes?
   mut peer_supports_reconfig : Bool
@@ -108,13 +108,13 @@ pub struct Association {
   mut last_control_packet : Bytes?
   mut control_deadline : @transport.Instant?
   mut control_rto_milliseconds : Int64
-  mut control_retransmissions : Int
-  outstanding : Map[UInt, OutstandingData]
-  abandoned : Map[UInt, DataChunk]
-  mut peer_cumulative_tsn_ack : UInt
+  mut control_retransmissions : Int32
+  outstanding : Map[UInt32, OutstandingData]
+  abandoned : Map[UInt32, DataChunk]
+  mut peer_cumulative_tsn_ack : UInt32
   mut forward_tsn_transaction : ForwardTsnTransaction?
-  received : Map[UInt, DataChunk]
-  duplicates : Array[UInt]
+  received : Map[UInt32, DataChunk]
+  duplicates : Array[UInt32]
   send_sequences : Map[StreamId, UInt16]
   receive_sequences : Map[StreamId, UInt16]
   reassemblies : Map[UInt64, Reassembly]
@@ -122,15 +122,15 @@ pub struct Association {
   buffered_by_stream : Map[StreamId, UInt64]
   buffered_amount_low_thresholds : Map[StreamId, UInt64]
   mut buffered_amount : UInt64
-  mut next_reset_request : UInt
-  mut expected_peer_reset_request : UInt?
-  reset_transactions : Map[UInt, ResetTransaction]
-  pending_resets : Map[UInt, PendingReset]
-  reset_responses : Map[UInt, Bytes]
+  mut next_reset_request : UInt32
+  mut expected_peer_reset_request : UInt32?
+  reset_transactions : Map[UInt32, ResetTransaction]
+  pending_resets : Map[UInt32, PendingReset]
+  reset_responses : Map[UInt32, Bytes]
 }
 
 ///|
-fn random_uint(provider : @crypto.Provider) -> UInt raise SctpError {
+fn random_uint(provider : @crypto.Provider) -> UInt32 raise SctpError {
   let bytes = association_crypto(() => provider.random_bytes(4))
   let value = (bytes[0].to_uint() << 24) |
     (bytes[1].to_uint() << 16) |
@@ -214,7 +214,7 @@ fn Association::set_state(self : Association, state : AssociationState) -> Unit 
 ///|
 fn Association::packet(
   self : Association,
-  verification_tag : UInt,
+  verification_tag : UInt32,
   chunks : Array[Chunk],
 ) -> Bytes raise SctpError {
   Packet::new(
@@ -347,29 +347,29 @@ fn state_cookie(parameters : Array[Parameter]) -> Bytes? {
 }
 
 ///|
-fn tsn_after(left : UInt, right : UInt) -> Bool {
+fn tsn_after(left : UInt32, right : UInt32) -> Bool {
   left != right && left - right < 0x80000000U
 }
 
 ///|
-fn tsn_before(left : UInt, right : UInt) -> Bool {
+fn tsn_before(left : UInt32, right : UInt32) -> Bool {
   tsn_after(right, left)
 }
 
 ///|
-fn tsn_at_or_before(left : UInt, right : UInt) -> Bool {
+fn tsn_at_or_before(left : UInt32, right : UInt32) -> Bool {
   left == right || tsn_before(left, right)
 }
 
 ///|
-fn tsn_increment(value : UInt) -> UInt {
+fn tsn_increment(value : UInt32) -> UInt32 {
   value + 1U
 }
 
 ///|
 fn Association::accept_peer_initial_tsn(
   self : Association,
-  initial_tsn : UInt,
+  initial_tsn : UInt32,
 ) -> Unit {
   self.peer_initial_tsn = Some(initial_tsn)
   self.cumulative_tsn = Some(initial_tsn - 1U)
@@ -630,7 +630,7 @@ fn Association::drain_received(self : Association) -> Unit raise SctpError {
 ///|
 fn Association::gap_ack_blocks(self : Association) -> Array[GapAckBlock] {
   guard self.cumulative_tsn is Some(cumulative) else { return [] }
-  let offsets : Array[UInt] = []
+  let offsets : Array[UInt32] = []
   for tsn in self.received.keys() {
     let offset = tsn - cumulative
     if offset > 0U && offset <= 0xffffU {
@@ -709,7 +709,7 @@ fn Association::handle_forward_tsn(
       _ => skipped[stream.stream] = stream.sequence
     }
   }
-  let forwarded_received : Array[UInt] = []
+  let forwarded_received : Array[UInt32] = []
   for tsn in self.received.keys() {
     if tsn_after(tsn, cumulative) &&
       tsn_at_or_before(tsn, forward.new_cumulative_tsn) {
@@ -772,7 +772,7 @@ fn Association::handle_forward_tsn(
 }
 
 ///|
-fn sack_acknowledges(sack : SackChunk, tsn : UInt) -> Bool {
+fn sack_acknowledges(sack : SackChunk, tsn : UInt32) -> Bool {
   if tsn_at_or_before(tsn, sack.cumulative_tsn_ack) {
     return true
   }
@@ -882,7 +882,7 @@ fn Association::abandon_message(
   stream_sequence : UInt16,
   now : @transport.Instant,
 ) -> Unit raise SctpError {
-  let abandoned_tsns : Array[UInt] = []
+  let abandoned_tsns : Array[UInt32] = []
   for entry in self.outstanding {
     let (tsn, data) = entry
     if data.chunk.stream == stream &&
@@ -908,7 +908,7 @@ fn Association::handle_sack(
   if tsn_after(sack.cumulative_tsn_ack, self.peer_cumulative_tsn_ack) {
     self.peer_cumulative_tsn_ack = sack.cumulative_tsn_ack
   }
-  let acknowledged : Array[UInt] = []
+  let acknowledged : Array[UInt32] = []
   for entry in self.outstanding {
     let (tsn, data) = entry
     if sack_acknowledges(sack, tsn) {
@@ -919,7 +919,7 @@ fn Association::handle_sack(
   for tsn in acknowledged {
     self.outstanding.remove(tsn)
   }
-  let acknowledged_abandoned : Array[UInt] = []
+  let acknowledged_abandoned : Array[UInt32] = []
   for tsn in self.abandoned.keys() {
     if sack_acknowledges(sack, tsn) {
       acknowledged_abandoned.push(tsn)
@@ -967,8 +967,8 @@ fn Association::reset_receive_streams(
 ///|
 fn Association::send_reset_response(
   self : Association,
-  request_sequence : UInt,
-  result : UInt,
+  request_sequence : UInt32,
+  result : UInt32,
 ) -> Bytes raise SctpError {
   let packet = self.normal_packet([
     ReconfigChunk([ReconfigResponse(request_sequence~, result~)]),
@@ -996,7 +996,7 @@ fn Association::process_pending_resets(
   self : Association,
 ) -> Unit raise SctpError {
   guard self.cumulative_tsn is Some(cumulative) else { return }
-  let ready : Array[UInt] = []
+  let ready : Array[UInt32] = []
   for entry in self.pending_resets {
     let (request_sequence, pending) = entry
     if tsn_at_or_before(pending.sender_last_tsn, cumulative) {
@@ -1018,8 +1018,8 @@ fn Association::process_pending_resets(
 ///|
 fn Association::handle_outgoing_reset_request(
   self : Association,
-  request_sequence : UInt,
-  sender_last_tsn : UInt,
+  request_sequence : UInt32,
+  sender_last_tsn : UInt32,
   streams : Array[StreamId],
 ) -> Unit raise SctpError {
   match self.reset_responses.get(request_sequence) {
@@ -1054,8 +1054,8 @@ fn Association::handle_outgoing_reset_request(
 ///|
 fn Association::handle_reconfig_response(
   self : Association,
-  request_sequence : UInt,
-  result : UInt,
+  request_sequence : UInt32,
+  result : UInt32,
 ) -> Unit raise SctpError {
   guard self.reset_transactions.get(request_sequence) is Some(transaction) else {
     return
@@ -1200,7 +1200,7 @@ pub fn Association::handle_datagram(
 pub fn Association::send(
   self : Association,
   message : Message,
-  reliability? : Reliability = Reliable,
+  reliability~ : Reliability = Reliable,
   now~ : @transport.Instant,
 ) -> Unit raise SctpError {
   if self.state != Established {
@@ -1401,7 +1401,7 @@ pub fn Association::handle_timeout(
     }
     _ => ()
   }
-  let due_data : Array[UInt] = []
+  let due_data : Array[UInt32] = []
   for entry in self.outstanding {
     let (tsn, data) = entry
     let expired = match data.expires_at {
@@ -1452,7 +1452,7 @@ pub fn Association::handle_timeout(
     }
     _ => ()
   }
-  let due_resets : Array[UInt] = []
+  let due_resets : Array[UInt32] = []
   for entry in self.reset_transactions {
     let (request_sequence, transaction) = entry
     if transaction.deadline <= now {

@@ -92,16 +92,16 @@ pub(all) enum RidDirection {
 pub(all) struct RtpCodecParameters {
   payload_type : Byte
   encoding_name : String
-  clock_rate : UInt
+  clock_rate : UInt32
   channels : UInt16
   fmtp : String
   rtcp_feedback : Array[String]
 } derive(Eq, @debug.Debug)
 pub fn RtpCodecParameters::channels(Self) -> UInt16
-pub fn RtpCodecParameters::clock_rate(Self) -> UInt
+pub fn RtpCodecParameters::clock_rate(Self) -> UInt32
 pub fn RtpCodecParameters::encoding_name(Self) -> String
 pub fn RtpCodecParameters::fmtp(Self) -> String
-pub fn RtpCodecParameters::new(payload_type~ : Byte, encoding_name~ : String, clock_rate~ : UInt, channels? : UInt16, fmtp? : String, rtcp_feedback? : Array[String]) -> Self raise SdpError
+pub fn RtpCodecParameters::new(payload_type~ : Byte, encoding_name~ : String, clock_rate~ : UInt32, channels? : UInt16, fmtp? : String, rtcp_feedback? : Array[String]) -> Self raise SdpError
 pub fn RtpCodecParameters::payload_type(Self) -> Byte
 pub fn RtpCodecParameters::rtcp_feedback(Self) -> Array[String]
 
@@ -121,8 +121,8 @@ pub(all) struct RtpMediaParameters {
   header_extensions : Array[RtpHeaderExtensionParameters]
   stream_id : String?
   track_id : String?
-  ssrc : UInt?
-  rtx_ssrc : UInt?
+  ssrc : UInt32?
+  rtx_ssrc : UInt32?
   streams : Array[RtpStreamParameters]
   cname : String?
 } derive(Eq, @debug.Debug)
@@ -132,21 +132,21 @@ pub fn RtpMediaParameters::direction(Self) -> MediaDirection
 pub fn RtpMediaParameters::header_extensions(Self) -> Array[RtpHeaderExtensionParameters]
 pub fn RtpMediaParameters::kind(Self) -> String
 pub fn RtpMediaParameters::mid(Self) -> String
-pub fn RtpMediaParameters::new(kind~ : String, mid~ : String, direction? : MediaDirection, codecs~ : Array[RtpCodecParameters], header_extensions? : Array[RtpHeaderExtensionParameters], stream_id? : String, track_id? : String, ssrc? : UInt, rtx_ssrc? : UInt, streams? : Array[RtpStreamParameters], cname? : String) -> Self raise SdpError
-pub fn RtpMediaParameters::rtx_ssrc(Self) -> UInt?
-pub fn RtpMediaParameters::ssrc(Self) -> UInt?
+pub fn RtpMediaParameters::new(kind~ : String, mid~ : String, direction? : MediaDirection, codecs~ : Array[RtpCodecParameters], header_extensions? : Array[RtpHeaderExtensionParameters], stream_id? : String, track_id? : String, ssrc? : UInt32, rtx_ssrc? : UInt32, streams? : Array[RtpStreamParameters], cname? : String) -> Self raise SdpError
+pub fn RtpMediaParameters::rtx_ssrc(Self) -> UInt32?
+pub fn RtpMediaParameters::ssrc(Self) -> UInt32?
 pub fn RtpMediaParameters::stream_id(Self) -> String?
 pub fn RtpMediaParameters::streams(Self) -> Array[RtpStreamParameters]
 pub fn RtpMediaParameters::track_id(Self) -> String?
 
 pub(all) struct RtpStreamParameters {
-  ssrc : UInt?
-  rtx_ssrc : UInt?
+  ssrc : UInt32?
+  rtx_ssrc : UInt32?
   rid : String?
   paused : Bool
   rid_direction : RidDirection
 } derive(Eq, @debug.Debug)
-pub fn RtpStreamParameters::new(ssrc? : UInt, rtx_ssrc? : UInt, rid? : String, paused? : Bool, rid_direction? : RidDirection) -> Self raise SdpError
+pub fn RtpStreamParameters::new(ssrc? : UInt32, rtx_ssrc? : UInt32, rid? : String, paused? : Bool, rid_direction? : RidDirection) -> Self raise SdpError
 
 pub struct SdpAttribute {
   key : String
@@ -164,7 +164,7 @@ pub fn SdpDocument::datachannel_parameters(Self) -> DataChannelParameters raise 
 pub fn SdpDocument::marshal(Self) -> String
 pub fn SdpDocument::media_descriptions(Self) -> Array[MediaDescription]
 pub fn SdpDocument::new(session_fields~ : Array[SdpField], media_descriptions? : Array[MediaDescription]) -> Self raise SdpError
-pub fn SdpDocument::new_datachannel(session_id~ : UInt64, session_version~ : UInt64, mid~ : String, ice_credentials~ : @ice.IceCredentials, fingerprint~ : DtlsFingerprint, setup~ : DtlsSetup, candidates? : Array[String], end_of_candidates? : Bool, sctp_port? : UInt16, max_message_size? : UInt64, media_sections? : Array[RtpMediaParameters], application_index? : Int) -> Self raise SdpError
+pub fn SdpDocument::new_datachannel(session_id~ : UInt64, session_version~ : UInt64, mid~ : String, ice_credentials~ : @ice.IceCredentials, fingerprint~ : DtlsFingerprint, setup~ : DtlsSetup, candidates? : Array[String], end_of_candidates? : Bool, sctp_port? : UInt16, max_message_size? : UInt64, media_sections? : Array[RtpMediaParameters], application_index? : Int32) -> Self raise SdpError
 pub fn SdpDocument::parse(String) -> Self raise SdpError
 pub fn SdpDocument::rtp_media_parameters(Self) -> Array[RtpMediaParameters] raise SdpError
 pub fn SdpDocument::session_attribute(Self, String) -> SdpAttribute? raise SdpError

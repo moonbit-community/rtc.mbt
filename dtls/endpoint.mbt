@@ -42,13 +42,13 @@ pub struct Endpoint {
   mut selected_cipher_suite : CipherSuite?
   mut selected_srtp_profile : SrtpProtectionProfile?
   mut certificate_requested : Bool
-  mut client_server_stage : Int
-  mut server_client_stage : Int
+  mut client_server_stage : Int32
+  mut server_client_stage : Int32
   mut peer_changed_cipher_spec : Bool
   mut last_flight : Array[Bytes]
   mut retransmit_deadline : @transport.Instant?
   mut retransmit_interval_milliseconds : Int64
-  mut retransmissions : Int
+  mut retransmissions : Int32
 }
 
 ///|
@@ -140,7 +140,7 @@ fn Endpoint::queue_flight(
   self : Endpoint,
   datagrams : Array[Bytes],
   now : @transport.Instant,
-  schedule_retransmit? : Bool = true,
+  schedule_retransmit~ : Bool = true,
 ) -> Unit raise DtlsError {
   for datagram in datagrams {
     self.outputs.push(datagram)
@@ -282,7 +282,7 @@ fn Endpoint::transcript_bytes(self : Endpoint) -> Bytes {
 ///|
 fn Endpoint::random_bytes(
   self : Endpoint,
-  length : Int,
+  length : Int32,
 ) -> Bytes raise DtlsError {
   crypto_operation(() => self.provider.random_bytes(length))
 }
@@ -1335,7 +1335,7 @@ pub fn Endpoint::send_application_data(
 pub fn Endpoint::export_keying_material(
   self : Endpoint,
   label : String,
-  length : Int,
+  length : Int32,
 ) -> Bytes raise DtlsError {
   if self.state != Connected {
     raise HandshakeFailed("DTLS exporter is unavailable before connection")

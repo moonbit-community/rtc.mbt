@@ -101,16 +101,16 @@ pub fn DcepMessage::encode(Self) -> Bytes raise DataChannelError
 pub struct DcepOpen {
   channel_type : ChannelType
   priority : UInt16
-  reliability_parameter : UInt
+  reliability_parameter : UInt32
   label : String
   protocol : String
 } derive(Eq, @debug.Debug)
 pub fn DcepOpen::channel_type(Self) -> ChannelType
 pub fn DcepOpen::label(Self) -> String
-pub fn DcepOpen::new(channel_type~ : ChannelType, priority? : UInt16, reliability_parameter? : UInt, label~ : String, protocol? : String) -> Self raise DataChannelError
+pub fn DcepOpen::new(channel_type~ : ChannelType, priority? : UInt16, reliability_parameter? : UInt32, label~ : String, protocol? : String) -> Self raise DataChannelError
 pub fn DcepOpen::priority(Self) -> UInt16
 pub fn DcepOpen::protocol(Self) -> String
-pub fn DcepOpen::reliability_parameter(Self) -> UInt
+pub fn DcepOpen::reliability_parameter(Self) -> UInt32
 
 pub struct Manager {
   mut role : StreamRole
@@ -122,7 +122,7 @@ pub struct Manager {
   commands : @queue.Queue[DataChannelCommand]
   events : @queue.Queue[DataChannelEvent]
   mut transport_ready : Bool
-  mut next_stream : UInt
+  mut next_stream : UInt32
 }
 pub fn Manager::all_channels(Self) -> Array[DataChannel]
 pub fn Manager::channel(Self, @sctp.StreamId) -> DataChannel?
@@ -143,8 +143,8 @@ pub(all) enum PayloadProtocolIdentifier {
   StringEmptyPayload
   BinaryEmptyPayload
 } derive(Eq, @debug.Debug)
-pub fn PayloadProtocolIdentifier::code(Self) -> UInt
-pub fn PayloadProtocolIdentifier::from_code(UInt) -> Self raise DataChannelError
+pub fn PayloadProtocolIdentifier::code(Self) -> UInt32
+pub fn PayloadProtocolIdentifier::from_code(UInt32) -> Self raise DataChannelError
 
 pub(all) enum StreamRole {
   DtlsClient

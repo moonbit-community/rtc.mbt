@@ -96,8 +96,8 @@ async fn NetworkTestDiagnostics::run(
 async fn NetworkTestDiagnostics::with_group(
   self : NetworkTestDiagnostics,
   body : async (@async_runtime.TaskGroup[Unit]) -> Unit,
-  timeout_ms? : Int = 60000,
-  report_failure? : Bool = true,
+  timeout_ms~ : Int32 = 60000,
+  report_failure~ : Bool = true,
 ) -> Unit {
   try
     @async_runtime.with_task_group <| group => {

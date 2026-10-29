@@ -77,8 +77,8 @@ pub struct ClientHelloMessage {
 ///|
 pub fn ClientHelloMessage::new(
   random~ : Bytes,
-  cookie? : Bytes = b"",
-  cipher_suites? : Array[CipherSuite] = [EcdheEcdsaAes128GcmSha256],
+  cookie~ : Bytes = b"",
+  cipher_suites~ : Array[CipherSuite] = [EcdheEcdsaAes128GcmSha256],
   extensions~ : HelloExtensions,
 ) -> ClientHelloMessage raise DtlsError {
   if random.length() != 32 {
@@ -226,7 +226,7 @@ pub struct ServerHelloMessage {
 ///|
 pub fn ServerHelloMessage::new(
   random~ : Bytes,
-  cipher_suite? : CipherSuite = EcdheEcdsaAes128GcmSha256,
+  cipher_suite~ : CipherSuite = EcdheEcdsaAes128GcmSha256,
   selected_srtp_profile? : UInt16,
 ) -> ServerHelloMessage raise DtlsError {
   if random.length() != 32 {

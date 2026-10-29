@@ -9,7 +9,7 @@ pub struct Manager {
   commands : @queue.Queue[DataChannelCommand]
   events : @queue.Queue[DataChannelEvent]
   mut transport_ready : Bool
-  mut next_stream : UInt
+  mut next_stream : UInt32
 }
 
 ///|
@@ -127,7 +127,7 @@ fn stream_has_parity(stream : @sctp.StreamId, parity : UInt16) -> Bool {
 fn channel_parameters(
   ordering : @sctp.Ordering,
   reliability : @sctp.Reliability,
-) -> (ChannelType, UInt) {
+) -> (ChannelType, UInt32) {
   match (ordering, reliability) {
     (Ordered, Reliable) => (ReliableChannel, 0U)
     (Unordered, Reliable) => (ReliableUnorderedChannel, 0U)

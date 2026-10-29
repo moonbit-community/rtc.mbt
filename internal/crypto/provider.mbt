@@ -1,7 +1,7 @@
 ///|
 pub(all) suberror CryptoError {
   CryptoUnavailable(String)
-  InvalidLength(Int)
+  InvalidLength(Int32)
   OperationFailed(String)
 } derive(Debug, Eq)
 
@@ -23,7 +23,7 @@ pub(all) enum AeadAlgorithm {
 } derive(Debug, Eq)
 
 ///|
-fn AeadAlgorithm::code(self : AeadAlgorithm) -> Int {
+fn AeadAlgorithm::code(self : AeadAlgorithm) -> Int32 {
   match self {
     Aes128Gcm => 0
     Aes256Gcm => 1
@@ -50,7 +50,7 @@ pub(all) enum KeyAlgorithm {
 } derive(Debug, Eq)
 
 ///|
-fn KeyAlgorithm::code(self : KeyAlgorithm) -> Int {
+fn KeyAlgorithm::code(self : KeyAlgorithm) -> Int32 {
   match self {
     P256 => 0
     P384 => 1
@@ -68,7 +68,7 @@ pub(all) enum SignatureAlgorithm {
 } derive(Debug, Eq)
 
 ///|
-fn SignatureAlgorithm::code(self : SignatureAlgorithm) -> Int {
+fn SignatureAlgorithm::code(self : SignatureAlgorithm) -> Int32 {
   match self {
     EcdsaSha256 => 0
     EcdsaSha384 => 1
@@ -78,7 +78,7 @@ fn SignatureAlgorithm::code(self : SignatureAlgorithm) -> Int {
 }
 
 ///|
-fn CipherAlgorithm::code(self : CipherAlgorithm) -> Int {
+fn CipherAlgorithm::code(self : CipherAlgorithm) -> Int32 {
   match self {
     Aes128Cbc => 0
     Aes256Cbc => 1
@@ -115,7 +115,7 @@ pub fn AeadSealed::tag(self : AeadSealed) -> Bytes {
 }
 
 ///|
-fn DigestAlgorithm::code(self : DigestAlgorithm) -> Int {
+fn DigestAlgorithm::code(self : DigestAlgorithm) -> Int32 {
   match self {
     Sha1 => 0
     Sha256 => 1
@@ -125,7 +125,7 @@ fn DigestAlgorithm::code(self : DigestAlgorithm) -> Int {
 }
 
 ///|
-fn DigestAlgorithm::output_size(self : DigestAlgorithm) -> Int {
+fn DigestAlgorithm::output_size(self : DigestAlgorithm) -> Int32 {
   match self {
     Sha1 => 20
     Sha256 => 32
@@ -167,7 +167,7 @@ pub fn Provider::version(self : Provider) -> String {
 ///|
 pub fn Provider::random_bytes(
   self : Provider,
-  length : Int,
+  length : Int32,
 ) -> Bytes raise CryptoError {
   if length < 1 {
     raise InvalidLength(length)
@@ -223,7 +223,7 @@ pub fn Provider::aead_seal(
   nonce : Bytes,
   aad : Bytes,
   plaintext : Bytes,
-  tag_length? : Int = 16,
+  tag_length~ : Int32 = 16,
 ) -> AeadSealed raise CryptoError {
   if tag_length != 8 && tag_length != 16 {
     raise InvalidLength(tag_length)
@@ -331,7 +331,7 @@ pub fn Secret::from_bytes(value : Bytes) -> Secret {
 ///|
 pub fn Provider::random_secret(
   self : Provider,
-  length : Int,
+  length : Int32,
 ) -> Secret raise CryptoError {
   if length < 1 {
     raise InvalidLength(length)
@@ -344,7 +344,7 @@ pub fn Provider::random_secret(
 }
 
 ///|
-pub fn Secret::length(self : Secret) -> Int {
+pub fn Secret::length(self : Secret) -> Int32 {
   secret_length(self)
 }
 

@@ -73,7 +73,7 @@ fn decode_address_value(
 ///|
 pub fn Attribute::from_address(
   address : @transport.SocketAddress,
-  attribute_type? : AttributeType = MappedAddress,
+  attribute_type~ : AttributeType = MappedAddress,
 ) -> Attribute raise StunError {
   if !is_plain_address_type(attribute_type) {
     raise InvalidMessage("attribute type is not a plain STUN address")
@@ -116,7 +116,7 @@ fn xor_address_value(
 pub fn Attribute::from_xor_address(
   address : @transport.SocketAddress,
   transaction_id : TransactionId,
-  attribute_type? : AttributeType = XorMappedAddress,
+  attribute_type~ : AttributeType = XorMappedAddress,
 ) -> Attribute raise StunError {
   if !is_xor_address_type(attribute_type) {
     raise InvalidMessage("attribute type is not a STUN XOR address")

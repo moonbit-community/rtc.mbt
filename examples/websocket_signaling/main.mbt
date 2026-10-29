@@ -3,14 +3,14 @@ priv suberror SubscriberClosed
 
 ///|
 priv struct Subscriber {
-  id : UInt
+  id : UInt32
   outbound : @async_runtime.Queue[String]
 }
 
 ///|
 priv struct Hub {
   subscribers : Array[Subscriber]
-  mut next_id : UInt
+  mut next_id : UInt32
 }
 
 ///|
@@ -30,7 +30,7 @@ fn Hub::subscribe(self : Hub) -> Subscriber {
 }
 
 ///|
-fn Hub::unsubscribe(self : Hub, id : UInt) -> Unit {
+fn Hub::unsubscribe(self : Hub, id : UInt32) -> Unit {
   for index = 0; index < self.subscribers.length(); index = index + 1 {
     if self.subscribers[index].id == id {
       let subscriber = self.subscribers[index]
@@ -42,7 +42,7 @@ fn Hub::unsubscribe(self : Hub, id : UInt) -> Unit {
 }
 
 ///|
-fn Hub::broadcast(self : Hub, sender : UInt, text : String) -> Unit {
+fn Hub::broadcast(self : Hub, sender : UInt32, text : String) -> Unit {
   for subscriber in self.subscribers {
     if subscriber.id != sender {
       ignore(subscriber.outbound.try_put(text) catch { _ => false })

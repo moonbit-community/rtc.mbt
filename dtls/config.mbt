@@ -9,8 +9,8 @@ pub struct Config {
   psk_identity : Bytes?
   srtp_profiles : Array[SrtpProtectionProfile]
   flight_interval : @transport.Duration
-  mtu : Int
-  replay_window : Int
+  mtu : Int32
+  replay_window : Int32
   verify_peer_fingerprint : Bool
 }
 
@@ -20,14 +20,14 @@ pub fn Config::new(
   identity~ : CertificateIdentity,
   expected_peer_fingerprint~ : Fingerprint,
   wall_time~ : @transport.WallTime,
-  cipher_suites? : Array[CipherSuite] = [],
+  cipher_suites~ : Array[CipherSuite] = [],
   psk? : Bytes,
   psk_identity? : Bytes,
-  srtp_profiles? : Array[SrtpProtectionProfile] = [],
+  srtp_profiles~ : Array[SrtpProtectionProfile] = [],
   flight_interval? : @transport.Duration,
-  mtu? : Int = 1200,
-  replay_window? : Int = 64,
-  verify_peer_fingerprint? : Bool = true,
+  mtu~ : Int32 = 1200,
+  replay_window~ : Int32 = 64,
+  verify_peer_fingerprint~ : Bool = true,
 ) -> Config raise DtlsError {
   if role == Auto {
     raise HandshakeFailed("DTLS setup role must be resolved before start")
@@ -142,7 +142,7 @@ pub fn Config::psk_identity(self : Config) -> Bytes? {
 }
 
 ///|
-fn Config::maximum_record_expansion(self : Config) -> Int {
+fn Config::maximum_record_expansion(self : Config) -> Int32 {
   let mut result = 0
   for suite in self.cipher_suites {
     let expansion = suite.maximum_record_expansion()

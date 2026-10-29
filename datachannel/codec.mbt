@@ -1,5 +1,5 @@
 ///|
-fn dc_writer(capacity : Int) -> @codec.Writer raise DataChannelError {
+fn dc_writer(capacity : Int32) -> @codec.Writer raise DataChannelError {
   @codec.Writer::new(capacity~) catch {
     _ => raise ProtocolViolation("invalid DCEP output length")
   }
@@ -29,7 +29,7 @@ fn dc_read_u16(
 fn dc_read_u32(
   reader : @codec.Reader,
   context : String,
-) -> UInt raise DataChannelError {
+) -> UInt32 raise DataChannelError {
   reader.read_u32_be() catch {
     _ => raise ProtocolViolation("truncated \{context}")
   }
@@ -38,7 +38,7 @@ fn dc_read_u32(
 ///|
 fn dc_read_bytes(
   reader : @codec.Reader,
-  length : Int,
+  length : Int32,
   context : String,
 ) -> Bytes raise DataChannelError {
   reader.read_bytes(length) catch {
@@ -145,7 +145,7 @@ pub fn DcepMessage::decode(data : Bytes) -> DcepMessage raise DataChannelError {
 
 ///|
 pub fn PayloadProtocolIdentifier::from_code(
-  code : UInt,
+  code : UInt32,
 ) -> PayloadProtocolIdentifier raise DataChannelError {
   match code {
     50U => Dcep

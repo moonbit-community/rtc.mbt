@@ -2,7 +2,7 @@
 pub(all) suberror RtcpError {
   InvalidPacket(String)
   InvalidCompoundPacket(String)
-  PacketTooLarge(Int)
+  PacketTooLarge(Int32)
 } derive(Debug, Eq)
 
 ///|
@@ -20,24 +20,24 @@ pub(all) enum Packet {
 
 ///|
 pub(all) struct ReceptionReport {
-  ssrc : UInt
+  ssrc : UInt32
   fraction_lost : Byte
-  cumulative_lost : Int
-  extended_sequence_number : UInt
-  jitter : UInt
-  last_sender_report : UInt
-  delay_since_last_sender_report : UInt
+  cumulative_lost : Int32
+  extended_sequence_number : UInt32
+  jitter : UInt32
+  last_sender_report : UInt32
+  delay_since_last_sender_report : UInt32
 } derive(Debug, Eq)
 
 ///|
 pub fn ReceptionReport::new(
-  ssrc~ : UInt,
-  fraction_lost? : Byte = 0,
-  cumulative_lost? : Int = 0,
-  extended_sequence_number? : UInt = 0U,
-  jitter? : UInt = 0U,
-  last_sender_report? : UInt = 0U,
-  delay_since_last_sender_report? : UInt = 0U,
+  ssrc~ : UInt32,
+  fraction_lost~ : Byte = 0,
+  cumulative_lost~ : Int32 = 0,
+  extended_sequence_number~ : UInt32 = 0U,
+  jitter~ : UInt32 = 0U,
+  last_sender_report~ : UInt32 = 0U,
+  delay_since_last_sender_report~ : UInt32 = 0U,
 ) -> ReceptionReport raise RtcpError {
   if cumulative_lost < -8388608 || cumulative_lost > 8388607 {
     raise InvalidPacket("RTCP cumulative loss does not fit in signed 24 bits")
@@ -54,7 +54,7 @@ pub fn ReceptionReport::new(
 }
 
 ///|
-pub fn ReceptionReport::ssrc(self : ReceptionReport) -> UInt {
+pub fn ReceptionReport::ssrc(self : ReceptionReport) -> UInt32 {
   self.ssrc
 }
 
@@ -64,54 +64,54 @@ pub fn ReceptionReport::fraction_lost(self : ReceptionReport) -> Byte {
 }
 
 ///|
-pub fn ReceptionReport::cumulative_lost(self : ReceptionReport) -> Int {
+pub fn ReceptionReport::cumulative_lost(self : ReceptionReport) -> Int32 {
   self.cumulative_lost
 }
 
 ///|
 pub fn ReceptionReport::extended_sequence_number(
   self : ReceptionReport,
-) -> UInt {
+) -> UInt32 {
   self.extended_sequence_number
 }
 
 ///|
-pub fn ReceptionReport::jitter(self : ReceptionReport) -> UInt {
+pub fn ReceptionReport::jitter(self : ReceptionReport) -> UInt32 {
   self.jitter
 }
 
 ///|
-pub fn ReceptionReport::last_sender_report(self : ReceptionReport) -> UInt {
+pub fn ReceptionReport::last_sender_report(self : ReceptionReport) -> UInt32 {
   self.last_sender_report
 }
 
 ///|
 pub fn ReceptionReport::delay_since_last_sender_report(
   self : ReceptionReport,
-) -> UInt {
+) -> UInt32 {
   self.delay_since_last_sender_report
 }
 
 ///|
 pub(all) struct SenderReportPacket {
-  sender_ssrc : UInt
+  sender_ssrc : UInt32
   ntp_timestamp : UInt64
-  rtp_timestamp : UInt
-  packet_count : UInt
-  octet_count : UInt
+  rtp_timestamp : UInt32
+  packet_count : UInt32
+  octet_count : UInt32
   reports : Array[ReceptionReport]
   profile_extensions : Bytes
 } derive(Debug, Eq)
 
 ///|
 pub fn SenderReportPacket::new(
-  sender_ssrc~ : UInt,
+  sender_ssrc~ : UInt32,
   ntp_timestamp~ : UInt64,
-  rtp_timestamp~ : UInt,
-  packet_count~ : UInt,
-  octet_count~ : UInt,
-  reports? : Array[ReceptionReport] = [],
-  profile_extensions? : Bytes = b"",
+  rtp_timestamp~ : UInt32,
+  packet_count~ : UInt32,
+  octet_count~ : UInt32,
+  reports~ : Array[ReceptionReport] = [],
+  profile_extensions~ : Bytes = b"",
 ) -> SenderReportPacket raise RtcpError {
   if reports.length() > 31 {
     raise InvalidPacket("RTCP sender report contains more than 31 reports")
@@ -132,16 +132,16 @@ pub fn SenderReportPacket::new(
 
 ///|
 pub(all) struct ReceiverReportPacket {
-  sender_ssrc : UInt
+  sender_ssrc : UInt32
   reports : Array[ReceptionReport]
   profile_extensions : Bytes
 } derive(Debug, Eq)
 
 ///|
 pub fn ReceiverReportPacket::new(
-  sender_ssrc~ : UInt,
-  reports? : Array[ReceptionReport] = [],
-  profile_extensions? : Bytes = b"",
+  sender_ssrc~ : UInt32,
+  reports~ : Array[ReceptionReport] = [],
+  profile_extensions~ : Bytes = b"",
 ) -> ReceiverReportPacket raise RtcpError {
   if reports.length() > 31 {
     raise InvalidPacket("RTCP receiver report contains more than 31 reports")
@@ -184,14 +184,14 @@ pub fn SourceDescriptionItem::new(
 
 ///|
 pub(all) struct SourceDescriptionChunk {
-  source : UInt
+  source : UInt32
   items : Array[SourceDescriptionItem]
 } derive(Debug, Eq)
 
 ///|
 pub fn SourceDescriptionChunk::new(
-  source~ : UInt,
-  items? : Array[SourceDescriptionItem] = [],
+  source~ : UInt32,
+  items~ : Array[SourceDescriptionItem] = [],
 ) -> SourceDescriptionChunk {
   { source, items: items.copy(), }
 }
@@ -213,13 +213,13 @@ pub fn SourceDescriptionPacket::new(
 
 ///|
 pub(all) struct GoodbyePacket {
-  sources : Array[UInt]
+  sources : Array[UInt32]
   reason : Bytes?
 } derive(Debug, Eq)
 
 ///|
 pub fn GoodbyePacket::new(
-  sources~ : Array[UInt],
+  sources~ : Array[UInt32],
   reason? : Bytes,
 ) -> GoodbyePacket raise RtcpError {
   if sources.is_empty() || sources.length() > 31 {
@@ -236,17 +236,17 @@ pub fn GoodbyePacket::new(
 ///|
 pub(all) struct ApplicationDefinedPacket {
   subtype : Byte
-  ssrc : UInt
+  ssrc : UInt32
   name : Bytes
   data : Bytes
 } derive(Debug, Eq)
 
 ///|
 pub fn ApplicationDefinedPacket::new(
-  subtype? : Byte = 0,
-  ssrc~ : UInt,
+  subtype~ : Byte = 0,
+  ssrc~ : UInt32,
   name~ : Bytes,
-  data? : Bytes = b"",
+  data~ : Bytes = b"",
 ) -> ApplicationDefinedPacket raise RtcpError {
   if subtype > 31 {
     raise InvalidPacket("RTCP APP subtype exceeds five bits")
@@ -269,7 +269,7 @@ pub(all) struct NackPair {
 ///|
 pub fn NackPair::new(
   packet_id~ : UInt16,
-  lost_packets? : UInt16 = 0,
+  lost_packets~ : UInt16 = 0,
 ) -> NackPair {
   { packet_id, lost_packets, }
 }
@@ -287,15 +287,15 @@ pub fn NackPair::lost_sequence_numbers(self : NackPair) -> Array[UInt16] {
 
 ///|
 pub(all) struct TransportLayerNackPacket {
-  sender_ssrc : UInt
-  media_ssrc : UInt
+  sender_ssrc : UInt32
+  media_ssrc : UInt32
   nacks : Array[NackPair]
 } derive(Debug, Eq)
 
 ///|
 pub fn TransportLayerNackPacket::new(
-  sender_ssrc~ : UInt,
-  media_ssrc~ : UInt,
+  sender_ssrc~ : UInt32,
+  media_ssrc~ : UInt32,
   nacks~ : Array[NackPair],
 ) -> TransportLayerNackPacket {
   { sender_ssrc, media_ssrc, nacks: nacks.copy(), }
@@ -304,28 +304,28 @@ pub fn TransportLayerNackPacket::new(
 ///|
 pub(all) enum TransportWideStatus {
   PacketNotReceived
-  PacketReceivedSmallDelta(Int)
-  PacketReceivedLargeDelta(Int)
+  PacketReceivedSmallDelta(Int32)
+  PacketReceivedLargeDelta(Int32)
   PacketReceivedWithoutDelta
 } derive(Debug, Eq)
 
 ///|
 pub(all) struct TransportWideCcPacket {
-  sender_ssrc : UInt
-  media_ssrc : UInt
+  sender_ssrc : UInt32
+  media_ssrc : UInt32
   base_sequence_number : UInt16
-  reference_time : UInt
+  reference_time : UInt32
   feedback_packet_count : Byte
   statuses : Array[TransportWideStatus]
 } derive(Debug, Eq)
 
 ///|
 pub fn TransportWideCcPacket::new(
-  sender_ssrc~ : UInt,
-  media_ssrc~ : UInt,
+  sender_ssrc~ : UInt32,
+  media_ssrc~ : UInt32,
   base_sequence_number~ : UInt16,
-  reference_time~ : UInt,
-  feedback_packet_count? : Byte = 0,
+  reference_time~ : UInt32,
+  feedback_packet_count~ : Byte = 0,
   statuses~ : Array[TransportWideStatus],
 ) -> TransportWideCcPacket raise RtcpError {
   if reference_time > 0xffffffU {
@@ -359,35 +359,35 @@ pub fn TransportWideCcPacket::new(
 
 ///|
 pub(all) struct PictureLossIndicationPacket {
-  sender_ssrc : UInt
-  media_ssrc : UInt
+  sender_ssrc : UInt32
+  media_ssrc : UInt32
 } derive(Debug, Eq)
 
 ///|
 pub fn PictureLossIndicationPacket::new(
-  sender_ssrc~ : UInt,
-  media_ssrc~ : UInt,
+  sender_ssrc~ : UInt32,
+  media_ssrc~ : UInt32,
 ) -> PictureLossIndicationPacket {
   { sender_ssrc, media_ssrc, }
 }
 
 ///|
 pub(all) struct FullIntraRequestEntry {
-  ssrc : UInt
+  ssrc : UInt32
   sequence_number : Byte
 } derive(Debug, Eq)
 
 ///|
 pub(all) struct FullIntraRequestPacket {
-  sender_ssrc : UInt
-  media_ssrc : UInt
+  sender_ssrc : UInt32
+  media_ssrc : UInt32
   entries : Array[FullIntraRequestEntry]
 } derive(Debug, Eq)
 
 ///|
 pub fn FullIntraRequestPacket::new(
-  sender_ssrc~ : UInt,
-  media_ssrc? : UInt = 0U,
+  sender_ssrc~ : UInt32,
+  media_ssrc~ : UInt32 = 0U,
   entries~ : Array[FullIntraRequestEntry],
 ) -> FullIntraRequestPacket {
   { sender_ssrc, media_ssrc, entries: entries.copy(), }
@@ -395,16 +395,16 @@ pub fn FullIntraRequestPacket::new(
 
 ///|
 pub(all) struct ReceiverEstimatedMaximumBitratePacket {
-  sender_ssrc : UInt
+  sender_ssrc : UInt32
   bitrate : UInt64
-  ssrcs : Array[UInt]
+  ssrcs : Array[UInt32]
 } derive(Debug, Eq)
 
 ///|
 pub fn ReceiverEstimatedMaximumBitratePacket::new(
-  sender_ssrc~ : UInt,
+  sender_ssrc~ : UInt32,
   bitrate~ : UInt64,
-  ssrcs~ : Array[UInt],
+  ssrcs~ : Array[UInt32],
 ) -> ReceiverEstimatedMaximumBitratePacket raise RtcpError {
   if ssrcs.length() > 255 {
     raise InvalidPacket("RTCP REMB contains more than 255 SSRC values")
@@ -422,7 +422,7 @@ pub(all) struct ExtendedReportBlock {
 ///|
 pub fn ExtendedReportBlock::new(
   block_type~ : Byte,
-  type_specific? : Byte = 0,
+  type_specific~ : Byte = 0,
   payload~ : Bytes,
 ) -> ExtendedReportBlock raise RtcpError {
   if payload.length() % 4 != 0 {
@@ -433,14 +433,14 @@ pub fn ExtendedReportBlock::new(
 
 ///|
 pub(all) struct ExtendedReportPacket {
-  sender_ssrc : UInt
+  sender_ssrc : UInt32
   blocks : Array[ExtendedReportBlock]
 } derive(Debug, Eq)
 
 ///|
 pub fn ExtendedReportPacket::new(
-  sender_ssrc~ : UInt,
-  blocks? : Array[ExtendedReportBlock] = [],
+  sender_ssrc~ : UInt32,
+  blocks~ : Array[ExtendedReportBlock] = [],
 ) -> ExtendedReportPacket {
   { sender_ssrc, blocks: blocks.copy(), }
 }

@@ -39,7 +39,7 @@ struct Shared {
 pub struct Driver {
   core : @rtc.PeerConnection
   shared : Shared
-  receive_mtu : Int
+  receive_mtu : Int32
   pending_events : Array[@rtc.PeerEvent]
   pending_messages : Array[@rtc.RtcMessage]
 }
@@ -574,7 +574,7 @@ async fn send_datagram(
 async fn receive_loop(
   shared : Shared,
   bound : BoundSocket,
-  receive_mtu : Int,
+  receive_mtu : Int32,
 ) -> Unit raise DriverError {
   let buffer : FixedArray[Byte] = FixedArray::make(receive_mtu, b'\x00')
   for ;; {
@@ -1064,7 +1064,7 @@ async fn Driver::flush_core(
 }
 
 ///|
-fn duration_until(deadline : @rtc.Instant, now : @rtc.Instant) -> Int {
+fn duration_until(deadline : @rtc.Instant, now : @rtc.Instant) -> Int32 {
   let milliseconds = deadline.saturating_duration_since(now).as_milliseconds()
   if milliseconds > 2147483647L {
     2147483647
@@ -1125,7 +1125,7 @@ fn try_ready_input(
 ///|
 async fn wait_for_driver_signal(
   shared : Shared,
-  delay : Int?,
+  delay : Int32?,
 ) -> Bool raise DriverError {
   match delay {
     Some(0) => false
@@ -1191,7 +1191,7 @@ async fn get_control_until_timeout(
   shared : Shared,
   deadline : @rtc.Instant?,
   now : @rtc.Instant,
-  backpressure_delay : Int,
+  backpressure_delay : Int32,
 ) -> DriverInput? raise DriverError {
   match try_ready_input(shared, false) {
     Some(input) => return Some(input)
@@ -1218,7 +1218,7 @@ async fn get_control_until_timeout(
 }
 
 ///|
-fn backpressure_delay(shared : Shared, now : @rtc.Instant) -> Int {
+fn backpressure_delay(shared : Shared, now : @rtc.Instant) -> Int32 {
   let started = match shared.output_blocked_since {
     Some(value) => value
     None => {

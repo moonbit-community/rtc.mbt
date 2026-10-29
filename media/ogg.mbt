@@ -1,5 +1,5 @@
 ///|
-const OGG_PAGE_HEADER_SIZE : Int = 27
+const OGG_PAGE_HEADER_SIZE : Int32 = 27
 
 ///|
 const OGG_DEFAULT_PRE_SKIP : UInt16 = 3840
@@ -14,7 +14,7 @@ const OGG_EOS : Byte = 0x04
 const OGG_CONTINUED : Byte = 0x01
 
 ///|
-fn ogg_crc_page(page : Array[Byte]) -> UInt {
+fn ogg_crc_page(page : Array[Byte]) -> UInt32 {
   let mut crc = 0U
   for index = 0; index < page.length(); index = index + 1 {
     let byte : Byte = if index >= 22 && index < 26 { 0 } else { page[index] }
@@ -60,7 +60,7 @@ pub(all) struct OpusTags {
 ///|
 pub fn OpusTags::new(
   vendor~ : String,
-  comments? : Array[UserComment] = [],
+  comments~ : Array[UserComment] = [],
 ) -> OpusTags {
   { vendor, comments: comments.copy(), }
 }
@@ -80,7 +80,7 @@ pub(all) struct OggHeader {
   version : Byte
   channels : Byte
   pre_skip : UInt16
-  sample_rate : UInt
+  sample_rate : UInt32
   output_gain : UInt16
   channel_mapping_family : Byte
   stream_count : Byte
@@ -104,7 +104,7 @@ pub fn OggHeader::pre_skip(self : OggHeader) -> UInt16 {
 }
 
 ///|
-pub fn OggHeader::sample_rate(self : OggHeader) -> UInt {
+pub fn OggHeader::sample_rate(self : OggHeader) -> UInt32 {
   self.sample_rate
 }
 
@@ -137,9 +137,9 @@ pub fn OggHeader::channel_mapping(self : OggHeader) -> Bytes {
 pub(all) struct OggPageHeader {
   header_type : Byte
   granule_position : UInt64
-  serial : UInt
-  sequence : UInt
-  checksum : UInt
+  serial : UInt32
+  sequence : UInt32
+  checksum : UInt32
   segments : Bytes
 } derive(Debug, Eq)
 
@@ -154,17 +154,17 @@ pub fn OggPageHeader::granule_position(self : OggPageHeader) -> UInt64 {
 }
 
 ///|
-pub fn OggPageHeader::serial(self : OggPageHeader) -> UInt {
+pub fn OggPageHeader::serial(self : OggPageHeader) -> UInt32 {
   self.serial
 }
 
 ///|
-pub fn OggPageHeader::sequence(self : OggPageHeader) -> UInt {
+pub fn OggPageHeader::sequence(self : OggPageHeader) -> UInt32 {
   self.sequence
 }
 
 ///|
-pub fn OggPageHeader::checksum(self : OggPageHeader) -> UInt {
+pub fn OggPageHeader::checksum(self : OggPageHeader) -> UInt32 {
   self.checksum
 }
 
@@ -226,8 +226,8 @@ fn ogg_encode_page(
   payload : Bytes,
   header_type : Byte,
   granule_position : UInt64,
-  serial : UInt,
-  sequence : UInt,
+  serial : UInt32,
+  sequence : UInt32,
 ) -> Bytes raise MediaError {
   let segment_count = payload.length() / 255 + 1
   if segment_count > 255 {
@@ -263,9 +263,9 @@ fn ogg_encode_page(
 ///|
 fn ogg_parse_page_at(
   data : Bytes,
-  offset : Int,
+  offset : Int32,
   verify_checksum : Bool,
-) -> (OggPage, Int) raise MediaError {
+) -> (OggPage, Int32) raise MediaError {
   if offset < 0 || offset + OGG_PAGE_HEADER_SIZE > data.length() {
     raise InvalidMedia("truncated Ogg page header")
   }
@@ -309,7 +309,7 @@ fn ogg_parse_page_at(
 
 ///|
 fn ogg_opus_head(
-  sample_rate : UInt,
+  sample_rate : UInt32,
   channels : Byte,
   pre_skip : UInt16,
 ) -> Bytes {
@@ -350,24 +350,24 @@ fn ogg_opus_tags(tags : OpusTags) -> Bytes {
 
 ///|
 pub struct OggWriter {
-  sample_rate : UInt
+  sample_rate : UInt32
   channels : Byte
   pre_skip : UInt16
-  serial : UInt
+  serial : UInt32
   output : Array[Byte]
-  mut sequence : UInt
+  mut sequence : UInt32
   mut last_granule_position : UInt64
-  mut last_rtp_timestamp : UInt?
+  mut last_rtp_timestamp : UInt32?
   mut closed : Bool
 }
 
 ///|
 pub fn OggWriter::new(
-  sample_rate~ : UInt,
+  sample_rate~ : UInt32,
   channels~ : Byte,
-  pre_skip? : UInt16 = OGG_DEFAULT_PRE_SKIP,
-  serial? : UInt = 0x72746301U,
-  tags? : OpusTags = { vendor: "rtc.mbt", comments: [], },
+  pre_skip~ : UInt16 = OGG_DEFAULT_PRE_SKIP,
+  serial~ : UInt32 = 0x72746301U,
+  tags~ : OpusTags = { vendor: "rtc.mbt", comments: [], },
 ) -> OggWriter raise MediaError {
   if sample_rate == 0 || channels == 0 || channels > 2 {
     raise InvalidMedia("Ogg Opus mapping family zero supports mono or stereo")
@@ -584,18 +584,18 @@ pub struct OggReader {
   header : OggHeader
   tags : OpusTags
   verify_checksum : Bool
-  mut offset : Int
+  mut offset : Int32
   pending : Array[Byte]
   queued : Array[OggPacket]
-  serial : UInt
-  mut expected_sequence : UInt
+  serial : UInt32
+  mut expected_sequence : UInt32
   mut reached_eos : Bool
 }
 
 ///|
 pub fn OggReader::new(
   data : Bytes,
-  verify_checksum? : Bool = true,
+  verify_checksum~ : Bool = true,
 ) -> OggReader raise MediaError {
   let (id_page, after_id) = ogg_parse_page_at(data, 0, verify_checksum)
   if !id_page.header.is_beginning_of_stream() {
@@ -716,6 +716,6 @@ pub fn OggReader::next_packet(self : OggReader) -> OggPacket? raise MediaError {
 }
 
 ///|
-pub fn OggReader::bytes_read(self : OggReader) -> Int {
+pub fn OggReader::bytes_read(self : OggReader) -> Int32 {
   self.offset
 }

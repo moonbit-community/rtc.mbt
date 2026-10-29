@@ -185,7 +185,7 @@ pub struct Attribute {
 } derive(Debug, Eq)
 
 ///|
-fn padding_length(value_length : Int) -> Int {
+fn padding_length(value_length : Int32) -> Int32 {
   (4 - value_length % 4) % 4
 }
 
@@ -311,7 +311,7 @@ pub fn Attribute::nonce(value : String) -> Attribute raise StunError {
 fn text_attribute(
   attribute_type : AttributeType,
   value : String,
-  maximum_length : Int,
+  maximum_length : Int32,
 ) -> Attribute raise StunError {
   let value = @utf8.encode(value)
   if value.length() > maximum_length {
@@ -321,7 +321,7 @@ fn text_attribute(
 }
 
 ///|
-pub fn Attribute::priority(value : UInt) -> Attribute raise StunError {
+pub fn Attribute::priority(value : UInt32) -> Attribute raise StunError {
   Attribute::new(
     attribute_type=Priority,
     value=Bytes::from_array([
@@ -381,7 +381,7 @@ pub fn Attribute::as_text(self : Attribute) -> String raise StunError {
 }
 
 ///|
-pub fn Attribute::as_u32(self : Attribute) -> UInt raise StunError {
+pub fn Attribute::as_u32(self : Attribute) -> UInt32 raise StunError {
   if self.value.length() != 4 {
     raise InvalidMessage("attribute does not contain a 32-bit value")
   }
@@ -437,7 +437,7 @@ pub fn Message::new(
   class~ : MessageClass,
   stun_method~ : Method,
   transaction_id~ : TransactionId,
-  attributes? : Array[Attribute] = [],
+  attributes~ : Array[Attribute] = [],
 ) -> Message {
   { class, stun_method, transaction_id, attributes: attributes.copy(), }
 }

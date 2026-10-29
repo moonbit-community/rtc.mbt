@@ -205,7 +205,7 @@ fn feed_turn_stream(
   allocation : @turn.Allocation,
   now : @transport.Instant,
   frame : Bytes,
-  chunk_size : Int,
+  chunk_size : Int32,
 ) -> Unit raise @turn.TurnError {
   let mut offset = 0
   while offset < frame.length() {

@@ -31,7 +31,7 @@ pub fn MediaDirection::parse(value : String) -> MediaDirection raise SdpError {
 pub(all) struct RtpCodecParameters {
   payload_type : Byte
   encoding_name : String
-  clock_rate : UInt
+  clock_rate : UInt32
   channels : UInt16
   fmtp : String
   rtcp_feedback : Array[String]
@@ -41,10 +41,10 @@ pub(all) struct RtpCodecParameters {
 pub fn RtpCodecParameters::new(
   payload_type~ : Byte,
   encoding_name~ : String,
-  clock_rate~ : UInt,
-  channels? : UInt16 = 1,
-  fmtp? : String = "",
-  rtcp_feedback? : Array[String] = [],
+  clock_rate~ : UInt32,
+  channels~ : UInt16 = 1,
+  fmtp~ : String = "",
+  rtcp_feedback~ : Array[String] = [],
 ) -> RtpCodecParameters raise SdpError {
   if payload_type > 127 ||
     encoding_name.is_empty() ||
@@ -82,7 +82,7 @@ pub fn RtpCodecParameters::encoding_name(self : RtpCodecParameters) -> String {
 }
 
 ///|
-pub fn RtpCodecParameters::clock_rate(self : RtpCodecParameters) -> UInt {
+pub fn RtpCodecParameters::clock_rate(self : RtpCodecParameters) -> UInt32 {
   self.clock_rate
 }
 
@@ -146,8 +146,8 @@ pub(all) enum RidDirection {
 
 ///|
 pub(all) struct RtpStreamParameters {
-  ssrc : UInt?
-  rtx_ssrc : UInt?
+  ssrc : UInt32?
+  rtx_ssrc : UInt32?
   rid : String?
   paused : Bool
   rid_direction : RidDirection
@@ -155,11 +155,11 @@ pub(all) struct RtpStreamParameters {
 
 ///|
 pub fn RtpStreamParameters::new(
-  ssrc? : UInt,
-  rtx_ssrc? : UInt,
+  ssrc? : UInt32,
+  rtx_ssrc? : UInt32,
   rid? : String,
-  paused? : Bool = false,
-  rid_direction? : RidDirection = RidSend,
+  paused~ : Bool = false,
+  rid_direction~ : RidDirection = RidSend,
 ) -> RtpStreamParameters raise SdpError {
   if ssrc is None && rid is None {
     raise InvalidSyntax("RTP stream requires an SSRC or RID")
@@ -195,8 +195,8 @@ pub(all) struct RtpMediaParameters {
   header_extensions : Array[RtpHeaderExtensionParameters]
   stream_id : String?
   track_id : String?
-  ssrc : UInt?
-  rtx_ssrc : UInt?
+  ssrc : UInt32?
+  rtx_ssrc : UInt32?
   streams : Array[RtpStreamParameters]
   cname : String?
 } derive(Debug, Eq)
@@ -205,14 +205,14 @@ pub(all) struct RtpMediaParameters {
 pub fn RtpMediaParameters::new(
   kind~ : String,
   mid~ : String,
-  direction? : MediaDirection = SendRecv,
+  direction~ : MediaDirection = SendRecv,
   codecs~ : Array[RtpCodecParameters],
-  header_extensions? : Array[RtpHeaderExtensionParameters] = [],
+  header_extensions~ : Array[RtpHeaderExtensionParameters] = [],
   stream_id? : String,
   track_id? : String,
-  ssrc? : UInt,
-  rtx_ssrc? : UInt,
-  streams? : Array[RtpStreamParameters] = [],
+  ssrc? : UInt32,
+  rtx_ssrc? : UInt32,
+  streams~ : Array[RtpStreamParameters] = [],
   cname? : String,
 ) -> RtpMediaParameters raise SdpError {
   if kind != "audio" && kind != "video" {
@@ -266,8 +266,8 @@ pub fn RtpMediaParameters::new(
       None => ()
     }
   }
-  let stream_ssrcs : Array[UInt] = []
-  let stream_rtx_ssrcs : Array[UInt] = []
+  let stream_ssrcs : Array[UInt32] = []
+  let stream_rtx_ssrcs : Array[UInt32] = []
   let stream_rids : Array[String] = []
   for stream in normalized_streams {
     match stream.ssrc {
@@ -380,12 +380,12 @@ pub fn RtpMediaParameters::track_id(self : RtpMediaParameters) -> String? {
 }
 
 ///|
-pub fn RtpMediaParameters::ssrc(self : RtpMediaParameters) -> UInt? {
+pub fn RtpMediaParameters::ssrc(self : RtpMediaParameters) -> UInt32? {
   self.ssrc
 }
 
 ///|
-pub fn RtpMediaParameters::rtx_ssrc(self : RtpMediaParameters) -> UInt? {
+pub fn RtpMediaParameters::rtx_ssrc(self : RtpMediaParameters) -> UInt32? {
   self.rtx_ssrc
 }
 
@@ -523,9 +523,9 @@ fn parse_rtp_codec(
 ///|
 fn parse_stream_groups(
   media : MediaDescription,
-) -> (Array[UInt], Map[UInt, UInt]) raise SdpError {
-  let simulcast_ssrcs : Array[UInt] = []
-  let fid : Map[UInt, UInt] = Map([])
+) -> (Array[UInt32], Map[UInt32, UInt32]) raise SdpError {
+  let simulcast_ssrcs : Array[UInt32] = []
+  let fid : Map[UInt32, UInt32] = Map([])
   for attribute in media.attributes("ssrc-group") {
     guard attribute.value() is Some(value) else {
       raise InvalidSyntax("a=ssrc-group requires a value")
@@ -633,9 +633,9 @@ fn parse_simulcast_rids(
 ///|
 fn parse_ssrc_attribute(
   media : MediaDescription,
-) -> (UInt?, UInt?, Array[RtpStreamParameters], String?, String?, String?) raise SdpError {
+) -> (UInt32?, UInt32?, Array[RtpStreamParameters], String?, String?, String?) raise SdpError {
   let (simulcast_ssrcs, fid) = parse_stream_groups(media)
-  let all_ssrcs : Array[UInt] = []
+  let all_ssrcs : Array[UInt32] = []
   let mut cname : String? = None
   let mut stream_id : String? = None
   let mut track_id : String? = None
@@ -700,7 +700,7 @@ fn parse_ssrc_attribute(
   let primary_ssrcs = if !simulcast_ssrcs.is_empty() {
     simulcast_ssrcs
   } else {
-    let values : Array[UInt] = []
+    let values : Array[UInt32] = []
     for primary in fid.keys() {
       if !values.contains(primary) {
         values.push(primary)

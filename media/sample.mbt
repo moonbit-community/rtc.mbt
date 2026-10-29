@@ -3,7 +3,7 @@ pub(all) struct Sample {
   data : Bytes
   timestamp : @transport.WallTime
   duration : @transport.Duration
-  packet_timestamp : UInt
+  packet_timestamp : UInt32
   prev_dropped_packets : UInt16
   prev_padding_packets : UInt16
 } derive(Debug, Eq)
@@ -24,7 +24,7 @@ pub fn Sample::duration(self : Sample) -> @transport.Duration {
 }
 
 ///|
-pub fn Sample::packet_timestamp(self : Sample) -> UInt {
+pub fn Sample::packet_timestamp(self : Sample) -> UInt32 {
   self.packet_timestamp
 }
 
@@ -39,21 +39,21 @@ pub fn Sample::prev_padding_packets(self : Sample) -> UInt16 {
 }
 
 ///|
-fn sample_forward_distance(from : UInt16, to : UInt16) -> Int {
+fn sample_forward_distance(from : UInt16, to : UInt16) -> Int32 {
   (to - from).to_int()
 }
 
 ///|
 pub struct SampleBuilder {
-  max_late : Int
+  max_late : Int32
   codec : @rtp.PayloadCodec
-  sample_rate : UInt
-  mut max_late_timestamp : UInt
+  sample_rate : UInt32
+  mut max_late_timestamp : UInt32
   packets : Array[@rtp.Packet]
   ready : Array[Sample]
   mut next_sequence : UInt16?
   mut consumed_any : Bool
-  mut last_sample_timestamp : UInt?
+  mut last_sample_timestamp : UInt32?
   mut dropped_packets : UInt16
   mut padding_packets : UInt16
   mut generated_at : @transport.WallTime
@@ -63,8 +63,8 @@ pub struct SampleBuilder {
 pub fn SampleBuilder::new(
   max_late~ : UInt16,
   codec~ : @rtp.PayloadCodec,
-  sample_rate~ : UInt,
-  generated_at? : @transport.WallTime = @transport.WallTime::from_unix_nanoseconds(
+  sample_rate~ : UInt32,
+  generated_at~ : @transport.WallTime = @transport.WallTime::from_unix_nanoseconds(
     0L,
   ),
 ) -> SampleBuilder raise MediaError {
@@ -111,7 +111,10 @@ pub fn SampleBuilder::set_generated_at(
 }
 
 ///|
-fn SampleBuilder::packet_index(self : SampleBuilder, sequence : UInt16) -> Int? {
+fn SampleBuilder::packet_index(
+  self : SampleBuilder,
+  sequence : UInt16,
+) -> Int32? {
   for index = 0; index < self.packets.length(); index = index + 1 {
     if self.packets[index].sequence_number() == sequence {
       return Some(index)
@@ -143,7 +146,7 @@ fn SampleBuilder::remove_packet(
 }
 
 ///|
-fn SampleBuilder::buffer_span(self : SampleBuilder) -> Int {
+fn SampleBuilder::buffer_span(self : SampleBuilder) -> Int32 {
   match self.next_sequence {
     None => 0
     Some(head) => {
@@ -160,7 +163,7 @@ fn SampleBuilder::buffer_span(self : SampleBuilder) -> Int {
 }
 
 ///|
-fn SampleBuilder::timestamp_span(self : SampleBuilder) -> UInt {
+fn SampleBuilder::timestamp_span(self : SampleBuilder) -> UInt32 {
   match self.next_sequence {
     None => 0
     Some(head) =>
@@ -237,7 +240,7 @@ pub fn SampleBuilder::push_at(
 ///|
 fn SampleBuilder::duration_from_ticks(
   self : SampleBuilder,
-  ticks : UInt,
+  ticks : UInt32,
 ) -> @transport.Duration raise MediaError {
   let milliseconds = ticks.to_int64() * 1000L / self.sample_rate.to_int64()
   @transport.Duration::milliseconds(milliseconds) catch {
@@ -249,8 +252,8 @@ fn SampleBuilder::duration_from_ticks(
 fn SampleBuilder::queue_sample(
   self : SampleBuilder,
   sequences : Array[UInt16],
-  timestamp : UInt,
-  next_timestamp : UInt?,
+  timestamp : UInt32,
+  next_timestamp : UInt32?,
 ) -> Unit raise MediaError {
   let payloads : Array[Bytes] = []
   for sequence in sequences {
@@ -343,7 +346,7 @@ fn SampleBuilder::prepare(
     let sequences : Array[UInt16] = []
     let mut sequence = head
     let mut complete = false
-    let mut next_timestamp : UInt? = None
+    let mut next_timestamp : UInt32? = None
     while true {
       match self.packet(sequence) {
         None => break
@@ -400,7 +403,7 @@ pub fn SampleBuilder::pop(self : SampleBuilder) -> Sample? raise MediaError {
 ///|
 pub fn SampleBuilder::pop_with_timestamp(
   self : SampleBuilder,
-) -> (Sample, UInt)? raise MediaError {
+) -> (Sample, UInt32)? raise MediaError {
   match self.pop() {
     Some(sample) => Some((sample, sample.packet_timestamp))
     None => None

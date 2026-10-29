@@ -1,5 +1,5 @@
 ///|
-const DNS_HEADER_LENGTH : Int = 12
+const DNS_HEADER_LENGTH : Int32 = 12
 
 ///|
 const DNS_TYPE_A : UInt16 = 1
@@ -61,7 +61,7 @@ fn encode_name(name : String) -> Bytes raise MdnsError {
 }
 
 ///|
-fn dns_writer(capacity : Int) -> @codec.Writer raise MdnsError {
+fn dns_writer(capacity : Int32) -> @codec.Writer raise MdnsError {
   @codec.Writer::new(capacity~) catch {
     InvalidLength(length) =>
       raise InvalidPacket("invalid DNS writer capacity \{length}")
@@ -92,7 +92,7 @@ fn encode_query(name : String) -> Bytes raise MdnsError {
 }
 
 ///|
-fn read_u16_at(data : Bytes, offset : Int) -> UInt16 raise MdnsError {
+fn read_u16_at(data : Bytes, offset : Int32) -> UInt16 raise MdnsError {
   if offset < 0 || offset + 2 > data.length() {
     raise InvalidPacket("truncated DNS 16-bit field")
   }
@@ -100,7 +100,7 @@ fn read_u16_at(data : Bytes, offset : Int) -> UInt16 raise MdnsError {
 }
 
 ///|
-fn read_u32_at(data : Bytes, offset : Int) -> UInt raise MdnsError {
+fn read_u32_at(data : Bytes, offset : Int32) -> UInt32 raise MdnsError {
   if offset < 0 || offset + 4 > data.length() {
     raise InvalidPacket("truncated DNS 32-bit field")
   }
@@ -111,7 +111,7 @@ fn read_u32_at(data : Bytes, offset : Int) -> UInt raise MdnsError {
 }
 
 ///|
-fn decode_name(data : Bytes, start : Int) -> (String, Int) raise MdnsError {
+fn decode_name(data : Bytes, start : Int32) -> (String, Int32) raise MdnsError {
   if start < 0 || start >= data.length() {
     raise InvalidPacket("DNS name starts outside the packet")
   }
@@ -182,9 +182,9 @@ priv struct DnsQuestion {
 ///|
 fn skip_resource_records(
   data : Bytes,
-  start : Int,
-  count : Int,
-) -> Int raise MdnsError {
+  start : Int32,
+  count : Int32,
+) -> Int32 raise MdnsError {
   let mut offset = start
   for _record = 0; _record < count; _record = _record + 1 {
     let (_, next) = decode_name(data, offset)
@@ -244,7 +244,7 @@ fn parse_query(data : Bytes) -> Array[DnsQuestion] raise MdnsError {
 fn encode_answer_record(
   name : String,
   address : @transport.IpAddress,
-  ttl_seconds : UInt,
+  ttl_seconds : UInt32,
 ) -> Bytes raise MdnsError {
   let encoded_name = encode_name(name)
   let address_bytes = address.to_bytes()
@@ -266,7 +266,7 @@ fn encode_answer_record(
 fn encode_registered_response(
   query : Bytes,
   registrations : Map[String, Array[@transport.IpAddress]],
-  ttl_seconds : UInt,
+  ttl_seconds : UInt32,
 ) -> Bytes? raise MdnsError {
   let questions = parse_query(query)
   let records : Array[(String, @transport.IpAddress)] = []
@@ -317,7 +317,7 @@ fn encode_registered_response(
 priv struct DnsAnswer {
   name : String
   address : @transport.IpAddress
-  ttl_seconds : UInt
+  ttl_seconds : UInt32
 }
 
 ///|

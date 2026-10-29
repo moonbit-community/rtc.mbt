@@ -27,7 +27,7 @@ pub fn Header::length_words_minus_one(self : Header) -> UInt16 {
 }
 
 ///|
-fn rtcp_read_u16(data : Bytes, offset : Int) -> UInt16 raise RtcpError {
+fn rtcp_read_u16(data : Bytes, offset : Int32) -> UInt16 raise RtcpError {
   if offset < 0 || offset + 2 > data.length() {
     raise InvalidPacket("truncated RTCP 16-bit field")
   }
@@ -35,7 +35,7 @@ fn rtcp_read_u16(data : Bytes, offset : Int) -> UInt16 raise RtcpError {
 }
 
 ///|
-fn rtcp_read_u24(data : Bytes, offset : Int) -> UInt raise RtcpError {
+fn rtcp_read_u24(data : Bytes, offset : Int32) -> UInt32 raise RtcpError {
   if offset < 0 || offset + 3 > data.length() {
     raise InvalidPacket("truncated RTCP 24-bit field")
   }
@@ -45,7 +45,7 @@ fn rtcp_read_u24(data : Bytes, offset : Int) -> UInt raise RtcpError {
 }
 
 ///|
-fn rtcp_read_u32(data : Bytes, offset : Int) -> UInt raise RtcpError {
+fn rtcp_read_u32(data : Bytes, offset : Int32) -> UInt32 raise RtcpError {
   if offset < 0 || offset + 4 > data.length() {
     raise InvalidPacket("truncated RTCP 32-bit field")
   }
@@ -56,7 +56,7 @@ fn rtcp_read_u32(data : Bytes, offset : Int) -> UInt raise RtcpError {
 }
 
 ///|
-fn rtcp_read_u64(data : Bytes, offset : Int) -> UInt64 raise RtcpError {
+fn rtcp_read_u64(data : Bytes, offset : Int32) -> UInt64 raise RtcpError {
   if offset < 0 || offset + 8 > data.length() {
     raise InvalidPacket("truncated RTCP 64-bit field")
   }
@@ -77,14 +77,14 @@ fn rtcp_write_u16(output : Array[Byte], value : UInt16) -> Unit {
 }
 
 ///|
-fn rtcp_write_u24(output : Array[Byte], value : UInt) -> Unit {
+fn rtcp_write_u24(output : Array[Byte], value : UInt32) -> Unit {
   output.push((value >> 16).to_byte())
   output.push((value >> 8).to_byte())
   output.push(value.to_byte())
 }
 
 ///|
-fn rtcp_write_u32(output : Array[Byte], value : UInt) -> Unit {
+fn rtcp_write_u32(output : Array[Byte], value : UInt32) -> Unit {
   output.push((value >> 24).to_byte())
   output.push((value >> 16).to_byte())
   output.push((value >> 8).to_byte())
@@ -318,7 +318,7 @@ fn encode_reception_report(
 ///|
 fn decode_reception_report(
   data : Bytes,
-  offset : Int,
+  offset : Int32,
 ) -> ReceptionReport raise RtcpError {
   if offset + 24 > data.length() {
     raise InvalidPacket("truncated RTCP reception report")
@@ -456,7 +456,7 @@ pub fn Packet::as_receiver_report(
 }
 
 ///|
-fn unpadded_end(data : Bytes, header : Header) -> Int {
+fn unpadded_end(data : Bytes, header : Header) -> Int32 {
   if header.padding {
     data.length() - data[data.length() - 1].to_int()
   } else {
@@ -639,7 +639,7 @@ pub fn Packet::as_goodbye(self : Packet) -> GoodbyePacket raise RtcpError {
   if source_count == 0 || required > end {
     raise InvalidPacket("truncated RTCP BYE")
   }
-  let sources : Array[UInt] = []
+  let sources : Array[UInt32] = []
   for index = 0; index < source_count; index = index + 1 {
     sources.push(rtcp_read_u32(data, 4 + index * 4))
   }
@@ -999,7 +999,7 @@ pub fn Packet::as_full_intra_request(
 }
 
 ///|
-fn encode_remb_bitrate(bitrate : UInt64) -> (Byte, UInt) raise RtcpError {
+fn encode_remb_bitrate(bitrate : UInt64) -> (Byte, UInt32) raise RtcpError {
   let mut exponent : Byte = 0
   let mut mantissa = bitrate
   while mantissa > 0x3ffffUL && exponent < 63 {
@@ -1064,7 +1064,7 @@ pub fn Packet::as_receiver_estimated_maximum_bitrate(
   let mantissa = ((data[17].to_uint() & 0x03) << 16) |
     (data[18].to_uint() << 8) |
     data[19].to_uint()
-  let ssrcs : Array[UInt] = []
+  let ssrcs : Array[UInt32] = []
   for index = 0; index < count; index = index + 1 {
     ssrcs.push(rtcp_read_u32(data, 20 + index * 4))
   }

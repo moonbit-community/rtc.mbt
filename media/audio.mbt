@@ -7,15 +7,15 @@ pub(all) enum AudioLayout {
 ///|
 pub struct AudioBuffer {
   samples : Array[Int16]
-  channels : Int
+  channels : Int32
   layout : AudioLayout
 } derive(Debug, Eq)
 
 ///|
 pub fn AudioBuffer::new(
   samples~ : Array[Int16],
-  channels~ : Int,
-  layout? : AudioLayout = Interleaved,
+  channels~ : Int32,
+  layout~ : AudioLayout = Interleaved,
 ) -> AudioBuffer raise MediaError {
   if channels <= 0 {
     raise InvalidMedia("audio channel count must be positive")
@@ -29,17 +29,17 @@ pub fn AudioBuffer::new(
 }
 
 ///|
-pub fn AudioBuffer::channels(self : AudioBuffer) -> Int {
+pub fn AudioBuffer::channels(self : AudioBuffer) -> Int32 {
   self.channels
 }
 
 ///|
-pub fn AudioBuffer::frames(self : AudioBuffer) -> Int {
+pub fn AudioBuffer::frames(self : AudioBuffer) -> Int32 {
   self.samples.length() / self.channels
 }
 
 ///|
-pub fn AudioBuffer::sample_count(self : AudioBuffer) -> Int {
+pub fn AudioBuffer::sample_count(self : AudioBuffer) -> Int32 {
   self.samples.length()
 }
 
@@ -56,9 +56,9 @@ pub fn AudioBuffer::samples(self : AudioBuffer) -> Array[Int16] {
 ///|
 fn AudioBuffer::sample_index(
   self : AudioBuffer,
-  channel : Int,
-  frame : Int,
-) -> Int raise MediaError {
+  channel : Int32,
+  frame : Int32,
+) -> Int32 raise MediaError {
   if channel < 0 || channel >= self.channels {
     raise InvalidMedia("audio channel index is out of range")
   }
@@ -74,8 +74,8 @@ fn AudioBuffer::sample_index(
 ///|
 fn AudioBuffer::sample_unchecked(
   self : AudioBuffer,
-  channel : Int,
-  frame : Int,
+  channel : Int32,
+  frame : Int32,
 ) -> Int16 {
   let index = match self.layout {
     Interleaved => frame * self.channels + channel
@@ -87,8 +87,8 @@ fn AudioBuffer::sample_unchecked(
 ///|
 pub fn AudioBuffer::sample(
   self : AudioBuffer,
-  channel : Int,
-  frame : Int,
+  channel : Int32,
+  frame : Int32,
 ) -> Int16 raise MediaError {
   ignore(self.sample_index(channel, frame))
   self.sample_unchecked(channel, frame)
@@ -123,8 +123,8 @@ pub fn AudioBuffer::with_layout(
 ///|
 pub fn AudioBuffer::slice_frames(
   self : AudioBuffer,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> AudioBuffer raise MediaError {
   if start < 0 || end < start || end > self.frames() {
     raise InvalidMedia("audio frame range is out of bounds")
@@ -150,9 +150,9 @@ pub fn AudioBuffer::slice_frames(
 ///|
 pub fn AudioBuffer::from_pcm_s16(
   data : Bytes,
-  channels~ : Int,
-  little_endian? : Bool = true,
-  layout? : AudioLayout = Interleaved,
+  channels~ : Int32,
+  little_endian~ : Bool = true,
+  layout~ : AudioLayout = Interleaved,
 ) -> AudioBuffer raise MediaError {
   if data.length() % 2 != 0 {
     raise InvalidMedia("signed 16-bit PCM contains a partial sample")
@@ -172,7 +172,7 @@ pub fn AudioBuffer::from_pcm_s16(
 ///|
 pub fn AudioBuffer::to_pcm_s16(
   self : AudioBuffer,
-  little_endian? : Bool = true,
+  little_endian~ : Bool = true,
 ) -> Bytes {
   let output : Array[Byte] = []
   for sample in self.samples {

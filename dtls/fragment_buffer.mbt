@@ -1,11 +1,11 @@
 ///|
 priv struct FragmentAssembly {
   handshake_type : HandshakeType
-  total_length : Int
+  total_length : Int32
   message_sequence : UInt16
   bytes : Array[Byte]
   present : Array[Bool]
-  mut present_count : Int
+  mut present_count : Int32
 }
 
 ///|
@@ -82,7 +82,7 @@ struct FragmentBuffer {
 }
 
 ///|
-fn FragmentBuffer::new(expected_sequence? : UInt16 = 0) -> FragmentBuffer {
+fn FragmentBuffer::new(expected_sequence~ : UInt16 = 0) -> FragmentBuffer {
   { assemblies: Map([]), completed: Map([]), expected_sequence, }
 }
 

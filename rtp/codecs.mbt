@@ -22,14 +22,14 @@ fn codec_bytes(parts : Array[Bytes]) -> Bytes {
 }
 
 ///|
-fn codec_chunk(payload : Bytes, size : Int) -> Array[Bytes] {
+fn codec_chunk(payload : Bytes, size : Int32) -> Array[Bytes] {
   let chunks : Array[Bytes] = []
   if size <= 0 {
     return chunks
   }
   let mut offset = 0
   while offset < payload.length() {
-    let length = Int::min(size, payload.length() - offset)
+    let length = Int32::min(size, payload.length() - offset)
     chunks.push(payload[offset:offset + length].to_owned())
     offset += length
   }
@@ -38,7 +38,7 @@ fn codec_chunk(payload : Bytes, size : Int) -> Array[Bytes] {
 
 ///|
 fn annexb_units(payload : Bytes) -> Array[Bytes] {
-  let starts : Array[(Int, Int)] = []
+  let starts : Array[(Int32, Int32)] = []
   let mut offset = 0
   while offset + 2 < payload.length() {
     if offset + 3 < payload.length() &&
@@ -79,7 +79,7 @@ fn annexb_units(payload : Bytes) -> Array[Bytes] {
 ///|
 fn h264_emit(
   nalu : Bytes,
-  mtu : Int,
+  mtu : Int32,
   output : Array[Bytes],
 ) -> Unit raise RtpError {
   if nalu.is_empty() {
@@ -100,7 +100,7 @@ fn h264_emit(
   let indicator = (nalu[0] & 0xe0) | 28
   let mut offset = 1
   while offset < nalu.length() {
-    let length = Int::min(fragment_size, nalu.length() - offset)
+    let length = Int32::min(fragment_size, nalu.length() - offset)
     let bytes : Array[Byte] = [indicator]
     let mut header = nalu_type
     if offset == 1 {
@@ -121,7 +121,7 @@ fn h264_emit(
 ///|
 fn h264_packetize(
   payload : Bytes,
-  mtu : Int,
+  mtu : Int32,
   previous_sps : Bytes?,
   previous_pps : Bytes?,
 ) -> (Array[Bytes], Bytes?, Bytes?) raise RtpError {
@@ -170,7 +170,7 @@ fn h264_packetize(
 ///|
 fn vp8_packetize(
   payload : Bytes,
-  mtu : Int,
+  mtu : Int32,
   picture_id : UInt16,
   include_picture_id : Bool,
 ) -> Array[Bytes] raise RtpError {
@@ -190,7 +190,7 @@ fn vp8_packetize(
   let output : Array[Bytes] = []
   let mut offset = 0
   while offset < payload.length() {
-    let length = Int::min(mtu - header_size, payload.length() - offset)
+    let length = Int32::min(mtu - header_size, payload.length() - offset)
     let bytes : Array[Byte] = []
     let mut descriptor : Byte = if offset == 0 { 0x10 } else { 0 }
     if include_picture_id {
@@ -216,7 +216,7 @@ fn vp8_packetize(
 }
 
 ///|
-fn vp8_payload_offset(payload : Bytes) -> Int raise RtpError {
+fn vp8_payload_offset(payload : Bytes) -> Int32 raise RtpError {
   if payload.length() < 2 {
     raise InvalidPacket("truncated VP8 payload descriptor")
   }
@@ -263,7 +263,7 @@ fn vp8_payload_offset(payload : Bytes) -> Int raise RtpError {
 ///|
 fn vp9_packetize(
   payload : Bytes,
-  mtu : Int,
+  mtu : Int32,
   picture_id : UInt16,
 ) -> Array[Bytes] raise RtpError {
   if payload.is_empty() {
@@ -275,7 +275,7 @@ fn vp9_packetize(
   let output : Array[Bytes] = []
   let mut offset = 0
   while offset < payload.length() {
-    let length = Int::min(mtu - 3, payload.length() - offset)
+    let length = Int32::min(mtu - 3, payload.length() - offset)
     let mut descriptor : Byte = 0x90
     if offset == 0 {
       descriptor = descriptor | 0x08
@@ -298,7 +298,7 @@ fn vp9_packetize(
 }
 
 ///|
-fn vp9_payload_offset(payload : Bytes) -> Int raise RtpError {
+fn vp9_payload_offset(payload : Bytes) -> Int32 raise RtpError {
   if payload.length() < 2 {
     raise InvalidPacket("truncated VP9 payload descriptor")
   }
@@ -398,7 +398,7 @@ fn vp9_payload_offset(payload : Bytes) -> Int raise RtpError {
 ///|
 fn h265_emit(
   nalu : Bytes,
-  mtu : Int,
+  mtu : Int32,
   output : Array[Bytes],
 ) -> Unit raise RtpError {
   if nalu.length() < 2 {
@@ -420,7 +420,7 @@ fn h265_emit(
   let indicator1 = nalu[1]
   let mut offset = 2
   while offset < nalu.length() {
-    let length = Int::min(fragment_size, nalu.length() - offset)
+    let length = Int32::min(fragment_size, nalu.length() - offset)
     let mut fu_header = nalu_type
     if offset == 2 {
       fu_header = fu_header | 0x80
@@ -438,12 +438,12 @@ fn h265_emit(
 }
 
 ///|
-fn h265_packetize(payload : Bytes, mtu : Int) -> Array[Bytes] raise RtpError {
+fn h265_packetize(payload : Bytes, mtu : Int32) -> Array[Bytes] raise RtpError {
   let units = annexb_units(payload)
   let output : Array[Bytes] = []
   let aggregation : Array[Bytes] = []
   let mut aggregation_size = 2
-  fn flush(aggregation : Array[Bytes], output : Array[Bytes]) -> Int {
+  fn flush(aggregation : Array[Bytes], output : Array[Bytes]) -> Int32 {
     if aggregation.length() == 1 {
       output.push(aggregation[0])
     } else if aggregation.length() > 1 {
@@ -482,7 +482,7 @@ fn h265_packetize(payload : Bytes, mtu : Int) -> Array[Bytes] raise RtpError {
 }
 
 ///|
-fn leb128_write(output : Array[Byte], value : Int) -> Unit {
+fn leb128_write(output : Array[Byte], value : Int32) -> Unit {
   let mut remaining = value
   while true {
     let mut byte = (remaining & 0x7f).to_byte()
@@ -498,7 +498,7 @@ fn leb128_write(output : Array[Byte], value : Int) -> Unit {
 }
 
 ///|
-fn leb128_read(data : Bytes, start : Int) -> (Int, Int) raise RtpError {
+fn leb128_read(data : Bytes, start : Int32) -> (Int32, Int32) raise RtpError {
   let mut value = 0
   let mut shift = 0
   let mut offset = start
@@ -552,7 +552,7 @@ fn av1_obus(payload : Bytes) -> Array[Bytes] raise RtpError {
 }
 
 ///|
-fn av1_packetize(payload : Bytes, mtu : Int) -> Array[Bytes] raise RtpError {
+fn av1_packetize(payload : Bytes, mtu : Int32) -> Array[Bytes] raise RtpError {
   if mtu <= 1 {
     raise PayloadTooLarge(payload.length())
   }
@@ -692,7 +692,7 @@ fn av1_depacketize(payloads : Array[Bytes]) -> Bytes raise RtpError {
 pub fn packetize_payload(
   codec : PayloadCodec,
   payload : Bytes,
-  mtu : Int,
+  mtu : Int32,
 ) -> Array[Bytes] raise RtpError {
   if mtu <= 0 {
     raise InvalidPacket("RTP payload MTU must be positive")
@@ -976,14 +976,14 @@ pub fn depacketize_payload(
 
 ///|
 pub struct Packetizer {
-  mtu : Int
+  mtu : Int32
   payload_type : Byte
-  ssrc : UInt
-  clock_rate : UInt
+  ssrc : UInt32
+  clock_rate : UInt32
   codec : PayloadCodec
   include_vp8_picture_id : Bool
   mut sequence_number : UInt16
-  mut timestamp : UInt
+  mut timestamp : UInt32
   mut picture_id : UInt16
   mut h264_sps : Bytes?
   mut h264_pps : Bytes?
@@ -991,15 +991,15 @@ pub struct Packetizer {
 
 ///|
 pub fn Packetizer::new(
-  mtu~ : Int,
+  mtu~ : Int32,
   payload_type~ : Byte,
-  ssrc~ : UInt,
-  clock_rate~ : UInt,
+  ssrc~ : UInt32,
+  clock_rate~ : UInt32,
   codec~ : PayloadCodec,
-  sequence_number? : UInt16 = 0,
-  timestamp? : UInt = 0,
-  picture_id? : UInt16 = 0,
-  include_vp8_picture_id? : Bool = false,
+  sequence_number~ : UInt16 = 0,
+  timestamp~ : UInt32 = 0,
+  picture_id~ : UInt16 = 0,
+  include_vp8_picture_id~ : Bool = false,
 ) -> Packetizer raise RtpError {
   if mtu <= RTP_FIXED_HEADER_LENGTH {
     raise InvalidPacket("RTP packetizer MTU is too small")
@@ -1031,19 +1031,19 @@ pub fn Packetizer::sequence_number(self : Packetizer) -> UInt16 {
 }
 
 ///|
-pub fn Packetizer::timestamp(self : Packetizer) -> UInt {
+pub fn Packetizer::timestamp(self : Packetizer) -> UInt32 {
   self.timestamp
 }
 
 ///|
-pub fn Packetizer::clock_rate(self : Packetizer) -> UInt {
+pub fn Packetizer::clock_rate(self : Packetizer) -> UInt32 {
   self.clock_rate
 }
 
 ///|
 pub fn Packetizer::skip_samples(
   self : Packetizer,
-  skipped_samples : UInt,
+  skipped_samples : UInt32,
 ) -> Unit {
   self.timestamp = self.timestamp + skipped_samples
 }
@@ -1052,8 +1052,8 @@ pub fn Packetizer::skip_samples(
 pub fn Packetizer::packetize(
   self : Packetizer,
   payload : Bytes,
-  samples : UInt,
-  extensions? : Array[HeaderExtension] = [],
+  samples : UInt32,
+  extensions~ : Array[HeaderExtension] = [],
 ) -> Array[Packet] raise RtpError {
   let probe = Packet::new(
     payload_type=self.payload_type,

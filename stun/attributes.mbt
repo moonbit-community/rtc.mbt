@@ -125,7 +125,7 @@ pub fn Attribute::to_unknown_attributes(
 }
 
 ///|
-pub fn Attribute::lifetime(seconds : UInt) -> Attribute raise StunError {
+pub fn Attribute::lifetime(seconds : UInt32) -> Attribute raise StunError {
   Attribute::new(attribute_type=Lifetime, value=u32_bytes(seconds))
 }
 

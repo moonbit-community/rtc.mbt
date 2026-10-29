@@ -1,8 +1,8 @@
 ///|
-const MAGIC_COOKIE : UInt = 0x2112a442U
+const MAGIC_COOKIE : UInt32 = 0x2112a442U
 
 ///|
-const HEADER_LENGTH : Int = 20
+const HEADER_LENGTH : Int32 = 20
 
 ///|
 fn Method::code(self : Method) -> UInt16 {
@@ -33,7 +33,7 @@ fn Method::from_code(code : UInt16) -> Method {
 }
 
 ///|
-fn MessageClass::code(self : MessageClass) -> UInt {
+fn MessageClass::code(self : MessageClass) -> UInt32 {
   match self {
     Request => 0U
     Indication => 1U
@@ -43,7 +43,7 @@ fn MessageClass::code(self : MessageClass) -> UInt {
 }
 
 ///|
-fn MessageClass::from_code(code : UInt) -> MessageClass {
+fn MessageClass::from_code(code : UInt32) -> MessageClass {
   match code {
     0U => Request
     1U => Indication
@@ -91,7 +91,7 @@ fn read_u16(reader : @codec.Reader) -> UInt16 raise StunError {
 }
 
 ///|
-fn read_u32(reader : @codec.Reader) -> UInt raise StunError {
+fn read_u32(reader : @codec.Reader) -> UInt32 raise StunError {
   reader.read_u32_be() catch {
     InvalidLength(length) =>
       raise InvalidMessage("invalid codec length \{length}")
@@ -103,7 +103,7 @@ fn read_u32(reader : @codec.Reader) -> UInt raise StunError {
 }
 
 ///|
-fn read_bytes(reader : @codec.Reader, length : Int) -> Bytes raise StunError {
+fn read_bytes(reader : @codec.Reader, length : Int32) -> Bytes raise StunError {
   reader.read_bytes(length) catch {
     InvalidLength(invalid_length) =>
       raise InvalidMessage("invalid codec length \{invalid_length}")
@@ -115,7 +115,7 @@ fn read_bytes(reader : @codec.Reader, length : Int) -> Bytes raise StunError {
 }
 
 ///|
-fn new_writer(capacity : Int) -> @codec.Writer raise StunError {
+fn new_writer(capacity : Int32) -> @codec.Writer raise StunError {
   @codec.Writer::new(capacity~) catch {
     InvalidLength(length) =>
       raise InvalidMessage("invalid codec capacity \{length}")
@@ -127,7 +127,7 @@ fn new_writer(capacity : Int) -> @codec.Writer raise StunError {
 }
 
 ///|
-fn Attribute::wire_length(self : Attribute) -> Int raise StunError {
+fn Attribute::wire_length(self : Attribute) -> Int32 raise StunError {
   validate_attribute(self.attribute_type, self.value)
   let expected_padding = padding_length(self.value.length())
   if self.padding.length() != expected_padding {
@@ -139,8 +139,8 @@ fn Attribute::wire_length(self : Attribute) -> Int raise StunError {
 ///|
 fn Message::body_length(
   self : Message,
-  attribute_count : Int,
-) -> Int raise StunError {
+  attribute_count : Int32,
+) -> Int32 raise StunError {
   if attribute_count < 0 || attribute_count > self.attributes.length() {
     raise InvalidMessage("attribute count is out of bounds")
   }
@@ -157,8 +157,8 @@ fn Message::body_length(
 ///|
 fn Message::encode_prefix(
   self : Message,
-  attribute_count : Int,
-  declared_body_length : Int,
+  attribute_count : Int32,
+  declared_body_length : Int32,
 ) -> Bytes raise StunError {
   if declared_body_length < 0 ||
     declared_body_length > 0xffff ||

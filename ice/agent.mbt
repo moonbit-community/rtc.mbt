@@ -59,17 +59,24 @@ pub struct IceAgent {
   pairs : Array[CandidatePair]
   transactions : Map[
     @stun.TransactionId,
-    (Int, Bytes, @transport.TransportContext, Int, Int64, @transport.Instant),
+    (
+      Int32,
+      Bytes,
+      @transport.TransportContext,
+      Int32,
+      Int64,
+      @transport.Instant,
+    ),
   ]
   outputs : @queue.Queue[@transport.OutboundDatagram]
   events : @queue.Queue[IceEvent]
   mut state : IceConnectionState
-  mut selected_pair_index : Int?
+  mut selected_pair_index : Int32?
   mut next_check : @transport.Instant?
   check_interval : @transport.Duration
   initial_rto : @transport.Duration
   reliable_timeout : @transport.Duration
-  max_retransmissions : Int
+  max_retransmissions : Int32
   disconnected_timeout : @transport.Duration
   failed_timeout : @transport.Duration
   keepalive_interval : @transport.Duration
@@ -106,7 +113,7 @@ pub fn IceAgent::new(
   check_interval? : @transport.Duration,
   initial_rto? : @transport.Duration,
   reliable_timeout? : @transport.Duration,
-  max_retransmissions? : Int = 7,
+  max_retransmissions~ : Int32 = 7,
   disconnected_timeout? : @transport.Duration,
   failed_timeout? : @transport.Duration,
   keepalive_interval? : @transport.Duration,
@@ -730,7 +737,7 @@ pub fn IceAgent::handle_timeout(
 fn IceAgent::pair_index_for_context(
   self : IceAgent,
   context : @transport.TransportContext,
-) -> Int? {
+) -> Int32? {
   for index = 0; index < self.pairs.length(); index = index + 1 {
     if pair_context(self.pairs[index]) == context {
       return Some(index)
@@ -743,8 +750,8 @@ fn IceAgent::pair_index_for_context(
 fn IceAgent::add_peer_reflexive_pair(
   self : IceAgent,
   datagram : @transport.InboundDatagram,
-  priority : UInt,
-) -> Int raise IceError {
+  priority : UInt32,
+) -> Int32 raise IceError {
   let mut matching_local : IceCandidate? = None
   for candidate in self.local_candidates {
     if candidate.protocol == datagram.context.protocol &&
@@ -802,7 +809,7 @@ fn IceAgent::change_role(
 }
 
 ///|
-fn IceAgent::mark_succeeded(self : IceAgent, pair_index : Int) -> Unit {
+fn IceAgent::mark_succeeded(self : IceAgent, pair_index : Int32) -> Unit {
   self.pairs[pair_index].state = PairSucceeded
   if self.state == Checking {
     self.set_connection_state(Connected)
@@ -812,7 +819,7 @@ fn IceAgent::mark_succeeded(self : IceAgent, pair_index : Int) -> Unit {
 ///|
 fn IceAgent::select_pair(
   self : IceAgent,
-  pair_index : Int,
+  pair_index : Int32,
   now : @transport.Instant,
 ) -> Unit raise IceError {
   self.mark_succeeded(pair_index)
@@ -849,7 +856,7 @@ fn IceAgent::send_error_response(
   request : @stun.Message,
   context : @transport.TransportContext,
   code : UInt16,
-  unknown_attributes? : Array[UInt16] = [],
+  unknown_attributes~ : Array[UInt16] = [],
 ) -> Unit raise IceError {
   let error = from_stun(() => @stun.ResponseError::with_default_reason(code))
   let response = from_stun(() => @stun.Message::error_response(request, error))
@@ -873,7 +880,7 @@ fn IceAgent::handle_binding_request(
   self : IceAgent,
   datagram : @transport.InboundDatagram,
   message : @stun.Message,
-  known_pair_index : Int?,
+  known_pair_index : Int32?,
 ) -> Unit raise IceError {
   let unknown_attributes = message.unknown_required_attributes()
   if !unknown_attributes.is_empty() {

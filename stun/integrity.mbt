@@ -1,5 +1,5 @@
 ///|
-const FINGERPRINT_XOR : UInt = 0x5354554eU
+const FINGERPRINT_XOR : UInt32 = 0x5354554eU
 
 ///|
 let default_provider : Lazy[Result[@crypto.Provider, String]] = Lazy(() => {
@@ -47,7 +47,7 @@ fn hmac(
 }
 
 ///|
-fn crc32(data : Bytes) -> UInt {
+fn crc32(data : Bytes) -> UInt32 {
   let mut checksum = 0xffffffffU
   for byte in data {
     checksum = checksum ^ byte.to_uint()
@@ -63,7 +63,7 @@ fn crc32(data : Bytes) -> UInt {
 }
 
 ///|
-fn u32_bytes(value : UInt) -> Bytes {
+fn u32_bytes(value : UInt32) -> Bytes {
   Bytes::from_array([
     (value >> 24).to_byte(),
     (value >> 16).to_byte(),
@@ -93,8 +93,8 @@ fn Message::without_authentication_attributes(self : Message) -> Message {
 pub fn Message::encode_authenticated(
   self : Message,
   key : Bytes,
-  sha256? : Bool = false,
-  fingerprint? : Bool = true,
+  sha256~ : Bool = false,
+  fingerprint~ : Bool = true,
 ) -> Bytes raise StunError {
   let authenticated = self.without_authentication_attributes()
   let digest_length = if sha256 { 32 } else { 20 }
@@ -137,7 +137,7 @@ pub fn Message::encode_authenticated(
 fn Message::integrity_index(
   self : Message,
   expected_type : AttributeType,
-) -> Int raise StunError {
+) -> Int32 raise StunError {
   let mut result = -1
   for index = 0; index < self.attributes.length(); index = index + 1 {
     if self.attributes[index].attribute_type == expected_type {
@@ -156,7 +156,7 @@ fn Message::integrity_index(
 ///|
 fn Message::validate_attributes_after_integrity(
   self : Message,
-  index : Int,
+  index : Int32,
   sha256 : Bool,
 ) -> Unit raise StunError {
   for following = index + 1
@@ -175,7 +175,7 @@ fn Message::validate_attributes_after_integrity(
 pub fn Message::verify_integrity(
   self : Message,
   key : Bytes,
-  sha256? : Bool = false,
+  sha256~ : Bool = false,
 ) -> Unit raise StunError {
   let expected_type = if sha256 {
     MessageIntegritySha256

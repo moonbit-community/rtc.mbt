@@ -78,7 +78,7 @@ test "AEAD round-trips all required provider algorithms" {
   let provider = @crypto.Provider::open()
   let plaintext = b"MoonBit WebRTC"
   let aad = b"record header"
-  let cases : Array[(@crypto.AeadAlgorithm, Int, Bytes)] = [
+  let cases : Array[(@crypto.AeadAlgorithm, Int32, Bytes)] = [
     (Aes128Gcm, 16, b"twelve-bytes"),
     (Aes256Gcm, 32, b"twelve-bytes"),
     (Aes128Ccm, 16, b"twelve-bytes"),
@@ -226,7 +226,7 @@ test "self-signed X.509 uses injected wall time and stable DER fingerprints" {
 }
 
 ///|
-fn exercise_finalizer_owned_crypto_objects() -> (Bool, Bool, Int) raise @crypto.CryptoError {
+fn exercise_finalizer_owned_crypto_objects() -> (Bool, Bool, Int32) raise @crypto.CryptoError {
   let provider = @crypto.Provider::open()
   let secret = @crypto.Secret::from_bytes(b"finalizer-owned secret")
   let private_key = provider.generate_private_key(P256)

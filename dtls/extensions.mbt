@@ -29,7 +29,7 @@ pub struct HelloExtensions {
 
 ///|
 pub fn HelloExtensions::webrtc(
-  srtp_profiles? : Array[SrtpProtectionProfile] = [],
+  srtp_profiles~ : Array[SrtpProtectionProfile] = [],
 ) -> HelloExtensions {
   {
     supported_groups: [23, 29, 24],
@@ -118,7 +118,7 @@ fn hs_read_u16(
 fn hs_read_u24(
   reader : @codec.Reader,
   context : String,
-) -> UInt raise DtlsError {
+) -> UInt32 raise DtlsError {
   reader.read_u24_be() catch {
     InvalidLength(length) =>
       raise InvalidHandshake("\{context}: invalid length \{length}")
@@ -132,7 +132,7 @@ fn hs_read_u24(
 ///|
 fn hs_read_bytes(
   reader : @codec.Reader,
-  length : Int,
+  length : Int32,
   context : String,
 ) -> Bytes raise DtlsError {
   reader.read_bytes(length) catch {

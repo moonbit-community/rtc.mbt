@@ -11,7 +11,7 @@ import {
 // Errors
 pub(all) suberror CryptoError {
   CryptoUnavailable(String)
-  InvalidLength(Int)
+  InvalidLength(Int32)
   OperationFailed(String)
 } derive(Eq, @debug.Debug)
 
@@ -65,7 +65,7 @@ pub fn PrivateKey::public_der(Self, Provider) -> Bytes raise CryptoError
 
 pub type Provider
 pub fn Provider::aead_open(Self, AeadAlgorithm, Secret, Bytes, Bytes, AeadSealed) -> Bytes raise CryptoError
-pub fn Provider::aead_seal(Self, AeadAlgorithm, Secret, Bytes, Bytes, Bytes, tag_length? : Int) -> AeadSealed raise CryptoError
+pub fn Provider::aead_seal(Self, AeadAlgorithm, Secret, Bytes, Bytes, Bytes, tag_length? : Int32) -> AeadSealed raise CryptoError
 pub fn Provider::cipher_decrypt(Self, CipherAlgorithm, Secret, Bytes, Bytes) -> Bytes raise CryptoError
 pub fn Provider::cipher_encrypt(Self, CipherAlgorithm, Secret, Bytes, Bytes) -> Bytes raise CryptoError
 pub fn Provider::constant_time_equal(Self, Bytes, Bytes) -> Bool
@@ -76,8 +76,8 @@ pub fn Provider::hmac(Self, DigestAlgorithm, Secret, Bytes) -> Bytes raise Crypt
 pub fn Provider::import_certificate(Self, Bytes) -> Certificate raise CryptoError
 pub fn Provider::import_public_key(Self, Bytes) -> PublicKey raise CryptoError
 pub fn Provider::open(path? : String, property_query? : String) -> Self raise CryptoError
-pub fn Provider::random_bytes(Self, Int) -> Bytes raise CryptoError
-pub fn Provider::random_secret(Self, Int) -> Secret raise CryptoError
+pub fn Provider::random_bytes(Self, Int32) -> Bytes raise CryptoError
+pub fn Provider::random_secret(Self, Int32) -> Secret raise CryptoError
 pub fn Provider::self_signed_certificate(Self, PrivateKey, String, @transport.WallTime, @transport.WallTime) -> Certificate raise CryptoError
 pub fn Provider::sign(Self, SignatureAlgorithm, PrivateKey, Bytes) -> Bytes raise CryptoError
 pub fn Provider::verify(Self, SignatureAlgorithm, PublicKey, Bytes, Bytes) -> Bool raise CryptoError
@@ -88,7 +88,7 @@ pub type PublicKey
 pub type Secret
 pub fn Secret::constant_time_equal(Self, Provider, Self) -> Bool
 pub fn Secret::from_bytes(Bytes) -> Self
-pub fn Secret::length(Self) -> Int
+pub fn Secret::length(Self) -> Int32
 
 pub(all) enum SignatureAlgorithm {
   EcdsaSha256

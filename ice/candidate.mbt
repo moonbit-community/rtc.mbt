@@ -107,14 +107,14 @@ pub fn IceCandidate::new(
   foundation~ : String,
   component~ : UInt16,
   protocol~ : @transport.TransportProtocol,
-  priority~ : UInt,
+  priority~ : UInt32,
   address~ : CandidateAddress,
   port~ : UInt16,
   candidate_type~ : CandidateType,
   related_address? : CandidateAddress,
   related_port? : UInt16,
   tcp_type? : TcpCandidateType,
-  extensions? : Array[(String, String)] = [],
+  extensions~ : Array[(String, String)] = [],
 ) -> IceCandidate raise IceError {
   validate_token(foundation, "foundation")
   if component == 0 {
@@ -165,7 +165,7 @@ pub fn IceCandidate::new(
 pub fn IceCandidate::host(
   foundation~ : String,
   address : @transport.SocketAddress,
-  local_preference? : UInt16 = 65535,
+  local_preference~ : UInt16 = 65535,
 ) -> IceCandidate raise IceError {
   IceCandidate::new(
     foundation~,
@@ -187,7 +187,7 @@ pub fn IceCandidate::tcp_host(
   foundation~ : String,
   address : @transport.SocketAddress,
   tcp_type~ : TcpCandidateType,
-  local_preference? : UInt16 = 65535,
+  local_preference~ : UInt16 = 65535,
 ) -> IceCandidate raise IceError {
   if tcp_type == Active && address.port() != 0 {
     raise InvalidCandidate("active ICE TCP host candidate must use port zero")
@@ -218,7 +218,7 @@ pub fn IceCandidate::priority_value(
   candidate_type~ : CandidateType,
   local_preference~ : UInt16,
   component~ : UInt16,
-) -> UInt raise IceError {
+) -> UInt32 raise IceError {
   if component == 0 || component > 256 {
     raise InvalidCandidate("ICE component must be between 1 and 256")
   }
@@ -337,7 +337,7 @@ pub fn IceCandidate::protocol(
 }
 
 ///|
-pub fn IceCandidate::priority(self : IceCandidate) -> UInt {
+pub fn IceCandidate::priority(self : IceCandidate) -> UInt32 {
   self.priority
 }
 
